@@ -5,6 +5,8 @@ import 'package:hive/hive.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../billing/domain/entities/customer.dart';
 import '../bloc/customer/customer_bloc.dart';
 
@@ -55,13 +57,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: Text(l10n.customerManagement, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
-            onPressed: () => context.canPop() ? context.pop() : context.go('/'),
-          ),
+          leading: const BackButtonWidget(),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh),
@@ -191,35 +187,14 @@ class _CustomerListPageState extends State<CustomerListPage> {
 
   Widget _buildEmptyState(String searchQuery) {
     final l10n = AppLocalizations.of(context)!;
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.people_outline,
-                  size: 64,
-                  color: Colors.grey[400],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  searchQuery.isEmpty ? l10n.noProductsFound : l10n.noProductsMatchSearch,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                ),
-                if (searchQuery.isNotEmpty)
-                  TextButton(
-                    onPressed: () => _searchController.clear(),
-                    child: Text(l10n.clearCache),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return EmptyStateWidget(
+      icon: searchQuery.isEmpty ? Icons.people_outline : Icons.search_off,
+      title: searchQuery.isEmpty ? l10n.noCustomersFound : l10n.noCustomersMatchSearch,
+      subtitle: searchQuery.isEmpty ? l10n.addFirstCustomer : null,
+      onActionPressed: searchQuery.isEmpty 
+        ? () => context.push('/customers/add')
+        : () => _searchController.clear(),
+      actionLabel: searchQuery.isEmpty ? l10n.addCustomer : l10n.clear,
     );
   }
 
@@ -413,7 +388,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildDetailRow(l10n.phone, customer.phone),
-              _buildDetailRow(l10n.email, customer.email.isNotEmpty ? customer.email : 'Not provided'),
+              _buildDetailRow(l10n.email, customer.email.isNotEmpty ? customer.email : l10n.notProvided),
               _buildDetailRow(l10n.creditLimit, '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${customer.creditLimit.toStringAsFixed(2)}'),
               _buildDetailRow(l10n.cashBalance, '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${customer.currentBalance.toStringAsFixed(2)}'),
               _buildDetailRow(l10n.availableCredit, '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${customer.availableCredit.toStringAsFixed(2)}'),

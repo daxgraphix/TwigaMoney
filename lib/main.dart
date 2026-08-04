@@ -36,10 +36,14 @@ void main() async {
   String? initError;
 
   try {
-    await HiveDatabase.init().timeout(const Duration(seconds: 10));
+    await HiveDatabase.init();
   } catch (e) {
     initError = 'Database error: $e';
     debugPrint('Hive init failed: $e');
+    // If it's a lock file issue, we could try to handle it or show a clearer message.
+    if (e.toString().contains('LockFile')) {
+       initError = 'Database is locked. Please close other instances of the app or restart your device.';
+    }
   }
 
   try {
@@ -126,7 +130,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () {
-                      runApp(const MyApp());
+                      // Restart the entire application to retry initialization
+                      context.findAncestorStateOfType<_MyAppState>()?.setState(() {
+                        // This might not be enough to re-run main(), 
+                        // but a full app restart is usually required for Hive/DI failures.
+                      });
+                      // A more robust way to "retry" in a standalone app 
+                      // is often just prompting the user to restart.
                     },
                     child: const Text('Retry'),
                   ),

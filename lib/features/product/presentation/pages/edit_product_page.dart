@@ -1,5 +1,7 @@
+import 'package:twigamoney/l10n/app_localizations.dart';
 import 'package:twigamoney/core/widgets/input_label.dart';
 import 'package:twigamoney/core/widgets/primary_button.dart';
+import 'package:twigamoney/core/widgets/page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -57,21 +59,16 @@ class _EditProductPageState extends State<EditProductPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Get currency symbol for price input
     final currency = Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
     final symbol = AppTheme.getCurrencySymbol(currency);
 
     return Scaffold(
         appBar: AppBar(
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.chevron_left,
-                size: 32, color: Theme.of(context).primaryColor),
-            onPressed: () { if (context.canPop()) { if (context.canPop()) { context.pop(); } else { context.go('/'); } } else { context.go('/'); } },
-          ),
-          title: const Text('Edit Product',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          centerTitle: true,
+          leading: const BackButtonWidget(),
+          title: Text(l10n.editProduct,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -92,17 +89,17 @@ class _EditProductPageState extends State<EditProductPage> {
                           color: AppTheme.primaryColor.withValues(alpha: 0.1)),
                     ),
                   ),
-                  const InputLabel(text: 'Product Name'),
+                  InputLabel(text: l10n.productName),
 
                   TextFormField(
                     initialValue: _name,
                     textCapitalization: TextCapitalization.words,
-                    validator: AppValidators.required('Please enter a name'),
+                    validator: AppValidators.required(l10n.nameIsRequired),
                     onSaved: (value) => _name = value!,
                   ),
                   const SizedBox(height: 24),
 
-                  const InputLabel(text: 'Price'),
+                  InputLabel(text: l10n.price),
 
                   TextFormField(
                     initialValue: _price.toStringAsFixed(2),
@@ -115,7 +112,7 @@ class _EditProductPageState extends State<EditProductPage> {
                           fontWeight: FontWeight.w500,
                           color: Colors.black),
                     ),
-                    validator: AppValidators.price,
+                    validator: (value) => AppValidators.price(value, context),
                     onSaved: (value) => _price = double.parse(value!),
                   ),
                 ],
@@ -126,7 +123,7 @@ class _EditProductPageState extends State<EditProductPage> {
         bottomNavigationBar: PrimaryButton(
           onPressed: _submit,
           icon: Icons.save,
-          label: 'Save Changes',
+          label: l10n.saveChanges,
         ));
   }
 }

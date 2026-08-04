@@ -144,14 +144,13 @@ class _DashboardPageState extends State<DashboardPage> {
                             Row(
                               children: [
                                 _headerActionButton(
-                                  icon: Icons.refresh,
-                                  onTap: () => context.read<DashboardBloc>().add(
-                                      const LoadDashboardDataEvent(forceRefresh: true)),
+                                  icon: Icons.storefront_outlined,
+                                  onTap: () => context.push('/shop'),
                                 ),
                                 const SizedBox(width: 8),
                                 _headerActionButton(
-                                  icon: Icons.notifications_outlined,
-                                  onTap: () {},
+                                  icon: Icons.settings_outlined,
+                                  onTap: () => context.push('/settings'),
                                 ),
                               ],
                             ),

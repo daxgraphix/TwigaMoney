@@ -4,7 +4,7 @@ import 'package:hive/hive.dart';
 part 'shift.g.dart';
 
 /// Represents a cashier shift
-@HiveType(typeId: 21)
+@HiveType(typeId: 26)
 class Shift extends Equatable {
   @HiveField(0)
   final String id;

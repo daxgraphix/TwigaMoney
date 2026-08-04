@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../core/utils/responsive.dart';
+import 'package:twigamoney/core/widgets/page_transitions.dart';
+import 'package:twigamoney/core/widgets/input_label.dart';
+import 'package:twigamoney/core/widgets/primary_button.dart';
+import 'package:twigamoney/core/utils/responsive.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/entities/category.dart';
 import '../../presentation/bloc/finance_bloc.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 
 class EditBudgetPage extends StatefulWidget {
   final Budget? budget;
@@ -45,10 +49,11 @@ class _EditBudgetPageState extends State<EditBudgetPage> {
   }
 
   void _submit() {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category'), backgroundColor: Colors.orange),
+        SnackBar(content: Text(l10n.pleaseSelectCategory), backgroundColor: Colors.orange),
       );
       return;
     }
@@ -80,7 +85,7 @@ class _EditBudgetPageState extends State<EditBudgetPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(widget.budget == null ? 'Budget created' : 'Budget updated'),
+        content: Text(widget.budget == null ? l10n.budgetCreated : l10n.budgetUpdated),
         backgroundColor: Colors.green,
       ),
     );
@@ -90,71 +95,70 @@ class _EditBudgetPageState extends State<EditBudgetPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.budget == null ? 'New Budget' : 'Edit Budget'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
-          onPressed: () { if (context.canPop()) { if (context.canPop()) { context.pop(); } else { context.go('/'); } } else { context.go('/'); } },
-        ),
+        leading: const BackButtonWidget(),
+        title: Text(widget.budget == null ? l10n.newBudget : l10n.editBudget,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(Responsive.getPadding(context)),
+        padding: EdgeInsets.symmetric(horizontal: Responsive.getPadding(context)),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 20),
+              InputLabel(text: l10n.budgetName),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Budget Name',
-                  hintText: 'e.g., Monthly Marketing',
-                  prefixIcon: Icon(Icons.label),
+                decoration: InputDecoration(
+                  hintText: l10n.budgetNameHint,
+                  prefixIcon: const Icon(Icons.label),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a budget name';
+                    return l10n.pleaseEnterBudgetName;
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
+              InputLabel(text: l10n.category),
               BlocBuilder<FinanceBloc, FinanceState>(
                 builder: (context, state) {
                   List<Category> categories = [];
                   if (state is CategoriesLoaded) {
                     categories = state.categories;
                   }
-                  
+
                   return FormField<String>(
                     initialValue: _selectedCategoryId,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please select a category';
+                        return l10n.pleaseSelectCategory;
                       }
                       return null;
                     },
                     builder: (FormFieldState<String> state) {
                       return InputDecorator(
                         decoration: InputDecoration(
-                          labelText: 'Category',
                           prefixIcon: const Icon(Icons.category),
                           errorText: state.errorText,
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: _selectedCategoryId,
-                            hint: const Text('Select Category'),
+                            hint: Text(l10n.selectCategory),
                             isExpanded: true,
                             items: categories.map((category) {
                               return DropdownMenuItem<String>(
                                 value: category.id,
                                 child: Row(
                                   children: [
-                                    Icon(category.icon, color: category.color, size: 20),
+                                    Icon(category.icon,
+                                        color: category.color, size: 20),
                                     const SizedBox(width: 10),
                                     Text(category.name),
                                   ],
@@ -173,41 +177,45 @@ class _EditBudgetPageState extends State<EditBudgetPage> {
                 },
               ),
               const SizedBox(height: 16),
+              InputLabel(text: l10n.budgetAmount),
               TextFormField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Budget Amount',
-                  hintText: '0.00',
-                  prefixIcon: Icon(Icons.money),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  hintText: l10n.priceHint,
+                  prefixIcon: const Icon(Icons.money),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
+                    return l10n.pleaseEnterValidAmount;
                   }
                   final amount = double.tryParse(value);
                   if (amount == null || amount <= 0) {
-                    return 'Please enter a valid amount';
+                    return l10n.pleaseEnterValidAmount;
                   }
                   return null;
                 },
               ),
-             const SizedBox(height: 16),
+              const SizedBox(height: 16),
+              InputLabel(text: l10n.budgetPeriod),
               FormField<String>(
                 initialValue: _budgetPeriod,
                 builder: (FormFieldState<String> state) {
                   return InputDecorator(
                     decoration: const InputDecoration(
-                      labelText: 'Budget Period',
                       prefixIcon: Icon(Icons.calendar_today),
                     ),
                     child: DropdownButton<String>(
                       value: state.value,
-                      items: const [
-                        DropdownMenuItem(value: 'daily', child: Text('Daily')),
-                        DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
-                        DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
-                        DropdownMenuItem(value: 'yearly', child: Text('Yearly')),
+                      items: [
+                        DropdownMenuItem(value: 'daily', child: Text(l10n.daily)),
+                        DropdownMenuItem(
+                            value: 'weekly', child: Text(l10n.weekly)),
+                        DropdownMenuItem(
+                            value: 'monthly', child: Text(l10n.monthly)),
+                        DropdownMenuItem(
+                            value: 'yearly', child: Text(l10n.yearly)),
                       ],
                       onChanged: (value) {
                         state.didChange(value);
@@ -219,17 +227,10 @@ class _EditBudgetPageState extends State<EditBudgetPage> {
                 },
               ),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(widget.budget == null ? 'Create Budget' : 'Update Budget'),
-                ),
+              PrimaryButton(
+                onPressed: _submit,
+                label:
+                    widget.budget == null ? l10n.addBudget : l10n.updateBudget,
               ),
             ],
           ),

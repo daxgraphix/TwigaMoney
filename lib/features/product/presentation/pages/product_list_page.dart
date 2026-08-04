@@ -11,6 +11,8 @@ import '../../domain/entities/product.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/csv_service.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
+import '../../../../core/widgets/page_transitions.dart';
 
 class ProductListPage extends StatefulWidget {
   const ProductListPage({super.key});
@@ -54,16 +56,9 @@ class _ProductListPageState extends State<ProductListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left,
-              size: 28, color: Theme.of(context).primaryColor),
-          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
-        ),
+        leading: const BackButtonWidget(),
         title: Text(l10n.productManagement,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        centerTitle: true,
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -169,20 +164,12 @@ class _ProductListPageState extends State<ProductListPage> {
                   if (state.status == ProductStatus.error) {
                     return Center(child: Text('${l10n.error}: ${state.message}'));
                   }
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.noProductsFound,
-                          style: TextStyle(fontSize: Responsive.getFontSize(context, 18), color: Colors.grey[600]),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(l10n.addFirstProduct, style: TextStyle(color: Colors.grey[500])),
-                      ],
-                    ),
+                  return EmptyStateWidget(
+                    icon: Icons.inventory_2_outlined,
+                    title: l10n.noProductsFound,
+                    subtitle: l10n.addFirstProduct,
+                    onActionPressed: () => context.push('/products/add'),
+                    actionLabel: l10n.addProduct,
                   );
                 }
 
@@ -191,19 +178,22 @@ class _ProductListPageState extends State<ProductListPage> {
                         product.name.toLowerCase().contains(_searchQuery))
                     .toList();
 
-                if (filteredProducts.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.search_off, size: 48, color: Colors.grey[400]),
-                        const SizedBox(height: 12),
-                        Text(
-                          l10n.noProductsMatchSearch,
-                          style: TextStyle(color: Colors.grey[600], fontSize: Responsive.getFontSize(context, 16)),
-                        ),
-                      ],
-                    ),
+                if (filteredProducts.isEmpty && _searchQuery.isNotEmpty) {
+                  return EmptyStateWidget(
+                    icon: Icons.search_off,
+                    title: l10n.noProductsMatchSearch,
+                    onActionPressed: () => _searchController.clear(),
+                    actionLabel: l10n.clear,
+                  );
+                }
+
+                if (filteredProducts.isEmpty && _searchQuery.isEmpty) {
+                  return EmptyStateWidget(
+                    icon: Icons.inventory_2_outlined,
+                    title: l10n.noProductsFound,
+                    subtitle: l10n.addFirstProduct,
+                    onActionPressed: () => context.push('/products/add'),
+                    actionLabel: l10n.addProduct,
                   );
                 }
 

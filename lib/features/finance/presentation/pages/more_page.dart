@@ -14,9 +14,13 @@ class MorePage extends StatelessWidget {
         : (Responsive.isTablet(context) ? 3 : 2);
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.more),
+        title: Text(l10n.more, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
+          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
+        ),
       ),
       body: GridView.count(
         crossAxisCount: crossAxisCount,

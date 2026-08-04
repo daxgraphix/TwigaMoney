@@ -9,8 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/data/hive_database.dart';
-import 'package:twigamoney/features/shop/data/models/shop_model.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../cubit/settings_cubit.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -30,6 +29,7 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
+            leading: const BackButtonWidget(),
             title: Text(l10n.settings, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
           body: SingleChildScrollView(
@@ -95,7 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: Icons.store_outlined,
                       title: l10n.shopDetails,
                       subtitle: l10n.nameAddressContact,
-                      onTap: _editShopProfile,
+                      onTap: () => context.push('/shop'),
                     ),
                     _buildDivider(),
                     _buildListItem(
@@ -415,125 +415,6 @@ class _SettingsPageState extends State<SettingsPage> {
         );
       }
     }
-  }
-
-  void _editShopProfile() {
-    final l10n = AppLocalizations.of(context)!;
-    final shopBox = HiveDatabase.shopBox;
-    final currentShop = shopBox.get('shop_details');
-    final nameController = TextEditingController(text: currentShop?.name ?? '');
-    final address1Controller = TextEditingController(text: currentShop?.addressLine1 ?? '');
-    final address2Controller = TextEditingController(text: currentShop?.addressLine2 ?? '');
-    final phoneController = TextEditingController(text: currentShop?.phoneNumber ?? '');
-    final upiController = TextEditingController(text: currentShop?.upiId ?? '');
-    final footerController = TextEditingController(text: currentShop?.footerText ?? '');
-    final logoController = TextEditingController(text: currentShop?.logoText ?? '');
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(l10n.shopProfile),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(labelText: '${l10n.shopName} *'),
-                  textCapitalization: TextCapitalization.words,
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: address1Controller,
-                  decoration: InputDecoration(labelText: '${l10n.addressLine1} *'),
-                  textCapitalization: TextCapitalization.words,
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: address2Controller,
-                  decoration: InputDecoration(labelText: l10n.addressLine2),
-                  textCapitalization: TextCapitalization.words,
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: phoneController,
-                  decoration: InputDecoration(
-                    labelText: '${l10n.phoneNumber} *',
-                    prefixText: '+',
-                  ),
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: upiController,
-                  decoration: InputDecoration(
-                    labelText: l10n.upiPaymentId,
-                    hintText: 'e.g. upi://pay@bank',
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: logoController,
-                  decoration: InputDecoration(
-                    labelText: l10n.shopLogoText,
-                    hintText: l10n.textShownOnReceipts,
-                  ),
-                  textCapitalization: TextCapitalization.words,
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: footerController,
-                  decoration: InputDecoration(
-                    labelText: l10n.receiptFooter,
-                    hintText: l10n.thankYouMessage,
-                  ),
-                  maxLines: 2,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(l10n.cancel)),
-            ElevatedButton(
-              onPressed: () {
-                if (nameController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.shopNameRequired), backgroundColor: Colors.red),
-                  );
-                  return;
-                }
-                if (address1Controller.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.addressRequired), backgroundColor: Colors.red),
-                  );
-                  return;
-                }
-                final updatedShop = ShopModel(
-                  id: currentShop?.id ?? 'shop_1',
-                  name: nameController.text.trim(),
-                  addressLine1: address1Controller.text.trim(),
-                  addressLine2: address2Controller.text.trim(),
-                  phoneNumber: phoneController.text.trim(),
-                  footerText: footerController.text.trim(),
-                  upiId: upiController.text.trim(),
-                  logoText: logoController.text.trim(),
-                );
-                shopBox.put('shop_details', updatedShop);
-                Navigator.pop(dialogContext);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.shopProfileUpdatedSuccessfully)),
-                  );
-                }
-                setState(() {});
-              },
-              child: Text(l10n.save),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> _editUserProfile(SettingsState state) async {

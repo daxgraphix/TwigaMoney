@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../billing/domain/entities/customer.dart';
 import '../../../billing/domain/entities/sales_transaction.dart';
 import '../../../billing/domain/repositories/sales_repository.dart';
@@ -95,8 +95,9 @@ class _CustomerTransactionsPageState extends State<CustomerTransactionsPage> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(l10n.customerTransactions),
-        ),
+        title: Text(l10n.customerTransactions, style: const TextStyle(fontWeight: FontWeight.bold)),
+        leading: const BackButtonWidget(),
+      ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -104,8 +105,9 @@ class _CustomerTransactionsPageState extends State<CustomerTransactionsPage> {
     if (_customer == null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(l10n.customerTransactions),
-        ),
+        title: Text(l10n.customerTransactions, style: const TextStyle(fontWeight: FontWeight.bold)),
+        leading: const BackButtonWidget(),
+      ),
         body: Center(
           child: Text(l10n.customerNotFound),
         ),
@@ -118,13 +120,8 @@ class _CustomerTransactionsPageState extends State<CustomerTransactionsPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(l10n.transactions, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
-          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
-        ),
+        title: Text(l10n.transactions, style: const TextStyle(fontWeight: FontWeight.bold)),
+        leading: const BackButtonWidget(),
       ),
       body: Column(
         children: [
@@ -237,7 +234,7 @@ class _CustomerTransactionsPageState extends State<CustomerTransactionsPage> {
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                 ),
                                 Text(
-                                  '${transaction.quantity} units',
+                                  '${transaction.quantity} ${l10n.units}',
                                   style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                                 ),
                               ],

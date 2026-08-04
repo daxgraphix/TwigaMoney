@@ -994,6 +994,12 @@ abstract class AppLocalizations {
   /// **'Restock'**
   String get restock;
 
+  /// No description provided for @product.
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get product;
+
   /// No description provided for @stockQuantity.
   ///
   /// In en, this message translates to:
@@ -1114,11 +1120,65 @@ abstract class AppLocalizations {
   /// **'Edit Budget'**
   String get editBudget;
 
-  /// No description provided for @accountManagement.
+  /// No description provided for @accountName.
   ///
   /// In en, this message translates to:
-  /// **'Account Management'**
-  String get accountManagement;
+  /// **'Account Name'**
+  String get accountName;
+
+  /// No description provided for @accountNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Main Wallet'**
+  String get accountNameHint;
+
+  /// No description provided for @accountType.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Type'**
+  String get accountType;
+
+  /// No description provided for @checking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking'**
+  String get checking;
+
+  /// No description provided for @savings.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings'**
+  String get savings;
+
+  /// No description provided for @credit.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit'**
+  String get credit;
+
+  /// No description provided for @investment.
+  ///
+  /// In en, this message translates to:
+  /// **'Investment'**
+  String get investment;
+
+  /// No description provided for @accountSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Account saved successfully'**
+  String get accountSaved;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted successfully'**
+  String get accountDeleted;
+
+  /// No description provided for @confirmDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{name}\"? This action cannot be undone.'**
+  String confirmDeleteAccount(Object name);
 
   /// No description provided for @transactionHistory.
   ///
@@ -1588,6 +1648,84 @@ abstract class AppLocalizations {
   /// **'Shop profile updated successfully'**
   String get shopProfileUpdatedSuccessfully;
 
+  /// No description provided for @shopDetailsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop details saved!'**
+  String get shopDetailsSaved;
+
+  /// No description provided for @generalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'General Information'**
+  String get generalInformation;
+
+  /// No description provided for @receiptVisibilityNote.
+  ///
+  /// In en, this message translates to:
+  /// **'These details will appear on your digital and printed receipts.'**
+  String get receiptVisibilityNote;
+
+  /// No description provided for @shopNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. QuickMart Superstore'**
+  String get shopNameHint;
+
+  /// No description provided for @addressLine1Hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Samrajpet, Mecheri'**
+  String get addressLine1Hint;
+
+  /// No description provided for @addressLine2Hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Salem - 636453'**
+  String get addressLine2Hint;
+
+  /// No description provided for @phoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. +91 7010674588'**
+  String get phoneHint;
+
+  /// No description provided for @upiHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. yourname@oksbi'**
+  String get upiHint;
+
+  /// No description provided for @maxChars.
+  ///
+  /// In en, this message translates to:
+  /// **'Max {count} chars'**
+  String maxChars(Object count);
+
+  /// No description provided for @thankYouHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you, Visit again!!!'**
+  String get thankYouHint;
+
+  /// No description provided for @saveDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Details'**
+  String get saveDetails;
+
+  /// No description provided for @addressLine2Optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Line 2 (Optional)'**
+  String get addressLine2Optional;
+
+  /// No description provided for @upiPaymentIdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. upi://pay@bank'**
+  String get upiPaymentIdHint;
+
   /// No description provided for @cacheClearedSuccessfully.
   ///
   /// In en, this message translates to:
@@ -1786,6 +1924,78 @@ abstract class AppLocalizations {
   /// **'Last Transaction'**
   String get lastTransaction;
 
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @continueText.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueText;
+
+  /// No description provided for @slogan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Business, Simplified'**
+  String get slogan;
+
+  /// No description provided for @onboardingTrackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track Everything'**
+  String get onboardingTrackTitle;
+
+  /// No description provided for @onboardingTrackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Monitor your sales, expenses, and profits in one place. Real-time analytics for your business.'**
+  String get onboardingTrackDesc;
+
+  /// No description provided for @onboardingInventoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory Control'**
+  String get onboardingInventoryTitle;
+
+  /// No description provided for @onboardingInventoryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your stock efficiently. Get alerts when items are running low and track movements.'**
+  String get onboardingInventoryDesc;
+
+  /// No description provided for @onboardingCustomerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Relations'**
+  String get onboardingCustomerTitle;
+
+  /// No description provided for @onboardingCustomerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep track of your customers and their transaction history. Manage credit sales and payments.'**
+  String get onboardingCustomerDesc;
+
+  /// No description provided for @onboardingShiftTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift Insights'**
+  String get onboardingShiftTitle;
+
+  /// No description provided for @onboardingShiftDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed shift reports and cashier tracking to ensure transparency and accountability.'**
+  String get onboardingShiftDesc;
+
   /// No description provided for @confirmDeleteCustomer.
   ///
   /// In en, this message translates to:
@@ -1876,6 +2086,24 @@ abstract class AppLocalizations {
   /// **'No transactions found'**
   String get noTransactionsFound;
 
+  /// No description provided for @noTransactionsMatchSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions match your search'**
+  String get noTransactionsMatchSearch;
+
+  /// No description provided for @addFirstTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start by adding your first transaction'**
+  String get addFirstTransaction;
+
+  /// No description provided for @tryAdjustingSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your search or filters'**
+  String get tryAdjustingSearch;
+
   /// No description provided for @totalTransactions.
   ///
   /// In en, this message translates to:
@@ -1887,6 +2115,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total Amount'**
   String get totalAmount;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @productNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Basmati Rice'**
+  String get productNameHint;
+
+  /// No description provided for @priceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0.00'**
+  String get priceHint;
+
+  /// No description provided for @stockHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0'**
+  String get stockHint;
+
+  /// No description provided for @categoryFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get categoryFood;
+
+  /// No description provided for @categoryBeverages.
+  ///
+  /// In en, this message translates to:
+  /// **'Beverages'**
+  String get categoryBeverages;
+
+  /// No description provided for @categoryHousehold.
+  ///
+  /// In en, this message translates to:
+  /// **'Household'**
+  String get categoryHousehold;
+
+  /// No description provided for @categoryPersonalCare.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Care'**
+  String get categoryPersonalCare;
+
+  /// No description provided for @categoryElectronics.
+  ///
+  /// In en, this message translates to:
+  /// **'Electronics'**
+  String get categoryElectronics;
+
+  /// No description provided for @categoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryOther;
 
   /// No description provided for @numberOfTransactions.
   ///
@@ -2410,6 +2698,24 @@ abstract class AppLocalizations {
   /// **'Customer List'**
   String get customerList;
 
+  /// No description provided for @noCustomersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No customers found'**
+  String get noCustomersFound;
+
+  /// No description provided for @noCustomersMatchSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'No customers match your search'**
+  String get noCustomersMatchSearch;
+
+  /// No description provided for @addFirstCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the + button to add your first customer'**
+  String get addFirstCustomer;
+
   /// No description provided for @noPhone.
   ///
   /// In en, this message translates to:
@@ -2686,11 +2992,29 @@ abstract class AppLocalizations {
   /// **'No accounts yet'**
   String get noAccountsYet;
 
+  /// No description provided for @noAccountsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No accounts found'**
+  String get noAccountsFound;
+
+  /// No description provided for @noAccountsMatchSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'No accounts match your search'**
+  String get noAccountsMatchSearch;
+
   /// No description provided for @addFirstAccount.
   ///
   /// In en, this message translates to:
   /// **'Add your first account'**
   String get addFirstAccount;
+
+  /// No description provided for @tapToCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to create your first account'**
+  String get tapToCreateAccount;
 
   /// No description provided for @manageAccounts.
   ///
@@ -2710,11 +3034,29 @@ abstract class AppLocalizations {
   /// **'No budgets yet'**
   String get noBudgetsYet;
 
+  /// No description provided for @noBudgetsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No budgets found'**
+  String get noBudgetsFound;
+
+  /// No description provided for @noBudgetsMatchSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'No budgets match your search'**
+  String get noBudgetsMatchSearch;
+
   /// No description provided for @addFirstBudget.
   ///
   /// In en, this message translates to:
   /// **'Create your first budget'**
   String get addFirstBudget;
+
+  /// No description provided for @tapToCreateBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to create your first budget'**
+  String get tapToCreateBudget;
 
   /// No description provided for @createBudget.
   ///
@@ -2974,6 +3316,12 @@ abstract class AppLocalizations {
   /// **'Help'**
   String get help;
 
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Search'**
+  String get clearSearch;
+
   /// No description provided for @type.
   ///
   /// In en, this message translates to:
@@ -2986,11 +3334,143 @@ abstract class AppLocalizations {
   /// **'Please enter valid numbers in all fields'**
   String get invalidInput;
 
-  /// No description provided for @result.
+  /// No description provided for @notProvided.
   ///
   /// In en, this message translates to:
-  /// **'Result'**
-  String get result;
+  /// **'Not provided'**
+  String get notProvided;
+
+  /// No description provided for @units.
+  ///
+  /// In en, this message translates to:
+  /// **'units'**
+  String get units;
+
+  /// No description provided for @pleaseEnterValidPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid price'**
+  String get pleaseEnterValidPrice;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @pleaseSelectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category'**
+  String get pleaseSelectCategory;
+
+  /// No description provided for @pleaseEnterValidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get pleaseEnterValidAmount;
+
+  /// No description provided for @editAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Account'**
+  String get editAccount;
+
+  /// No description provided for @budgetCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget created'**
+  String get budgetCreated;
+
+  /// No description provided for @budgetUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget updated'**
+  String get budgetUpdated;
+
+  /// No description provided for @newBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'New Budget'**
+  String get newBudget;
+
+  /// No description provided for @budgetName.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget Name'**
+  String get budgetName;
+
+  /// No description provided for @budgetNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Monthly Marketing'**
+  String get budgetNameHint;
+
+  /// No description provided for @pleaseEnterBudgetName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a budget name'**
+  String get pleaseEnterBudgetName;
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Category'**
+  String get selectCategory;
+
+  /// No description provided for @budgetAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget Amount'**
+  String get budgetAmount;
+
+  /// No description provided for @budgetPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget Period'**
+  String get budgetPeriod;
+
+  /// No description provided for @daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get daily;
+
+  /// No description provided for @weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weekly;
+
+  /// No description provided for @monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthly;
+
+  /// No description provided for @yearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get yearly;
+
+  /// No description provided for @updateBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Budget'**
+  String get updateBudget;
+
+  /// No description provided for @custom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get custom;
+
+  /// No description provided for @peakHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak Hours'**
+  String get peakHours;
 
   /// No description provided for @cashFlowTrend.
   ///
@@ -3016,17 +3496,137 @@ abstract class AppLocalizations {
   /// **'Outstanding Balances'**
   String get outstandingBalances;
 
-  /// No description provided for @peakHours.
+  /// No description provided for @exportBudgets.
   ///
   /// In en, this message translates to:
-  /// **'Peak Hours Analysis'**
-  String get peakHours;
+  /// **'Export Budgets'**
+  String get exportBudgets;
 
-  /// No description provided for @savingsGoal.
+  /// No description provided for @searchBudgets.
   ///
   /// In en, this message translates to:
-  /// **'Savings Goal'**
-  String get savingsGoal;
+  /// **'Search Budgets'**
+  String get searchBudgets;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @totalBudgeted.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Budgeted'**
+  String get totalBudgeted;
+
+  /// No description provided for @totalSpent.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Spent'**
+  String get totalSpent;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All Categories'**
+  String get allCategories;
+
+  /// No description provided for @used.
+  ///
+  /// In en, this message translates to:
+  /// **'Used'**
+  String get used;
+
+  /// No description provided for @noBudgetsToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'No budgets to export'**
+  String get noBudgetsToExport;
+
+  /// No description provided for @budgetExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget Export'**
+  String get budgetExport;
+
+  /// No description provided for @deleteBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Budget'**
+  String get deleteBudget;
+
+  /// No description provided for @confirmDeleteBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete {name}?'**
+  String confirmDeleteBudget(String name);
+
+  /// No description provided for @budgetDeletedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget deleted successfully'**
+  String get budgetDeletedSuccessfully;
+
+  /// No description provided for @thisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'This Year'**
+  String get thisYear;
+
+  /// No description provided for @transfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get transfer;
+
+  /// No description provided for @allTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All Time'**
+  String get allTime;
+
+  /// No description provided for @searchTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Transactions'**
+  String get searchTransactions;
+
+  /// No description provided for @deleteTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Transaction'**
+  String get deleteTransaction;
+
+  /// No description provided for @confirmDeleteTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{description}\"?'**
+  String confirmDeleteTransaction(String description);
+
+  /// No description provided for @transactionDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction \"{description}\" deleted successfully'**
+  String transactionDeleted(String description);
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @noTransactionsToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions to export'**
+  String get noTransactionsToExport;
+
+  /// No description provided for @transactionExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Export'**
+  String get transactionExport;
 }
 
 class _AppLocalizationsDelegate

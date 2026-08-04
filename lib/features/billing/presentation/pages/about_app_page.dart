@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../../l10n/app_localizations.dart';
 
 class AboutAppPage extends StatelessWidget {
@@ -10,13 +10,8 @@ class AboutAppPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.aboutTwigaMoney),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
-          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
-        ),
+        leading: const BackButtonWidget(),
+        title: Text(l10n.aboutTwigaMoney, style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),

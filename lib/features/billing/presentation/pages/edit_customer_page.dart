@@ -1,3 +1,5 @@
+import 'package:twigamoney/core/widgets/input_label.dart';
+import 'package:twigamoney/core/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:hive/hive.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../billing/domain/entities/customer.dart';
 import '../bloc/customer/customer_bloc.dart';
 
@@ -75,7 +78,10 @@ class _EditCustomerPageState extends State<EditCustomerPage> {
 
     if (widget.customer == null) {
       return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          leading: const BackButtonWidget(),
+          title: Text(l10n.editCustomer, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ),
         body: const Center(child: Text('Customer not found')),
       );
     }
@@ -105,19 +111,8 @@ class _EditCustomerPageState extends State<EditCustomerPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(l10n.editCustomer),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/customers');
-              }
-            },
-          ),
+          leading: const BackButtonWidget(),
+          title: Text(l10n.editCustomer, style: const TextStyle(fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
@@ -147,16 +142,17 @@ class _EditCustomerPageState extends State<EditCustomerPage> {
           ],
         ),
         body: SingleChildScrollView(
-          padding: EdgeInsets.all(Responsive.getPadding(context)),
+          padding: EdgeInsets.fromLTRB(Responsive.getPadding(context), 16, Responsive.getPadding(context), 100),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                InputLabel(text: l10n.fullName),
                 TextFormField(
                   controller: _nameController,
                   decoration: InputDecoration(
-                    labelText: l10n.fullName,
+                    hintText: l10n.fullName,
                     prefixIcon: const Icon(Icons.person),
                   ),
                   validator: (value) {
@@ -166,11 +162,13 @@ class _EditCustomerPageState extends State<EditCustomerPage> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
+                InputLabel(text: l10n.phoneNumber),
                 TextFormField(
                   controller: _phoneController,
+                  keyboardType: TextInputType.phone,
                   decoration: InputDecoration(
-                    labelText: l10n.phoneNumber,
+                    hintText: l10n.phoneHint,
                     prefixIcon: const Icon(Icons.phone),
                   ),
                   validator: (value) {
@@ -180,11 +178,13 @@ class _EditCustomerPageState extends State<EditCustomerPage> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
+                InputLabel(text: l10n.email),
                 TextFormField(
                   controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    labelText: '${l10n.email} (${l10n.optional})',
+                    hintText: l10n.enterValidEmail,
                     prefixIcon: const Icon(Icons.email),
                   ),
                   validator: (value) {
@@ -197,21 +197,23 @@ class _EditCustomerPageState extends State<EditCustomerPage> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
+                InputLabel(text: l10n.addressLine1),
                 TextFormField(
                   controller: _addressController,
                   maxLines: 3,
                   decoration: InputDecoration(
-                    labelText: '${l10n.addressLine1} (${l10n.optional})',
+                    hintText: l10n.addressLine1Hint,
                     prefixIcon: const Icon(Icons.location_on),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
+                InputLabel(text: l10n.creditLimit),
                 TextFormField(
                   initialValue: _creditLimit.toString(),
-                  keyboardType: TextInputType.number,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                    labelText: l10n.creditLimit,
+                    hintText: '0.00',
                     prefixText: '$symbol ',
                     prefixIcon: const Icon(Icons.credit_card),
                   ),
@@ -234,22 +236,14 @@ class _EditCustomerPageState extends State<EditCustomerPage> {
                   value: _isActive,
                   onChanged: (value) => setState(() => _isActive = value),
                 ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: Text(l10n.updateCustomer),
-                  ),
-                ),
               ],
             ),
           ),
+        ),
+        bottomNavigationBar: PrimaryButton(
+          onPressed: _submit,
+          icon: Icons.save,
+          label: l10n.updateCustomer,
         ),
       ),
     );

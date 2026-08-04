@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import '../../../../core/utils/pdf_invoice_helper.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../billing/domain/repositories/sales_repository.dart';
 import '../../../billing/domain/entities/sales_transaction.dart';
@@ -47,18 +50,18 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text('Invoice Detail', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        leading: const BackButtonWidget(),
+        title: const Text('Invoice Detail', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            onPressed: _generateAndSharePdf,
+            tooltip: 'Share PDF',
+          ),
           IconButton(
             icon: const Icon(Icons.share_outlined),
             onPressed: _shareInvoice,
-            tooltip: 'Share Invoice',
+            tooltip: 'Share Text',
           ),
         ],
       ),
@@ -239,5 +242,28 @@ Total: $symbol${_transaction!.totalRevenue.toStringAsFixed(2)}
 Thank you for your purchase!
 ''';
     Share.share(text, subject: 'Invoice #${_transaction!.id}');
+  }
+
+  Future<void> _generateAndSharePdf() async {
+    if (_transaction == null) return;
+    
+    try {
+      final currency = Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
+      final symbol = AppTheme.getCurrencySymbol(currency);
+      
+      final File pdfFile = await PdfInvoiceHelper.generate(_transaction!, symbol);
+      
+      await Share.shareXFiles(
+        [XFile(pdfFile.path)],
+        subject: 'Invoice #${_transaction!.id}',
+        text: 'Please find the attached invoice.',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to generate PDF: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 }

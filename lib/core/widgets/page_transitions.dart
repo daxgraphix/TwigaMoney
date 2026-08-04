@@ -23,15 +23,16 @@ class SwipeToPopPage extends CupertinoPage<void> {
 /// Only renders when there is a previous route to pop.
 class BackButtonWidget extends StatelessWidget {
   final Color? color;
+  final double iconSize;
 
-  const BackButtonWidget({super.key, this.color});
+  const BackButtonWidget({super.key, this.color, this.iconSize = 24});
 
   @override
   Widget build(BuildContext context) {
     if (!context.canPop()) return const SizedBox.shrink();
     return IconButton(
-      icon: const Icon(Icons.arrow_back_ios_new),
-      color: color,
+      icon: Icon(Icons.chevron_left, size: iconSize + 4),
+      color: color ?? Theme.of(context).primaryColor,
       onPressed: () => context.pop(),
     );
   }

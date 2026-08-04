@@ -5,6 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/data/hive_database.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../product/domain/entities/product.dart';
 import '../../../product/presentation/bloc/product_bloc.dart';
 import '../bloc/billing_bloc.dart';
@@ -213,6 +214,31 @@ class _NewSalePageState extends State<NewSalePage> {
     }
   }
 
+  Widget _buildQtyButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required bool isDark,
+    Color? color,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 48,
+          height: 48,
+          alignment: Alignment.center,
+          child: Icon(
+            icon,
+            size: 24,
+            color: color ?? (isDark ? Colors.white70 : Colors.grey.shade700),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final billingState = context.watch<BillingBloc>().state;
@@ -220,7 +246,8 @@ class _NewSalePageState extends State<NewSalePage> {
         HiveDatabase.settingsBox.get('selectedCurrency', defaultValue: 'TZS');
     final symbol = AppTheme.getCurrencySymbol(currency);
     final primary = AppTheme.primaryColor;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<ProductBloc, ProductState>(
@@ -231,7 +258,8 @@ class _NewSalePageState extends State<NewSalePage> {
         
         return Scaffold(
           appBar: AppBar(
-            title: Text(l10n.newSale, style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(l10n.newSale, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            leading: const BackButtonWidget(),
             actions: [
               if (billingState.cartItems.isNotEmpty)
                 Padding(
@@ -297,6 +325,8 @@ class _NewSalePageState extends State<NewSalePage> {
                                   _productNameController.text = p.name;
                                   _priceController.text = p.price.toStringAsFixed(0);
                                 });
+                                // Automatically add to cart if selected from search
+                                _addManualToCart();
                               },
                               fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
                                 return TextField(
@@ -372,12 +402,13 @@ class _NewSalePageState extends State<NewSalePage> {
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
-                                  child: ElevatedButton(
+                                  child: ElevatedButton.icon(
                                     onPressed: _addManualToCart,
+                                    icon: const Icon(Icons.add_shopping_cart, size: 20),
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(vertical: 16),
                                     ),
-                                    child: Text(l10n.addToCart),
+                                    label: Text(l10n.addToCart),
                                   ),
                                 ),
                               ],
@@ -399,48 +430,114 @@ class _NewSalePageState extends State<NewSalePage> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: billingState.cartItems.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 10),
+                          separatorBuilder: (context, index) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final item = billingState.cartItems[index];
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: isDark ? AppTheme.darkBorderColor : Colors.grey.shade200),
+                            return Dismissible(
+                              key: Key('cart_${item.product.id}'),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 20),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
                               ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                title: Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                subtitle: Text('$symbol${item.product.price.toStringAsFixed(0)} × ${item.quantity}'),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '$symbol${item.total.toStringAsFixed(0)}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: primary,
-                                        fontSize: 16,
+                              onDismissed: (direction) {
+                                context.read<BillingBloc>().add(RemoveProductFromCartEvent(item.product.id));
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isDark ? AppTheme.darkBorderColor : Colors.grey.shade200,
+                                    width: 1,
+                                  ),
+                                  boxShadow: AppTheme.softShadow,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    children: [
+                                      // Product Info
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.product.name,
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              '$symbol${item.product.price.toStringAsFixed(0)}',
+                                              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    IconButton(
-                                      icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
-                                      onPressed: () {
-                                        if (item.quantity > 1) {
-                                          context.read<BillingBloc>().add(UpdateQuantityEvent(item.product.id, item.quantity - 1));
-                                        } else {
-                                          context.read<BillingBloc>().add(RemoveProductFromCartEvent(item.product.id));
-                                        }
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: Icon(Icons.add_circle_outline, color: primary),
-                                      onPressed: () {
-                                        context.read<BillingBloc>().add(UpdateQuantityEvent(item.product.id, item.quantity + 1));
-                                      },
-                                    ),
-                                  ],
+                                      
+                                      // Quantity Controls
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            _buildQtyButton(
+                                              icon: Icons.remove,
+                                              onPressed: () {
+                                                if (item.quantity > 1) {
+                                                  context.read<BillingBloc>().add(UpdateQuantityEvent(item.product.id, item.quantity - 1));
+                                                } else {
+                                                  context.read<BillingBloc>().add(RemoveProductFromCartEvent(item.product.id));
+                                                }
+                                              },
+                                              isDark: isDark,
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                                              child: Text(
+                                                '${item.quantity}',
+                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                              ),
+                                            ),
+                                            _buildQtyButton(
+                                              icon: Icons.add,
+                                              onPressed: () {
+                                                context.read<BillingBloc>().add(UpdateQuantityEvent(item.product.id, item.quantity + 1));
+                                              },
+                                              isDark: isDark,
+                                              color: primary,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                      const SizedBox(width: 16),
+                                      
+                                      // Total for this item
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            '$symbol${item.total.toStringAsFixed(0)}',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: primary,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );

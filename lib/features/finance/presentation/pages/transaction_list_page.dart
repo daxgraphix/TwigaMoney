@@ -7,6 +7,9 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:twigamoney/core/widgets/empty_state_widget.dart';
+import 'package:twigamoney/core/widgets/page_transitions.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/data/hive_database.dart';
@@ -54,27 +57,24 @@ class _TransactionListPageState extends State<TransactionListPage> {
   void _updateFilteredTransactions() {
     final now = DateTime.now();
     DateTime? start;
+    final l10n = AppLocalizations.of(context)!;
 
-    switch (_dateFilter) {
-      case 'This Week':
-        start = now.subtract(Duration(days: now.weekday - 1));
-        break;
-      case 'This Month':
-        start = DateTime(now.year, now.month, 1);
-        break;
-      case 'This Year':
-        start = DateTime(now.year, 1, 1);
-        break;
-      default:
-        start = null;
+    if (_dateFilter == l10n.thisWeek) {
+      start = now.subtract(Duration(days: now.weekday - 1));
+    } else if (_dateFilter == l10n.thisMonth) {
+      start = DateTime(now.year, now.month, 1);
+    } else if (_dateFilter == l10n.thisYear) {
+      start = DateTime(now.year, 1, 1);
+    } else {
+      start = null;
     }
 
     setState(() {
       _filteredTransactions = _allTransactions.where((t) {
-        final matchesType = _typeFilter == 'All' ||
-            (_typeFilter == 'Income' && t.type == TransactionType.income) ||
-            (_typeFilter == 'Expense' && t.type == TransactionType.expense) ||
-            (_typeFilter == 'Transfer' && t.type == TransactionType.fundTransfer);
+        final matchesType = _typeFilter == l10n.all ||
+            (_typeFilter == l10n.income && t.type == TransactionType.income) ||
+            (_typeFilter == l10n.expenses && t.type == TransactionType.expense) ||
+            (_typeFilter == l10n.transfer && t.type == TransactionType.fundTransfer);
         final matchesDate = start == null || !t.date.isBefore(start);
         final matchesSearch = _searchQuery.isEmpty ||
             t.description.toLowerCase().contains(_searchQuery.toLowerCase());
@@ -85,22 +85,26 @@ class _TransactionListPageState extends State<TransactionListPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final l10n = AppLocalizations.of(context)!;
+    if (_typeFilter == 'All') _typeFilter = l10n.all;
+    if (_dateFilter == 'All Time') _dateFilter = l10n.allTime;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Transactions', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
-          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
-        ),
+        leading: const BackButtonWidget(),
+        title: Text(l10n.transactions, style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.file_download_outlined),
             onPressed: () => _exportTransactions(context),
-            tooltip: 'Export CSV',
+            tooltip: l10n.exportCsv,
           ),
         ],
       ),
@@ -135,7 +139,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search transactions...',
+                      hintText: l10n.searchTransactions,
                       prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -173,11 +177,12 @@ class _TransactionListPageState extends State<TransactionListPage> {
   }
 
   Widget _buildFilterChips() {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
-        children: ['All', 'Income', 'Expense', 'Transfer'].map((type) {
+        children: [l10n.all, l10n.income, l10n.expenses, l10n.transfer].map((type) {
           final isSelected = _typeFilter == type;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -196,11 +201,12 @@ class _TransactionListPageState extends State<TransactionListPage> {
   }
 
   Widget _buildDateFilterChips() {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        children: ['All Time', 'This Week', 'This Month', 'This Year'].map((range) {
+        children: [l10n.allTime, l10n.thisWeek, l10n.thisMonth, l10n.thisYear].map((range) {
           final isSelected = _dateFilter == range;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -227,16 +233,17 @@ class _TransactionListPageState extends State<TransactionListPage> {
         }
 
         if (_filteredTransactions.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey[400]),
-                const SizedBox(height: 16),
-                Text('No transactions found',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-              ],
-            ),
+          final l10n = AppLocalizations.of(context)!;
+          return EmptyStateWidget(
+            icon: _searchQuery.isNotEmpty ? Icons.search_off : Icons.receipt_long_outlined,
+            title: _searchQuery.isNotEmpty ? l10n.noTransactionsMatchSearch : l10n.noTransactionsFound,
+            subtitle: _searchQuery.isNotEmpty 
+              ? l10n.tryAdjustingSearch 
+              : l10n.addFirstTransaction,
+            onActionPressed: _searchQuery.isNotEmpty 
+              ? () => _searchController.clear()
+              : () => context.push('/add-transaction'),
+            actionLabel: _searchQuery.isNotEmpty ? l10n.clear : l10n.addTransaction,
           );
         }
 
@@ -275,18 +282,19 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     child: const Icon(Icons.delete_outline, color: Colors.red),
                   ),
                   confirmDismiss: (_) async {
+                    final l10n = AppLocalizations.of(context)!;
                     return await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: const Text('Delete Transaction'),
-                            content: Text('Delete "${tx.description}"?'),
+                            title: Text(l10n.deleteTransaction),
+                            content: Text(l10n.confirmDeleteTransaction(tx.description)),
                             actions: [
                               TextButton(
                                   onPressed: () => Navigator.pop(context, false),
-                                  child: const Text('Cancel')),
+                                  child: Text(l10n.cancel)),
                               TextButton(
                                 onPressed: () => Navigator.pop(context, true),
-                                child: Text('Delete',
+                                child: Text(l10n.delete,
                                     style: TextStyle(
                                         color: Theme.of(context).colorScheme.error)),
                               ),
@@ -296,10 +304,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
                         false;
                   },
                   onDismissed: (_) {
+                    final l10n = AppLocalizations.of(context)!;
                     context.read<TransactionBloc>().add(DeleteTransactionEvent(tx.id));
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text('"${tx.description}" deleted'),
+                          content: Text(l10n.transactionDeleted(tx.description)),
                           backgroundColor: Colors.green),
                     );
                   },
@@ -353,6 +362,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
   }
 
   void _showDetailSheet(BuildContext context, Transaction tx, Category category, Account? account) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -375,11 +385,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
               ],
             ),
             const SizedBox(height: 20),
-            _detailRow('Amount', '$_currencySymbol${tx.amount.toStringAsFixed(2)}'),
-            _detailRow('Type', tx.type.name.toUpperCase()),
-            _detailRow('Category', category.name),
-            if (account != null) _detailRow('Account', account.name),
-            _detailRow('Date', _dateFmt.format(tx.date)),
+            _detailRow(l10n.amount, '$_currencySymbol${tx.amount.toStringAsFixed(2)}'),
+            _detailRow(l10n.type, tx.type.name.toUpperCase()),
+            _detailRow(l10n.category, category.name),
+            if (account != null) _detailRow(l10n.account, account.name),
+            _detailRow(l10n.date, _dateFmt.format(tx.date)),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -389,7 +399,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                       Navigator.pop(context);
                       context.push('/add-transaction', extra: tx);
                     },
-                    child: const Text('Edit'),
+                    child: Text(l10n.edit),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -400,10 +410,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
                       Navigator.pop(context);
                       context.read<TransactionBloc>().add(DeleteTransactionEvent(tx.id));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('"${tx.description}" deleted'), backgroundColor: Colors.green),
+                        SnackBar(content: Text(l10n.transactionDeleted(tx.description)), backgroundColor: Colors.green),
                       );
                     },
-                    child: const Text('Delete', style: TextStyle(color: Colors.white)),
+                    child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
@@ -415,16 +425,17 @@ class _TransactionListPageState extends State<TransactionListPage> {
   }
 
   Future<void> _exportTransactions(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       if (_filteredTransactions.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No transactions to export')),
+          SnackBar(content: Text(l10n.noTransactionsToExport)),
         );
         return;
       }
 
       List<List<dynamic>> rows = [];
-      rows.add(['Date', 'Description', 'Amount', 'Type', 'Category', 'Account']);
+      rows.add([l10n.date, l10n.description, l10n.amount, l10n.type, l10n.category, l10n.account]);
 
       for (var tx in _filteredTransactions) {
         final category = _categoryMap[tx.categoryId];
@@ -434,8 +445,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
           tx.description,
           tx.amount,
           tx.type.name,
-          category?.name ?? 'Unknown',
-          account?.name ?? 'Unknown',
+          category?.name ?? l10n.unknown,
+          account?.name ?? l10n.unknown,
         ]);
       }
 
@@ -445,11 +456,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
       final file = File(path);
       await file.writeAsString(csvData);
 
-      await Share.shareXFiles([XFile(path)], text: 'TwigaMoney Transaction Export');
+      await Share.shareXFiles([XFile(path)], text: l10n.transactionExport);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.exportFailed(e.toString())), backgroundColor: Colors.red),
         );
       }
     }

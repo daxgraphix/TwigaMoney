@@ -11,6 +11,7 @@ import '../bloc/product_bloc.dart';
 import '../../domain/entities/product.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_validators.dart';
+import '../../../../core/widgets/page_transitions.dart';
 
 class AddProductPage extends StatefulWidget {
   const AddProductPage({super.key});
@@ -55,16 +56,9 @@ class _AddProductPageState extends State<AddProductPage> {
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.chevron_left,
-                size: 28, color: Theme.of(context).primaryColor),
-            onPressed: () { if (context.canPop()) { if (context.canPop()) { context.pop(); } else { context.go('/'); } } else { context.go('/'); } },
-          ),
+          leading: const BackButtonWidget(),
           title: Text(l10n.addProduct,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          centerTitle: true,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -76,11 +70,11 @@ class _AddProductPageState extends State<AddProductPage> {
                 children: [
                   InputLabel(text: l10n.productName),
                   TextFormField(
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Basmati Rice',
+                    decoration: InputDecoration(
+                      hintText: l10n.productNameHint,
                     ),
                     textCapitalization: TextCapitalization.words,
-                    validator: AppValidators.required(l10n.pleaseEnterValidQuantity), // Reuse or create specific
+                    validator: AppValidators.required(l10n.nameIsRequired), // Reuse or create specific
                     onSaved: (value) => _name = value!,
                   ),
                   const SizedBox(height: 24),
@@ -89,22 +83,22 @@ class _AddProductPageState extends State<AddProductPage> {
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
-                      hintText: '0.00',
+                      hintText: l10n.priceHint,
                       prefixText: '$symbol ',
                       prefixStyle: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.black),
                     ),
-                    validator: AppValidators.price,
+                    validator: (value) => AppValidators.price(value, context),
                     onSaved: (value) => _price = double.parse(value!),
                   ),
                   const SizedBox(height: 24),
                   InputLabel(text: l10n.stockQuantity),
                   TextFormField(
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      hintText: '0',
+                    decoration: InputDecoration(
+                      hintText: l10n.stockHint,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -130,13 +124,13 @@ class _AddProductPageState extends State<AddProductPage> {
                         ),
                         child: DropdownButton<String>(
                           value: state.value,
-                          items: const [
-                            DropdownMenuItem(value: 'Food', child: Text('Food')),
-                            DropdownMenuItem(value: 'Beverages', child: Text('Beverages')),
-                            DropdownMenuItem(value: 'Household', child: Text('Household')),
-                            DropdownMenuItem(value: 'Personal Care', child: Text('Personal Care')),
-                            DropdownMenuItem(value: 'Electronics', child: Text('Electronics')),
-                            DropdownMenuItem(value: 'Other', child: Text('Other')),
+                          items: [
+                            DropdownMenuItem(value: 'Food', child: Text(l10n.categoryFood)),
+                            DropdownMenuItem(value: 'Beverages', child: Text(l10n.categoryBeverages)),
+                            DropdownMenuItem(value: 'Household', child: Text(l10n.categoryHousehold)),
+                            DropdownMenuItem(value: 'Personal Care', child: Text(l10n.categoryPersonalCare)),
+                            DropdownMenuItem(value: 'Electronics', child: Text(l10n.categoryElectronics)),
+                            DropdownMenuItem(value: 'Other', child: Text(l10n.categoryOther)),
                           ],
                           onChanged: (value) {
                             state.didChange(value);

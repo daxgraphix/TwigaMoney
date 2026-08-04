@@ -1,6 +1,9 @@
+import 'package:twigamoney/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive/hive.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/data/hive_database.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -13,30 +16,30 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingData> _pages = const [
+  List<OnboardingData> _getPages(AppLocalizations l10n) => [
     OnboardingData(
-      icon: Icons.point_of_sale,
-      title: 'Manual Sales',
-      description: 'Quickly add products to your cart and complete sales with a simple, manual workflow.',
-      color: Color(0xFF4CAF50),
+      icon: Icons.account_balance_wallet,
+      title: l10n.onboardingTrackTitle,
+      description: l10n.onboardingTrackDesc,
+      color: AppTheme.primaryColor,
     ),
     OnboardingData(
       icon: Icons.inventory_2,
-      title: 'Manage Inventory',
-      description: 'Add, edit, and track your products. Keep stock levels updated in real-time.',
-      color: Color(0xFF2196F3),
+      title: l10n.onboardingInventoryTitle,
+      description: l10n.onboardingInventoryDesc,
+      color: const Color(0xFF0EA5E9),
     ),
     OnboardingData(
-      icon: Icons.receipt_long,
-      title: 'Digital Receipts',
-      description: 'Review sale totals clearly at checkout and keep accurate transaction history.',
-      color: Color(0xFFFF9800),
+      icon: Icons.people_alt,
+      title: l10n.onboardingCustomerTitle,
+      description: l10n.onboardingCustomerDesc,
+      color: const Color(0xFF8B5CF6),
     ),
     OnboardingData(
-      icon: Icons.store,
-      title: 'Customize Shop',
-      description: 'Personalize your shop details, logo, and receipt settings to match your brand.',
-      color: Color(0xFF9C27B0),
+      icon: Icons.analytics,
+      title: l10n.onboardingShiftTitle,
+      description: l10n.onboardingShiftDesc,
+      color: const Color(0xFF10B981),
     ),
   ];
 
@@ -56,8 +59,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _completeOnboarding();
   }
 
-  void _continueToNext() {
-    if (_currentPage < _pages.length - 1) {
+  void _continueToNext(int totalPages) {
+    if (_currentPage < totalPages - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -68,88 +71,126 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   void _completeOnboarding() {
-    // Mark onboarding as completed
-    Hive.box('settings').put('onboardingComplete', true);
+    HiveDatabase.settingsBox.put('onboardingComplete', true);
     context.go('/');
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pages = _getPages(l10n);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppTheme.darkBackgroundColor : Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button (top right)
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: _skipOnboarding,
-                child: const Text(
-                  'Skip',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Brand indicator
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet_rounded,
+                          size: 20,
+                          color: AppTheme.primaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.appName,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : AppTheme.secondaryColor,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  TextButton(
+                    onPressed: _skipOnboarding,
+                    style: TextButton.styleFrom(
+                      foregroundColor: isDark ? Colors.white60 : Colors.grey[600],
+                    ),
+                    child: Text(
+                      l10n.skip,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            // Page view
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: _onPageChanged,
-                itemCount: _pages.length,
+                itemCount: pages.length,
                 itemBuilder: (context, index) {
-                  return _buildPage(_pages[index]);
+                  return _buildPage(pages[index], isDark);
                 },
               ),
             ),
-            // Bottom section
             Padding(
-              padding: const EdgeInsets.all(32.0),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
               child: Column(
                 children: [
-                  // Page indicators
-                   Row(
-                     mainAxisAlignment: MainAxisAlignment.center,
-                     children: List.generate(
-                       _pages.length,
-                       (i) => AnimatedContainer(
-                         duration: const Duration(milliseconds: 300),
-                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                         height: 8,
-                         width: _currentPage == i ? 24 : 8,
-                         decoration: BoxDecoration(
-                           color: _currentPage == i
-                               ? Theme.of(context).primaryColor
-                               : Colors.grey[300],
-                           borderRadius: BorderRadius.circular(4),
-                         ),
-                       ),
-                     ),
-                   ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      pages.length,
+                      (i) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        height: 6,
+                        width: _currentPage == i ? 24 : 6,
+                        decoration: BoxDecoration(
+                          color: _currentPage == i
+                              ? AppTheme.primaryColor
+                              : (isDark ? Colors.white24 : Colors.grey[300]),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 32),
-                  // Continue button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _continueToNext,
+                      onPressed: () => _continueToNext(pages.length),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
+                        backgroundColor: AppTheme.primaryColor,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        elevation: 2,
+                        elevation: 0,
                       ),
-                      child: Text(
-                        _currentPage == _pages.length - 1 ? 'Get Started' : 'Continue',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _currentPage == pages.length - 1 ? l10n.getStarted : l10n.continueText,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_rounded, size: 20),
+                        ],
                       ),
                     ),
                   ),
@@ -162,44 +203,44 @@ class _OnboardingPageState extends State<OnboardingPage> {
     );
   }
 
-  Widget _buildPage(OnboardingData data) {
+  Widget _buildPage(OnboardingData data, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.all(48.0),
+      padding: const EdgeInsets.symmetric(horizontal: 32.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon
           Container(
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(
               color: data.color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(40),
             ),
             child: Icon(
               data.icon,
-              size: 120,
+              size: 100,
               color: data.color,
             ),
           ),
           const SizedBox(height: 48),
-          // Title
           Text(
             data.title,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : AppTheme.secondaryColor,
+              letterSpacing: -1,
+              height: 1.1,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          // Description
           Text(
             data.description,
-            style: const TextStyle(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
-              color: Colors.black54,
+              color: isDark ? Colors.white70 : Colors.black54,
               height: 1.5,
+              fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
           ),
@@ -222,3 +263,4 @@ class OnboardingData {
     required this.color,
   });
 }
+

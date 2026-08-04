@@ -468,6 +468,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restock => 'Restock';
 
   @override
+  String get product => 'Product';
+
+  @override
   String get stockQuantity => 'Stock Quantity';
 
   @override
@@ -537,7 +540,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editBudget => 'Edit Budget';
 
   @override
-  String get accountManagement => 'Account Management';
+  String get accountName => 'Account Name';
+
+  @override
+  String get accountNameHint => 'e.g., Main Wallet';
+
+  @override
+  String get accountType => 'Account Type';
+
+  @override
+  String get checking => 'Checking';
+
+  @override
+  String get savings => 'Savings';
+
+  @override
+  String get credit => 'Credit';
+
+  @override
+  String get investment => 'Investment';
+
+  @override
+  String get accountSaved => 'Account saved successfully';
+
+  @override
+  String get accountDeleted => 'Account deleted successfully';
+
+  @override
+  String confirmDeleteAccount(Object name) {
+    return 'Are you sure you want to delete \"$name\"? This action cannot be undone.';
+  }
 
   @override
   String get transactionHistory => 'Transaction History';
@@ -787,6 +819,48 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shop profile updated successfully';
 
   @override
+  String get shopDetailsSaved => 'Shop details saved!';
+
+  @override
+  String get generalInformation => 'General Information';
+
+  @override
+  String get receiptVisibilityNote =>
+      'These details will appear on your digital and printed receipts.';
+
+  @override
+  String get shopNameHint => 'e.g. QuickMart Superstore';
+
+  @override
+  String get addressLine1Hint => 'e.g. Samrajpet, Mecheri';
+
+  @override
+  String get addressLine2Hint => 'e.g. Salem - 636453';
+
+  @override
+  String get phoneHint => 'e.g. +91 7010674588';
+
+  @override
+  String get upiHint => 'e.g. yourname@oksbi';
+
+  @override
+  String maxChars(Object count) {
+    return 'Max $count chars';
+  }
+
+  @override
+  String get thankYouHint => 'Thank you, Visit again!!!';
+
+  @override
+  String get saveDetails => 'Save Details';
+
+  @override
+  String get addressLine2Optional => 'Address Line 2 (Optional)';
+
+  @override
+  String get upiPaymentIdHint => 'e.g. upi://pay@bank';
+
+  @override
   String get cacheClearedSuccessfully => 'Cache cleared successfully';
 
   @override
@@ -896,6 +970,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lastTransaction => 'Last Transaction';
 
   @override
+  String get skip => 'Skip';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get continueText => 'Continue';
+
+  @override
+  String get slogan => 'Your Business, Simplified';
+
+  @override
+  String get onboardingTrackTitle => 'Track Everything';
+
+  @override
+  String get onboardingTrackDesc =>
+      'Monitor your sales, expenses, and profits in one place. Real-time analytics for your business.';
+
+  @override
+  String get onboardingInventoryTitle => 'Inventory Control';
+
+  @override
+  String get onboardingInventoryDesc =>
+      'Manage your stock efficiently. Get alerts when items are running low and track movements.';
+
+  @override
+  String get onboardingCustomerTitle => 'Customer Relations';
+
+  @override
+  String get onboardingCustomerDesc =>
+      'Keep track of your customers and their transaction history. Manage credit sales and payments.';
+
+  @override
+  String get onboardingShiftTitle => 'Shift Insights';
+
+  @override
+  String get onboardingShiftDesc =>
+      'Detailed shift reports and cashier tracking to ensure transparency and accountability.';
+
+  @override
   String confirmDeleteCustomer(Object name) {
     return 'Are you sure you want to delete $name? This action cannot be undone.';
   }
@@ -949,10 +1063,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noTransactionsFound => 'No transactions found';
 
   @override
+  String get noTransactionsMatchSearch => 'No transactions match your search';
+
+  @override
+  String get addFirstTransaction => 'Start by adding your first transaction';
+
+  @override
+  String get tryAdjustingSearch => 'Try adjusting your search or filters';
+
+  @override
   String get totalTransactions => 'Total Transactions';
 
   @override
   String get totalAmount => 'Total Amount';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get productNameHint => 'e.g. Basmati Rice';
+
+  @override
+  String get priceHint => '0.00';
+
+  @override
+  String get stockHint => '0';
+
+  @override
+  String get categoryFood => 'Food';
+
+  @override
+  String get categoryBeverages => 'Beverages';
+
+  @override
+  String get categoryHousehold => 'Household';
+
+  @override
+  String get categoryPersonalCare => 'Personal Care';
+
+  @override
+  String get categoryElectronics => 'Electronics';
+
+  @override
+  String get categoryOther => 'Other';
 
   @override
   String get numberOfTransactions => 'Number of Transactions';
@@ -1233,6 +1386,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customerList => 'Customer List';
 
   @override
+  String get noCustomersFound => 'No customers found';
+
+  @override
+  String get noCustomersMatchSearch => 'No customers match your search';
+
+  @override
+  String get addFirstCustomer => 'Tap the + button to add your first customer';
+
+  @override
   String get noPhone => 'No phone';
 
   @override
@@ -1393,7 +1555,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAccountsYet => 'No accounts yet';
 
   @override
+  String get noAccountsFound => 'No accounts found';
+
+  @override
+  String get noAccountsMatchSearch => 'No accounts match your search';
+
+  @override
   String get addFirstAccount => 'Add your first account';
+
+  @override
+  String get tapToCreateAccount => 'Tap + to create your first account';
 
   @override
   String get manageAccounts => 'Manage Accounts';
@@ -1405,7 +1576,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noBudgetsYet => 'No budgets yet';
 
   @override
+  String get noBudgetsFound => 'No budgets found';
+
+  @override
+  String get noBudgetsMatchSearch => 'No budgets match your search';
+
+  @override
   String get addFirstBudget => 'Create your first budget';
+
+  @override
+  String get tapToCreateBudget => 'Tap + to create your first budget';
 
   @override
   String get createBudget => 'Create Budget';
@@ -1539,13 +1719,82 @@ class AppLocalizationsEn extends AppLocalizations {
   String get help => 'Help';
 
   @override
+  String get clearSearch => 'Clear Search';
+
+  @override
   String get type => 'Type';
 
   @override
   String get invalidInput => 'Please enter valid numbers in all fields';
 
   @override
-  String get result => 'Result';
+  String get notProvided => 'Not provided';
+
+  @override
+  String get units => 'units';
+
+  @override
+  String get pleaseEnterValidPrice => 'Please enter a valid price';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get pleaseSelectCategory => 'Please select a category';
+
+  @override
+  String get pleaseEnterValidAmount => 'Please enter a valid amount';
+
+  @override
+  String get editAccount => 'Edit Account';
+
+  @override
+  String get budgetCreated => 'Budget created';
+
+  @override
+  String get budgetUpdated => 'Budget updated';
+
+  @override
+  String get newBudget => 'New Budget';
+
+  @override
+  String get budgetName => 'Budget Name';
+
+  @override
+  String get budgetNameHint => 'e.g., Monthly Marketing';
+
+  @override
+  String get pleaseEnterBudgetName => 'Please enter a budget name';
+
+  @override
+  String get selectCategory => 'Select Category';
+
+  @override
+  String get budgetAmount => 'Budget Amount';
+
+  @override
+  String get budgetPeriod => 'Budget Period';
+
+  @override
+  String get daily => 'Daily';
+
+  @override
+  String get weekly => 'Weekly';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get yearly => 'Yearly';
+
+  @override
+  String get updateBudget => 'Update Budget';
+
+  @override
+  String get custom => 'Custom';
+
+  @override
+  String get peakHours => 'Peak Hours';
 
   @override
   String get cashFlowTrend => 'Cash Flow Trend';
@@ -1560,8 +1809,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get outstandingBalances => 'Outstanding Balances';
 
   @override
-  String get peakHours => 'Peak Hours Analysis';
+  String get exportBudgets => 'Export Budgets';
 
   @override
-  String get savingsGoal => 'Savings Goal';
+  String get searchBudgets => 'Search Budgets';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get totalBudgeted => 'Total Budgeted';
+
+  @override
+  String get totalSpent => 'Total Spent';
+
+  @override
+  String get allCategories => 'All Categories';
+
+  @override
+  String get used => 'Used';
+
+  @override
+  String get noBudgetsToExport => 'No budgets to export';
+
+  @override
+  String get budgetExport => 'Budget Export';
+
+  @override
+  String get deleteBudget => 'Delete Budget';
+
+  @override
+  String confirmDeleteBudget(String name) {
+    return 'Are you sure you want to delete $name?';
+  }
+
+  @override
+  String get budgetDeletedSuccessfully => 'Budget deleted successfully';
+
+  @override
+  String get thisYear => 'This Year';
+
+  @override
+  String get transfer => 'Transfer';
+
+  @override
+  String get allTime => 'All Time';
+
+  @override
+  String get searchTransactions => 'Search Transactions';
+
+  @override
+  String get deleteTransaction => 'Delete Transaction';
+
+  @override
+  String confirmDeleteTransaction(String description) {
+    return 'Are you sure you want to delete \"$description\"?';
+  }
+
+  @override
+  String transactionDeleted(String description) {
+    return 'Transaction \"$description\" deleted successfully';
+  }
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get noTransactionsToExport => 'No transactions to export';
+
+  @override
+  String get transactionExport => 'Transaction Export';
 }

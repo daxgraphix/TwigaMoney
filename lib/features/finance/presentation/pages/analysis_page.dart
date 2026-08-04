@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/transaction.dart';
@@ -89,9 +90,8 @@ class _AnalysisPageState extends State<AnalysisPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const BackButtonWidget(),
         title: const Text('Financial Analysis', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         actions: [
           IconButton(
             icon: Icon(_showForecasting ? Icons.trending_up : Icons.show_chart, 

@@ -8,7 +8,7 @@ part of 'shift.dart';
 
 class ShiftAdapter extends TypeAdapter<Shift> {
   @override
-  final int typeId = 21;
+  final int typeId = 26;
 
   @override
   Shift read(BinaryReader reader) {

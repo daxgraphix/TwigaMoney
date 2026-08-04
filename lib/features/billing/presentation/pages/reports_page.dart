@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -12,6 +11,7 @@ import 'dart:io';
 import '../bloc/analytics/analytics_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../finance/domain/entities/transaction.dart';
 
@@ -134,13 +134,18 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(l10n.generateCustomReport),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          title: Text(l10n.generateCustomReport, style: const TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
                 initialValue: reportType,
-                decoration: InputDecoration(labelText: l10n.reportType),
+                decoration: InputDecoration(
+                  labelText: l10n.reportType,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
                 items: [
                   DropdownMenuItem(value: 'Sales', child: Text(l10n.salesReport)),
                   DropdownMenuItem(value: 'Products', child: Text(l10n.productsReport)),
@@ -151,8 +156,10 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
               ),
               const SizedBox(height: 16),
               ListTile(
-                title: Text(l10n.startDate),
-                subtitle: Text(AppTheme.getDateFormat().format(customStart!)),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.calendar_today_outlined),
+                title: Text(l10n.startDate, style: const TextStyle(fontSize: 14)),
+                subtitle: Text(AppTheme.getDateFormat().format(customStart!), style: const TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -164,8 +171,10 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                 },
               ),
               ListTile(
-                title: Text(l10n.endDate),
-                subtitle: Text(AppTheme.getDateFormat().format(customEnd!)),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.event_outlined),
+                title: Text(l10n.endDate, style: const TextStyle(fontSize: 14)),
+                subtitle: Text(AppTheme.getDateFormat().format(customEnd!), style: const TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -201,6 +210,10 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   SnackBar(content: Text(l10n.customReportPeriod(type))),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(100, 45),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
               child: Text(l10n.generate),
             ),
           ],
@@ -233,14 +246,8 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!.reports, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            centerTitle: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
-              onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
-            ),
+            leading: const BackButtonWidget(),
+            title: Text(AppLocalizations.of(context)!.reports, style: const TextStyle(fontWeight: FontWeight.bold)),
             actions: [
               IconButton(
                 icon: const Icon(Icons.tune),
@@ -338,6 +345,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
     final dailyRevenue = state.dailyRevenue;
     final dailyProfit = state.dailyProfit;
     final totalSales = state.transactions.where((t) => t.type == TransactionType.income).length;
+    final l10n = AppLocalizations.of(context)!;
     
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -348,9 +356,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
           _buildDateRangeHeader(),
           const SizedBox(height: 16),
           _buildSummaryCards(state, totalSales),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context)!.revenueTrend),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.revenueTrend),
+          const SizedBox(height: 16),
           _buildChartCard(
             "",
             SizedBox(
@@ -441,9 +449,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   ),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context)!.profitTrend),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.profitTrend),
+          const SizedBox(height: 16),
           _buildChartCard(
             "",
             SizedBox(
@@ -522,9 +530,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   ),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context)!.peakHours),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.peakHours),
+          const SizedBox(height: 16),
           _buildChartCard(
             "",
             SizedBox(
@@ -567,7 +575,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   ),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 48),
         ],
       ),
     );
@@ -695,6 +703,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
   Widget _buildProductsTab(AnalyticsState state) {
     final topProducts = state.topPerformingProducts;
     final lowTurnover = state.lowTurnoverProducts;
+    final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -705,27 +714,27 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
           _buildDateRangeHeader(),
           const SizedBox(height: 16),
           _buildSummaryCard(
-            AppLocalizations.of(context)!.topProducts,
+            l10n.topProducts,
             topProducts.length.toString(),
-            'analyzed over period',
+            l10n.recordsExportedAsCsv(topProducts.length.toString()),
             Icons.inventory_2_outlined,
             Colors.indigo,
           ),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context)!.bestSellers),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.bestSellers),
+          const SizedBox(height: 16),
           _buildListCard(
             "",
             itemBuilder: (context, index) {
               final product = topProducts[index];
               return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 leading: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
                     child: Text(
@@ -734,19 +743,19 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                     ),
                   ),
                 ),
-                title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text('${product.totalSold} units sold'),
+                title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('${product.totalSold} units sold', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
                       NumberFormat.compact().format(product.totalRevenue),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     Text(
                       '${product.marginPercentage.toStringAsFixed(1)}% margin',
-                      style: TextStyle(fontSize: 10, color: Colors.green[600]),
+                      style: TextStyle(fontSize: 10, color: Colors.green[600], fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -754,35 +763,35 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
             },
             itemCount: topProducts.length,
           ),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context)!.lowTurnoverProducts),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.lowTurnoverProducts),
+          const SizedBox(height: 16),
           _buildListCard(
             "",
             itemBuilder: (context, index) {
               final product = lowTurnover[index];
               return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 leading: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
                 ),
-                title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text('Turnover Rate: ${product.turnoverRate.toStringAsFixed(2)}'),
+                title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('Turnover Rate: ${product.turnoverRate.toStringAsFixed(2)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
                 trailing: Text(
                   '${product.totalSold} sold',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500),
                 ),
               );
             },
             itemCount: lowTurnover.length,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 48),
         ],
       ),
     );
@@ -791,6 +800,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
   Widget _buildFinanceTab(AnalyticsState state) {
     final transactions = state.transactions;
     final categoryDist = state.categoryDistribution;
+    final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -799,9 +809,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildDateRangeHeader(),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.cashFlowTrend),
           const SizedBox(height: 16),
-          _buildSectionHeader(AppLocalizations.of(context)!.cashFlowTrend),
-          const SizedBox(height: 12),
           _buildChartCard(
             "",
             SizedBox(
@@ -855,9 +865,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   ),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context)!.expenseByCategory),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.expenseByCategory),
+          const SizedBox(height: 16),
           _buildChartCard(
             "",
             SizedBox(
@@ -894,7 +904,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                           itemBuilder: (context, index) {
                             final entry = categoryDist.entries.elementAt(index);
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Row(
                                 children: [
                                   Container(
@@ -905,18 +915,18 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                                       shape: BoxShape.circle,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       entry.key,
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   Text(
                                     NumberFormat.compact().format(entry.value),
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
@@ -928,41 +938,42 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   ),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context)!.recentTransactions),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.recentTransactions),
+          const SizedBox(height: 16),
           _buildListCard(
             "",
             itemBuilder: (context, index) {
               final tx = transactions[index];
               return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 leading: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
                     color: (tx.type == TransactionType.expense ? Colors.red : Colors.green).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     tx.type == TransactionType.expense ? Icons.remove : Icons.add,
                     color: tx.type == TransactionType.expense ? Colors.red : Colors.green,
                   ),
                 ),
-                title: Text(tx.description, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(DateFormat('MMM dd, HH:mm').format(tx.date)),
+                title: Text(tx.description, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(DateFormat('MMM dd, HH:mm').format(tx.date), style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
                 trailing: Text(
                   '${tx.type == TransactionType.expense ? "-" : "+"}${NumberFormat.compact().format(tx.amount)}',
                   style: TextStyle(
                     color: tx.type == TransactionType.expense ? Colors.red : Colors.green,
                     fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
               );
             },
             itemCount: transactions.length > 10 ? 10 : transactions.length,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 48),
         ],
       ),
     );
@@ -993,6 +1004,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
   Widget _buildCustomersTab(AnalyticsState state) {
     final outstanding = state.outstandingCustomers;
     final debtAging = state.debtAging;
+    final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -1003,15 +1015,15 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
           _buildDateRangeHeader(),
           const SizedBox(height: 16),
           _buildSummaryCard(
-            AppLocalizations.of(context)!.totalCustomers,
+            l10n.totalCustomers,
             outstanding.length.toString(),
             'with active balances',
             Icons.people_outline,
             Colors.purple,
           ),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context)!.debtAging),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.debtAging),
+          const SizedBox(height: 16),
           _buildChartCard(
             "",
             SizedBox(
@@ -1072,15 +1084,15 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   ),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSectionHeader(AppLocalizations.of(context)!.outstandingBalances),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          _buildSectionHeader(l10n.outstandingBalances),
+          const SizedBox(height: 16),
           _buildListCard(
             "",
             itemBuilder: (context, index) {
               final customer = outstanding[index];
               return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 leading: CircleAvatar(
                   backgroundColor: Colors.purple.withValues(alpha: 0.1),
                   child: Text(
@@ -1088,8 +1100,8 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                     style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
                   ),
                 ),
-                title: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(customer.phone.isNotEmpty ? customer.phone : AppLocalizations.of(context)!.noPhone),
+                title: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(customer.phone.isNotEmpty ? customer.phone : l10n.noPhone, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
                 trailing: Text(
                   NumberFormat.compact().format(customer.currentBalance),
                   style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16),
@@ -1098,7 +1110,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
             },
             itemCount: outstanding.length,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 48),
         ],
       ),
     );

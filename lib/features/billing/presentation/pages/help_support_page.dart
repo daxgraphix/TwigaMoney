@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 
 class HelpSupportPage extends StatefulWidget {
@@ -30,13 +31,8 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.helpSupport),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
-          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
-        ),
+        leading: const BackButtonWidget(),
+        title: Text(l10n.helpSupport, style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

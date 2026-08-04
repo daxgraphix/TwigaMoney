@@ -11,6 +11,7 @@ import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/data/hive_database.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../billing/domain/repositories/sales_repository.dart';
 import '../../../billing/domain/entities/sales_transaction.dart';
 
@@ -156,13 +157,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.settings),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
-          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
-        ),
+        title: Text(l10n.settings, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        leading: const BackButtonWidget(),
       ),
       body: ListView(
         padding: EdgeInsets.all(Responsive.getPadding(context)),

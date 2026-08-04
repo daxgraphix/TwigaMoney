@@ -7,7 +7,10 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../../core/data/hive_database.dart';
+import 'package:twigamoney/core/data/hive_database.dart';
+import 'package:twigamoney/core/widgets/empty_state_widget.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
+import 'package:twigamoney/core/widgets/page_transitions.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/budget.dart';
@@ -33,21 +36,21 @@ class _BudgetListPageState extends State<BudgetListPage> {
   @override
   Widget build(BuildContext context) {
     final padding = Responsive.getPadding(context);
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Budgets'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        leading: const BackButtonWidget(),
+        title: Text(l10n.budgets, style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => context.push('/budgets/add'),
-            tooltip: 'Add Budget',
+            tooltip: l10n.addBudget,
           ),
           IconButton(
             icon: const Icon(Icons.download),
             onPressed: _exportBudgets,
-            tooltip: 'Export Budgets',
+            tooltip: l10n.exportBudgets,
           ),
         ],
       ),
@@ -61,10 +64,10 @@ class _BudgetListPageState extends State<BudgetListPage> {
                 child: Column(
                   children: [
                     TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search budgets...',
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        hintText: l10n.searchBudgets,
+                        prefixIcon: const Icon(Icons.search),
+                        border: const OutlineInputBorder(),
                       ),
                       onChanged: (value) => setState(() => _searchQuery = value.toLowerCase()),
                     ),
@@ -72,13 +75,19 @@ class _BudgetListPageState extends State<BudgetListPage> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: ['All', 'Weekly', 'Monthly', 'Yearly'].map((period) {
+                        children: [
+                          l10n.all,
+                          l10n.weekly,
+                          l10n.monthly,
+                          l10n.yearly,
+                        ].map((period) {
+                          final periodStr = period.toString();
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: ChoiceChip(
-                              label: Text(period),
-                              selected: _selectedPeriod == period,
-                              onSelected: (_) => setState(() => _selectedPeriod = period),
+                              label: Text(periodStr),
+                              selected: _selectedPeriod == periodStr,
+                              onSelected: (_) => setState(() => _selectedPeriod = periodStr),
                             ),
                           );
                         }).toList(),
@@ -105,23 +114,14 @@ class _BudgetListPageState extends State<BudgetListPage> {
                 final categoryBox = HiveDatabase.categoryBox;
 
                 if (filteredBudgets.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.savings_outlined, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'No budgets set',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Tap + to create your first budget',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                      ],
-                    ),
+                  return EmptyStateWidget(
+                    icon: _searchQuery.isNotEmpty ? Icons.search_off : Icons.savings_outlined,
+                    title: _searchQuery.isNotEmpty ? l10n.noBudgetsMatchSearch : l10n.noBudgetsYet,
+                    subtitle: _searchQuery.isNotEmpty ? null : l10n.tapToCreateBudget,
+                    onActionPressed: _searchQuery.isNotEmpty 
+                      ? () => setState(() => _searchQuery = '')
+                      : () => context.push('/budgets/add'),
+                    actionLabel: _searchQuery.isNotEmpty ? l10n.clearSearch : l10n.addBudget,
                   );
                 }
 
@@ -136,9 +136,9 @@ class _BudgetListPageState extends State<BudgetListPage> {
                         constraints: const BoxConstraints(maxWidth: 800),
                         child: Row(
                           children: [
-                            Expanded(child: _buildSummaryCard('Total Budgeted', totalBudgeted)),
+                            Expanded(child: _buildSummaryCard(l10n.totalBudgeted, totalBudgeted)),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildSummaryCard('Total Spent', totalSpent)),
+                            Expanded(child: _buildSummaryCard(l10n.totalSpent, totalSpent)),
                           ],
                         ),
                       ),
@@ -191,7 +191,7 @@ class _BudgetListPageState extends State<BudgetListPage> {
                                                  overflow: TextOverflow.ellipsis,
                                                ),
                                               Text(
-                                                '${_formatPeriod(budget.period)} - ${category?.name ?? "All Categories"}',
+                                                '${_formatPeriod(budget.period)} - ${category?.name ?? l10n.allCategories}',
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: Colors.grey[600],
@@ -209,23 +209,23 @@ class _BudgetListPageState extends State<BudgetListPage> {
                                             }
                                           },
                                           itemBuilder: (context) => [
-                                            const PopupMenuItem(
+                                            PopupMenuItem(
                                               value: 'edit',
                                               child: Row(
                                                 children: [
-                                                  Icon(Icons.edit, size: 20),
-                                                  SizedBox(width: 8),
-                                                  Text('Edit'),
+                                                  const Icon(Icons.edit, size: 20),
+                                                  const SizedBox(width: 8),
+                                                  Text(l10n.edit),
                                                 ],
                                               ),
                                             ),
-                                            const PopupMenuItem(
+                                            PopupMenuItem(
                                               value: 'delete',
                                               child: Row(
                                                 children: [
-                                                  Icon(Icons.delete, size: 20, color: Colors.red),
-                                                  SizedBox(width: 8),
-                                                  Text('Delete', style: TextStyle(color: Colors.red)),
+                                                  const Icon(Icons.delete, size: 20, color: Colors.red),
+                                                  const SizedBox(width: 8),
+                                                  Text(l10n.delete, style: const TextStyle(color: Colors.red)),
                                                 ],
                                               ),
                                             ),
@@ -250,7 +250,7 @@ class _BudgetListPageState extends State<BudgetListPage> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          '${(spentPercentage * 100).toStringAsFixed(0)}% used',
+                                          '${(spentPercentage * 100).toStringAsFixed(0)}% ${l10n.used}',
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: budget.isOverBudget ? Colors.red : Colors.grey[600],
@@ -307,13 +307,14 @@ class _BudgetListPageState extends State<BudgetListPage> {
   }
 
   Future<void> _exportBudgets() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final state = context.read<FinanceBloc>().state;
       final allBudgets = state is BudgetsLoaded ? state.budgets : HiveDatabase.budgetBox.values.toList();
 
       if (allBudgets.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No budgets to export')),
+          SnackBar(content: Text(l10n.noBudgetsToExport)),
         );
         return;
       }
@@ -321,13 +322,13 @@ class _BudgetListPageState extends State<BudgetListPage> {
       final categoryBox = HiveDatabase.categoryBox;
 
       List<List<dynamic>> rows = [];
-      rows.add(['Budget Name', 'Category', 'Period', 'Amount', 'Spent', 'Start Date', 'End Date']);
+      rows.add([l10n.budgetName, l10n.category, l10n.budgetPeriod, l10n.budgetAmount, l10n.totalSpent, l10n.startDate, l10n.endDate]);
 
       for (var budget in allBudgets) {
         final category = categoryBox.get(budget.categoryId);
         rows.add([
           budget.name,
-          category?.name ?? 'Unknown',
+          category?.name ?? l10n.unknown,
           budget.period.name,
           budget.amount,
           budget.spent,
@@ -342,39 +343,40 @@ class _BudgetListPageState extends State<BudgetListPage> {
       final file = File(path);
       await file.writeAsString(csvData);
 
-      await Share.shareXFiles([XFile(path)], text: 'TwigaMoney Budget Export');
+      await Share.shareXFiles([XFile(path)], text: l10n.budgetExport);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.exportFailed(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
   }
 
   void _confirmDelete(BuildContext context, Budget budget) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Budget'),
-        content: Text('Are you sure you want to delete "${budget.name}"?'),
+        title: Text(l10n.deleteBudget),
+        content: Text(l10n.confirmDeleteBudget(budget.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               context.read<FinanceBloc>().add(DeleteBudgetEvent(budget.id));
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Budget deleted successfully'),
+                SnackBar(
+                  content: Text(l10n.budgetDeletedSuccessfully),
                   backgroundColor: Colors.green,
                 ),
               );
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -382,15 +384,16 @@ class _BudgetListPageState extends State<BudgetListPage> {
   }
 
   String _formatPeriod(BudgetPeriod period) {
+    final l10n = AppLocalizations.of(context)!;
     switch (period) {
       case BudgetPeriod.weekly:
-        return 'Weekly';
+        return l10n.weekly;
       case BudgetPeriod.monthly:
-        return 'Monthly';
+        return l10n.monthly;
       case BudgetPeriod.yearly:
-        return 'Yearly';
+        return l10n.yearly;
       case BudgetPeriod.custom:
-        return 'Custom';
+        return l10n.custom;
     }
   }
 }

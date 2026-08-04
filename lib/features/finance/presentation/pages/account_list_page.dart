@@ -1,7 +1,10 @@
+import 'package:twigamoney/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/data/hive_database.dart';
@@ -37,12 +40,12 @@ class _AccountListPageState extends State<AccountListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final padding = Responsive.getPadding(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Accounts'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        leading: const BackButtonWidget(),
+        title: Text(l10n.accounts, style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: BlocBuilder<AccountCubit, AccountState>(
         builder: (context, state) {
@@ -55,17 +58,13 @@ class _AccountListPageState extends State<AccountListPage> {
           final currency = AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'));
 
           if (accounts.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.account_balance_outlined, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text('No accounts yet', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-                  const SizedBox(height: 8),
-                  Text('Tap + to create your first account', style: TextStyle(fontSize: 14, color: Colors.grey[500])),
-                ],
-              ),
+            final l10n = AppLocalizations.of(context)!;
+            return EmptyStateWidget(
+              icon: Icons.account_balance_outlined,
+              title: l10n.noAccountsYet,
+              subtitle: l10n.tapToCreateAccount,
+              onActionPressed: () => context.push('/edit-account'),
+              actionLabel: l10n.addAccount,
             );
           }
 
@@ -88,7 +87,7 @@ class _AccountListPageState extends State<AccountListPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Total Balance', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                                Text(l10n.totalBalance, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
                                 Text('$currency${totalBalance.toStringAsFixed(2)}',
                                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                               ],
@@ -100,7 +99,7 @@ class _AccountListPageState extends State<AccountListPage> {
                               color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text('${accounts.length} account${accounts.length != 1 ? 's' : ''}',
+                            child: Text(l10n.transactionsWithCount(accounts.length),
                                 style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.w600)),
                           ),
                         ],
@@ -139,10 +138,10 @@ class _AccountListPageState extends State<AccountListPage> {
                               }
                             },
                             itemBuilder: (context) => [
-                              const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 20), SizedBox(width: 8), Text('Edit')])),
-                              const PopupMenuItem(
+                              PopupMenuItem(value: 'edit', child: Row(children: [const Icon(Icons.edit, size: 20), const SizedBox(width: 8), Text(l10n.edit)])),
+                              PopupMenuItem(
                                 value: 'delete',
-                                child: Row(children: [Icon(Icons.delete, size: 20, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))]),
+                                child: Row(children: [const Icon(Icons.delete, size: 20, color: Colors.red), const SizedBox(width: 8), Text(l10n.delete, style: const TextStyle(color: Colors.red))]),
                               ),
                             ],
                           ),
@@ -165,22 +164,27 @@ class _AccountListPageState extends State<AccountListPage> {
   }
 
   void _confirmDelete(Account account) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: Text('Are you sure you want to delete "${account.name}"?'),
+        title: Text(l10n.deleteAccount),
+        content: Text(l10n.confirmDeleteAccount(account.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () {
               context.read<AccountCubit>().deleteAccount(account.id);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('"${account.name}" deleted'), backgroundColor: Colors.green),
+                SnackBar(
+                    content: Text(l10n.accountDeleted),
+                    backgroundColor: Colors.green),
               );
             },
-            child: Text('Delete', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            child: Text(l10n.delete,
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),

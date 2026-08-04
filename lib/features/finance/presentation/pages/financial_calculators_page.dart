@@ -42,7 +42,6 @@ class _FinancialCalculatorsPageState extends State<FinancialCalculatorsPage>
         leading: const BackButtonWidget(),
         title: Text(l10n.financialTools,
             style: const TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Theme.of(context).colorScheme.surface,
         bottom: TabBar(
           controller: _tabController,
           labelColor: Theme.of(context).colorScheme.primary,

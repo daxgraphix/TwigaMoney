@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/billing/presentation/pages/dashboard_page.dart';
+import '../../features/onboarding/presentation/pages/onboarding_page.dart';
+import '../../features/onboarding/presentation/pages/splash_screen.dart';
 import '../../features/billing/presentation/pages/reports_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/billing/presentation/pages/new_sale_page.dart';
@@ -41,13 +42,58 @@ import '../../core/widgets/main_navigation_shell.dart';
 
 GoRouter createRouter() {
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/splash',
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingPage(),
+      ),
       ShellRoute(
         builder: (context, state, child) => MainNavigationShell(child: child),
         routes: [
           GoRoute(
               path: '/', builder: (context, state) => const DashboardPage()),
+          GoRoute(
+              path: '/reports',
+              builder: (context, state) => const ReportsPage()),
+          GoRoute(
+              path: '/settings',
+              builder: (context, state) => const SettingsPage()),
+          GoRoute(
+              path: '/products',
+              builder: (context, state) => const ProductListPage()),
+          GoRoute(
+              path: '/products/add',
+              builder: (context, state) => const AddProductPage()),
+          GoRoute(
+            path: '/products/edit',
+            builder: (context, state) {
+              final product = state.extra as Product;
+              return EditProductPage(product: product);
+            },
+          ),
+          GoRoute(
+              path: '/customers',
+              builder: (context, state) => const CustomerListPage()),
+          GoRoute(
+              path: '/customers/add',
+              builder: (context, state) => const AddCustomerPage()),
+          GoRoute(
+            path: '/customers/edit',
+            builder: (context, state) {
+              final customer = state.extra as Customer;
+              return EditCustomerPage(customer: customer);
+            },
+          ),
+          GoRoute(
+            path: '/customers/transactions/:id',
+            builder: (context, state) => CustomerTransactionsPage(
+                customerId: state.pathParameters['id']!),
+          ),
           GoRoute(
               path: '/new-sale',
               builder: (context, state) => const NewSalePage()),
@@ -56,22 +102,18 @@ GoRouter createRouter() {
               builder: (context, state) => const TransactionListPage()),
           GoRoute(
               path: '/budgets',
-              builder: (context, state) => const BudgetListPage(),
-              routes: [
-                GoRoute(
-                  path: 'add',
-                  pageBuilder: (context, state) =>
-                      SwipeToPopPage.create(state, const EditBudgetPage()),
-                ),
-                GoRoute(
-                  path: 'edit/:id',
-                  pageBuilder: (context, state) {
-                    final budget = state.extra as Budget?;
-                    return SwipeToPopPage.create(
-                        state, EditBudgetPage(budget: budget));
-                  },
-                ),
-              ]),
+              builder: (context, state) => const BudgetListPage()),
+          GoRoute(
+            path: '/budgets/add',
+            builder: (context, state) => const EditBudgetPage(),
+          ),
+          GoRoute(
+            path: '/budgets/edit',
+            builder: (context, state) {
+              final budget = state.extra as Budget;
+              return EditBudgetPage(budget: budget);
+            },
+          ),
           GoRoute(
               path: '/accounts',
               builder: (context, state) => const AccountListPage()),
@@ -156,73 +198,6 @@ GoRouter createRouter() {
         path: '/help-support',
         pageBuilder: (context, state) =>
             SwipeToPopPage.create(state, const HelpSupportPage()),
-      ),
-      GoRoute(
-        path: '/reports',
-        pageBuilder: (context, state) =>
-            SwipeToPopPage.create(state, const ReportsPage()),
-      ),
-      GoRoute(
-        path: '/settings',
-        pageBuilder: (context, state) =>
-            SwipeToPopPage.create(state, const SettingsPage()),
-      ),
-      GoRoute(
-        path: '/products',
-        pageBuilder: (context, state) =>
-            SwipeToPopPage.create(state, const ProductListPage()),
-        routes: [
-          GoRoute(
-            path: 'add',
-            pageBuilder: (context, state) =>
-                SwipeToPopPage.create(state, const AddProductPage()),
-          ),
-          GoRoute(
-            path: 'edit/:id',
-            pageBuilder: (context, state) {
-              final product = state.extra as Product?;
-              return SwipeToPopPage.create(
-                  state, EditProductPage(product: product ?? Product.empty()));
-            },
-          ),
-        ],
-      ),
-      GoRoute(
-        path: '/customers',
-        pageBuilder: (context, state) =>
-            SwipeToPopPage.create(state, const CustomerListPage()),
-        routes: [
-          GoRoute(
-            path: 'add',
-            pageBuilder: (context, state) =>
-                SwipeToPopPage.create(state, const AddCustomerPage()),
-          ),
-          GoRoute(
-            path: 'edit/:id',
-            pageBuilder: (context, state) {
-              final customer = state.extra as Customer?;
-              return SwipeToPopPage.create(state,
-                  EditCustomerPage(customer: customer ?? Customer.empty()));
-            },
-          ),
-          GoRoute(
-            path: 'transactions/:id',
-            pageBuilder: (context, state) {
-              final customerId = state.pathParameters['id']!;
-              return SwipeToPopPage.create(
-                  state, CustomerTransactionsPage(customerId: customerId));
-            },
-          ),
-        ],
-      ),
-      GoRoute(
-        path: '/:path',
-        pageBuilder: (context, state) => SwipeToPopPage.create(
-          state,
-          const Scaffold(
-            body: Center(child: Text('Page not found')),
-          ),
-        ),
       ),
     ],
   );

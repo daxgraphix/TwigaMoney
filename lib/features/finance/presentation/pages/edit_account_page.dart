@@ -1,10 +1,14 @@
+import 'package:twigamoney/core/widgets/input_label.dart';
+import 'package:twigamoney/core/widgets/primary_button.dart';
+import 'package:twigamoney/core/widgets/page_transitions.dart';
+import 'package:twigamoney/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/account.dart';
 import '../../presentation/bloc/account_cubit.dart';
-import '../../../../core/widgets/page_transitions.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 
 class EditAccountPage extends StatefulWidget {
   final Account? account;
@@ -56,9 +60,10 @@ class _EditAccountPageState extends State<EditAccountPage> {
       context.read<AccountCubit>().updateAccount(account);
     }
 
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(widget.account == null ? 'Account created' : 'Account updated'),
+        content: Text(l10n.accountSaved),
         backgroundColor: Colors.green,
       ),
     );
@@ -72,96 +77,100 @@ class _EditAccountPageState extends State<EditAccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         leading: const BackButtonWidget(),
-        title: Text(widget.account == null ? 'New Account' : 'Edit Account'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: Text(widget.account == null ? l10n.addAccount : l10n.editAccount,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(
+          Responsive.getPadding(context),
+          16,
+          Responsive.getPadding(context),
+          100,
+        ),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              InputLabel(text: l10n.accountName),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Account Name',
-                  hintText: 'e.g., Main Wallet',
-                  prefixIcon: Icon(Icons.label_outline),
+                decoration: InputDecoration(
+                  hintText: l10n.accountNameHint,
+                  prefixIcon: const Icon(Icons.label_outline),
                 ),
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) return 'Please enter an account name';
+                  if (value == null || value.trim().isEmpty) return l10n.required;
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              InputLabel(text: l10n.accountType),
               DropdownButtonFormField<AccountType>(
                 initialValue: _selectedType,
                 decoration: const InputDecoration(
-                  labelText: 'Account Type',
                   prefixIcon: Icon(Icons.account_balance_wallet_outlined),
                 ),
-                items: const [
-                  DropdownMenuItem(value: AccountType.checking, child: Text('Checking')),
-                  DropdownMenuItem(value: AccountType.savings, child: Text('Savings')),
-                  DropdownMenuItem(value: AccountType.credit, child: Text('Credit')),
-                  DropdownMenuItem(value: AccountType.investment, child: Text('Investment')),
+                items: [
+                  DropdownMenuItem(
+                      value: AccountType.checking, child: Text(l10n.checking)),
+                  DropdownMenuItem(
+                      value: AccountType.savings, child: Text(l10n.savings)),
+                  DropdownMenuItem(
+                      value: AccountType.credit, child: Text(l10n.credit)),
+                  DropdownMenuItem(
+                      value: AccountType.investment,
+                      child: Text(l10n.investment)),
                 ],
                 onChanged: (value) {
                   if (value != null) setState(() => _selectedType = value);
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              InputLabel(text: l10n.balance),
               TextFormField(
                 controller: _balanceController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Initial Balance',
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
                   hintText: '0.00',
-                  prefixIcon: Icon(Icons.money),
+                  prefixIcon: const Icon(Icons.money),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Please enter a balance';
+                  if (value == null || value.isEmpty) return l10n.required;
                   final amount = double.tryParse(value.replaceAll(',', '.'));
-                  if (amount == null) return 'Please enter a valid number';
+                  if (amount == null) return l10n.invalidInput;
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              InputLabel(text: l10n.currency),
               DropdownButtonFormField<String>(
                 initialValue: _currency,
                 decoration: const InputDecoration(
-                  labelText: 'Currency',
                   prefixIcon: Icon(Icons.currency_exchange),
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'TZS', child: Text('TZS (TSh)')),
-                  DropdownMenuItem(value: 'USD', child: Text('USD (\$)')),
+                items: [
+                  DropdownMenuItem(
+                      value: 'TZS', child: Text(l10n.tanzanianShilling)),
+                  DropdownMenuItem(value: 'USD', child: Text(l10n.usDollar)),
                 ],
                 onChanged: (value) {
                   if (value != null) setState(() => _currency = value);
                 },
               ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(widget.account == null ? 'Create Account' : 'Update Account'),
-                ),
-              ),
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: PrimaryButton(
+        onPressed: _submit,
+        icon: widget.account == null ? Icons.add_circle : Icons.save,
+        label: widget.account == null ? l10n.addAccount : l10n.saveChanges,
       ),
     );
   }
