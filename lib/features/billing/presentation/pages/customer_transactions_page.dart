@@ -116,12 +116,13 @@ class _CustomerTransactionsPageState extends State<CustomerTransactionsPage> {
     final symbol = AppTheme.getCurrencySymbol(currency);
 
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('${_customer!.name} - ${l10n.transactions}'),
+        title: Text(l10n.transactions, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
+          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
           onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
         ),
       ),
@@ -130,81 +131,40 @@ class _CustomerTransactionsPageState extends State<CustomerTransactionsPage> {
           // Customer Summary Card
           Container(
             margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: AppTheme.softShadow,
+              border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  _customer!.name,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      l10n.totalTransactions,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                    Expanded(
+                      child: _buildSummaryItem(
+                        l10n.totalTransactions,
+                        _transactions.length.toString(),
+                        Colors.blue,
                       ),
                     ),
-                    Text(
-                      _transactions.length.toString(),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    Container(height: 32, width: 1, color: Colors.grey.withValues(alpha: 0.2), margin: const EdgeInsets.symmetric(horizontal: 16)),
+                    Expanded(
+                      child: _buildSummaryItem(
+                        l10n.totalAmount,
+                        '$symbol${_totalAmount.toStringAsFixed(0)}',
+                        Colors.red,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n.totalAmount,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    Text(
-                      '$symbol${_totalAmount.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            l10n.numberOfTransactions,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          Text(
-                            '${_transactions.length}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ],
-                      ),
               ],
             ),
           ),
@@ -216,76 +176,74 @@ class _CustomerTransactionsPageState extends State<CustomerTransactionsPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.receipt_long,
-                          size: 64,
-                          color: Colors.grey,
-                        ),
+                        Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey[300]),
                         const SizedBox(height: 16),
                         Text(
                           l10n.noTransactionsFound,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 16, color: Colors.grey[500]),
                         ),
                       ],
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    physics: const BouncingScrollPhysics(),
                     itemCount: _transactions.length,
                     itemBuilder: (context, index) {
                       final transaction = _transactions[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          leading: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: transaction.status == TransactionStatus.paid
-                                  ? Colors.green.withValues(alpha: 0.1)
-                                  : Colors.orange.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              transaction.status == TransactionStatus.paid
-                                  ? Icons.check_circle
-                                  : Icons.pending,
-                              color: transaction.status == TransactionStatus.paid
-                                  ? Colors.green
-                                  : Colors.orange,
-                            ),
+                      final isPaid = transaction.status == TransactionStatus.paid;
+                      final statusColor = isPaid ? Colors.green : Colors.orange;
+                      
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: AppTheme.softShadow,
+                            border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
                           ),
-                          title: Text(
-                            l10n.transactionWithId(transaction.id),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: statusColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(
+                                isPaid ? Icons.check_circle_outline : Icons.pending_outlined,
+                                color: statusColor,
+                              ),
+                            ),
+                            title: Text(
+                              transaction.productName,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                _formatDate(transaction.createdAt),
+                                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                              ),
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '$symbol${transaction.totalRevenue.toStringAsFixed(0)}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                                Text(
+                                  '${transaction.quantity} units',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                ),
+                              ],
+                            ),
+                            onTap: () => _showTransactionDetails(transaction),
                           ),
-                           subtitle: Column(
-                             crossAxisAlignment: CrossAxisAlignment.start,
-                             children: [
-                               Text(
-                                 '${transaction.quantity}x ${transaction.productName}',
-                                 style: TextStyle(color: Colors.grey[600]),
-                               ),
-                               Text(
-                                 _formatDate(transaction.createdAt),
-                                 style: TextStyle(
-                                   fontSize: 12,
-                                   color: Colors.grey[500],
-                                 ),
-                               ),
-                             ],
-                           ),
-                           trailing: Text(
-                             '$symbol${transaction.totalRevenue.toStringAsFixed(2)}',
-                             style: const TextStyle(
-                               fontSize: 16,
-                               fontWeight: FontWeight.bold,
-                             ),
-                           ),
-                          onTap: () => _showTransactionDetails(transaction),
                         ),
                       );
                     },
@@ -293,6 +251,23 @@ class _CustomerTransactionsPageState extends State<CustomerTransactionsPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSummaryItem(String label, String value, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey[500], fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+        ),
+      ],
     );
   }
 

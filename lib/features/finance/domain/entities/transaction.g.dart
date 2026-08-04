@@ -30,13 +30,15 @@ class TransactionAdapter extends TypeAdapter<Transaction> {
       toAccountId: fields[10] as String?,
       productId: fields[11] as String?,
       stockQuantity: fields[12] as int?,
+      syncStatus: fields[13] as SyncStatus,
+      updatedAt: fields[14] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Transaction obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -62,7 +64,11 @@ class TransactionAdapter extends TypeAdapter<Transaction> {
       ..writeByte(11)
       ..write(obj.productId)
       ..writeByte(12)
-      ..write(obj.stockQuantity);
+      ..write(obj.stockQuantity)
+      ..writeByte(13)
+      ..write(obj.syncStatus)
+      ..writeByte(14)
+      ..write(obj.updatedAt);
   }
 
   @override

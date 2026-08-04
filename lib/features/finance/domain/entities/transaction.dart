@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import '../../../../core/data/sync_status.dart';
 
 part 'transaction.g.dart';
 
@@ -63,6 +64,12 @@ class Transaction extends HiveObject {
   @HiveField(12)
   final int? stockQuantity;
 
+  @HiveField(13)
+  final SyncStatus syncStatus;
+
+  @HiveField(14)
+  final DateTime updatedAt;
+
   Transaction({
     required this.id,
     required this.description,
@@ -77,7 +84,9 @@ class Transaction extends HiveObject {
     this.toAccountId,
     this.productId,
     this.stockQuantity,
-  });
+    this.syncStatus = SyncStatus.pending,
+    DateTime? updatedAt,
+  }) : updatedAt = updatedAt ?? DateTime.now();
 
   Map<String, dynamic> toJson() {
     return {
@@ -94,6 +103,8 @@ class Transaction extends HiveObject {
       'toAccountId': toAccountId,
       'productId': productId,
       'stockQuantity': stockQuantity,
+      'syncStatus': syncStatus.name,
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
@@ -120,6 +131,46 @@ class Transaction extends HiveObject {
       toAccountId: json['toAccountId'] as String?,
       productId: json['productId'] as String?,
       stockQuantity: json['stockQuantity'] as int?,
+      syncStatus: json['syncStatus'] != null
+          ? SyncStatus.values.firstWhere((e) => e.name == json['syncStatus'], orElse: () => SyncStatus.pending)
+          : SyncStatus.pending,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : null,
+    );
+  }
+
+  Transaction copyWith({
+    String? id,
+    String? description,
+    double? amount,
+    DateTime? date,
+    String? categoryId,
+    String? accountId,
+    TransactionType? type,
+    bool? isRecurring,
+    RecurringInterval? recurringInterval,
+    String? fromAccountId,
+    String? toAccountId,
+    String? productId,
+    int? stockQuantity,
+    SyncStatus? syncStatus,
+    DateTime? updatedAt,
+  }) {
+    return Transaction(
+      id: id ?? this.id,
+      description: description ?? this.description,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      categoryId: categoryId ?? this.categoryId,
+      accountId: accountId ?? this.accountId,
+      type: type ?? this.type,
+      isRecurring: isRecurring ?? this.isRecurring,
+      recurringInterval: recurringInterval ?? this.recurringInterval,
+      fromAccountId: fromAccountId ?? this.fromAccountId,
+      toAccountId: toAccountId ?? this.toAccountId,
+      productId: productId ?? this.productId,
+      stockQuantity: stockQuantity ?? this.stockQuantity,
+      syncStatus: syncStatus ?? this.syncStatus,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

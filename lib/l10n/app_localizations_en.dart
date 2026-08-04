@@ -1537,4 +1537,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get help => 'Help';
+
+  @override
+  String get type => 'Type';
+
+  @override
+  String get invalidInput => 'Please enter valid numbers in all fields';
+
+  @override
+  String get result => 'Result';
+
+  @override
+  String get cashFlowTrend => 'Cash Flow Trend';
+
+  @override
+  String get expenseByCategory => 'Expense by Category';
+
+  @override
+  String get debtAging => 'Debt Aging';
+
+  @override
+  String get outstandingBalances => 'Outstanding Balances';
+
+  @override
+  String get peakHours => 'Peak Hours Analysis';
+
+  @override
+  String get savingsGoal => 'Savings Goal';
 }

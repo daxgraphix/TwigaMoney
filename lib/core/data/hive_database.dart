@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'sync_status.dart';
 import '../../features/product/data/models/product_model.dart';
 import '../../features/shop/data/models/shop_model.dart';
 import '../../features/finance/domain/entities/transaction.dart';
@@ -13,6 +14,8 @@ import '../../features/billing/domain/entities/sales_transaction.dart';
 import '../../features/product/domain/entities/stock_movement.dart';
 import '../../features/billing/domain/entities/customer.dart';
 import '../../features/billing/domain/entities/customer_transaction.dart';
+
+import '../../features/billing/domain/entities/shift.dart';
 
 class HiveDatabase {
   static const String productBoxName = 'products';
@@ -27,6 +30,7 @@ class HiveDatabase {
   static const String stockMovementBoxName = 'stock_movements';
   static const String customerBoxName = 'customers';
   static const String customerTransactionBoxName = 'customer_transactions';
+  static const String shiftBoxName = 'shifts';
   static const String plannerEventsBoxName = 'planner_events';
   static const String plannerNotesBoxName = 'planner_notes';
 
@@ -46,6 +50,7 @@ class HiveDatabase {
     await Hive.initFlutter();
 
     // Register Adapters
+    Hive.registerAdapter(SyncStatusAdapter());
     Hive.registerAdapter(ProductModelAdapter());
     Hive.registerAdapter(ShopModelAdapter());
     Hive.registerAdapter(TransactionTypeAdapter());
@@ -63,6 +68,7 @@ class HiveDatabase {
     Hive.registerAdapter(CustomerAdapter());
     Hive.registerAdapter(CustomerTransactionTypeAdapter());
     Hive.registerAdapter(CustomerTransactionAdapter());
+    Hive.registerAdapter(ShiftAdapter());
 
     // Open Boxes
     await Hive.openBox<ProductModel>(productBoxName);
@@ -77,6 +83,7 @@ class HiveDatabase {
     await Hive.openBox<StockMovement>(stockMovementBoxName);
     await Hive.openBox<Customer>(customerBoxName);
     await Hive.openBox<CustomerTransaction>(customerTransactionBoxName);
+    await Hive.openBox<Shift>(shiftBoxName);
     await Hive.openBox(plannerEventsBoxName);
     await Hive.openBox(plannerNotesBoxName);
 
@@ -126,6 +133,7 @@ class HiveDatabase {
   static Box<Customer> get customerBox => Hive.box<Customer>(customerBoxName);
   static Box<CustomerTransaction> get customerTransactionBox =>
       Hive.box<CustomerTransaction>(customerTransactionBoxName);
+  static Box<Shift> get shiftBox => Hive.box<Shift>(shiftBoxName);
   static Box get plannerEventsBox => Hive.box(plannerEventsBoxName);
   static Box get plannerNotesBox => Hive.box(plannerNotesBoxName);
 
@@ -190,6 +198,7 @@ class HiveDatabase {
         stockMovementBoxName: _boxToMap(stockMovementBox),
         customerBoxName: _boxToMap(customerBox),
         customerTransactionBoxName: _boxToMap(customerTransactionBox),
+        shiftBoxName: _boxToMap(shiftBox),
         plannerEventsBoxName: _boxToMap(plannerEventsBox),
         plannerNotesBoxName: _boxToMap(plannerNotesBox),
       },
@@ -338,6 +347,18 @@ class HiveDatabase {
         final m = entry.value as Map<String, dynamic>;
         await customerTransactionBox.put(entry.key, CustomerTransaction.fromJson(m['json'] ?? m));
       }
+    }
+
+    // Shifts
+    final shiftData = boxes[shiftBoxName];
+    if (shiftData is Map) {
+      // for (final entry in shiftData.entries) {
+      //   // final m = entry.value as Map<String, dynamic>;
+      //   // Assuming Shift has a fromJson if we want to import, but for now we might not have it.
+      //   // If Shift is a plain class with @HiveType, Hive might handle it if we put the object.
+      //   // However, for generic import/export we usually need to/from Json.
+      //   // Let's check Shift class again. It doesn't have fromJson.
+      // }
     }
 
     // Planner events

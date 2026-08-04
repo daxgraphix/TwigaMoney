@@ -507,5 +507,15 @@
   "calculate": "Calculate",
   "more": "More",
   "analysis": "Analysis",
-  "help": "Help"
+  "help": "Help",
+  "clear": "Clear",
+  "type": "Type",
+  "invalidInput": "Please enter valid numbers in all fields",
+  "result": "Result",
+  "cashFlowTrend": "Cash Flow Trend",
+  "expenseByCategory": "Expense by Category",
+  "debtAging": "Debt Aging",
+  "outstandingBalances": "Outstanding Balances",
+  "peakHours": "Peak Hours Analysis",
+  "savingsGoal": "Savings Goal"
 }

@@ -29,13 +29,15 @@ class SalesTransactionAdapter extends TypeAdapter<SalesTransaction> {
       status: fields[13] as TransactionStatus,
       items: (fields[14] as List).cast<String>(),
       createdAt: fields[15] as DateTime?,
+      syncStatus: fields[16] as SyncStatus,
+      updatedAt: fields[17] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, SalesTransaction obj) {
     writer
-      ..writeByte(16)
+      ..writeByte(18)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -67,7 +69,11 @@ class SalesTransactionAdapter extends TypeAdapter<SalesTransaction> {
       ..writeByte(14)
       ..write(obj.items)
       ..writeByte(15)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(16)
+      ..write(obj.syncStatus)
+      ..writeByte(17)
+      ..write(obj.updatedAt);
   }
 
   @override

@@ -23,9 +23,9 @@ class AppTheme {
 
   static List<BoxShadow> get softShadow => [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.05),
-      blurRadius: 15,
-      offset: const Offset(0, 5),
+      color: Colors.black.withValues(alpha: 0.04),
+      blurRadius: 20,
+      offset: const Offset(0, 8),
     ),
   ];
 
@@ -35,92 +35,69 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  static final TextTheme textTheme = GoogleFonts.ibmPlexSansTextTheme().copyWith(
-    bodyLarge: GoogleFonts.ibmPlexSans(
-      fontSize: 15,
-      fontWeight: FontWeight.w500,
-    ),
+  static final TextTheme textTheme = GoogleFonts.interTextTheme().copyWith(
+    displayLarge: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: -1),
+    titleLarge: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.5),
+    bodyLarge: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w500),
+    labelLarge: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
   );
 
-  // ignore: prefer_const_constructors
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       primaryColor: primaryColor,
-      scaffoldBackgroundColor: backgroundColor,
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: Colors.transparent,
-      ),
+      scaffoldBackgroundColor: const Color(0xFFF1F5F9),
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         primary: primaryColor,
-        primaryContainer: primaryVariantColor,
         secondary: secondaryColor,
-        tertiary: accentColor,
         surface: surfaceColor,
-        error: errorColor,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: const Color(0xFF1E293B),
+        onSurface: const Color(0xFF0F172A),
       ),
       textTheme: textTheme.apply(
-        bodyColor: Colors.black,
-        displayColor: Colors.black,
+        bodyColor: const Color(0xFF1E293B),
+        displayColor: const Color(0xFF0F172A),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.black),
+        titleTextStyle: TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold),
+        iconTheme: IconThemeData(color: Color(0xFF0F172A)),
       ),
       cardTheme: CardThemeData(
-        elevation: 8,
-        shadowColor: const Color(0x26000000),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: Colors.black.withValues(alpha: 0.05)),
+        ),
         color: surfaceColor,
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        hintStyle: const TextStyle(color: Color(0x80000000), fontWeight: FontWeight.normal, fontSize: 14),
-        labelStyle: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xD9000000)),
+          borderSide: BorderSide(color: Colors.grey.shade200),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xD9000000)),
+          borderSide: BorderSide(color: Colors.grey.shade200),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.elliptical(16, 16)),
-          borderSide: const BorderSide(color: Color(0xFFF97316), width: 2),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primaryColor, width: 2),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.elliptical(16, 16)),
-          borderSide: const BorderSide(color: Color(0xFFDC2626), width: 2.0),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.elliptical(16, 16)),
-          borderSide: const BorderSide(color: Color(0xFFDC2626), width: 2.0),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        floatingLabelBehavior: FloatingLabelBehavior.always,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          elevation: 6,
-          shadowColor: const Color(0x4DF97316),
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 28),
+          minimumSize: const Size.fromHeight(56),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          textStyle: textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
+          elevation: 0,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(

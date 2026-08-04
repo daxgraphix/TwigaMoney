@@ -47,6 +47,7 @@ class _EditProductPageState extends State<EditProductPage> {
         taxPercentage: widget.product.taxPercentage,
         lastStockUpdate: widget.product.lastStockUpdate,
         totalSold: widget.product.totalSold,
+        updatedAt: DateTime.now(),
       );
 
       context.read<ProductBloc>().add(UpdateProduct(updatedProduct));

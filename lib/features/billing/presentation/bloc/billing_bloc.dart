@@ -1,31 +1,22 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:twigamoney/core/error/failure.dart';
 import '../../domain/entities/cart_item.dart';
-import '../../domain/entities/sales_transaction.dart';
+import '../../domain/usecases/complete_sale_usecase.dart';
 import 'package:twigamoney/features/product/domain/entities/product.dart';
 import 'package:twigamoney/features/product/domain/usecases/product_usecases.dart';
-import '../../domain/repositories/sales_repository.dart';
-import '../../../product/domain/repositories/stock_repository.dart';
-import '../../../product/domain/entities/stock_movement.dart';
-import '../../domain/repositories/customer_repository.dart';
-import '../../domain/entities/customer_transaction.dart';
 
 part 'billing_event.dart';
 part 'billing_state.dart';
 
 class BillingBloc extends Bloc<BillingEvent, BillingState> {
   final GetProductByBarcodeUseCase getProductByBarcodeUseCase;
-  final DecrementStockUseCase decrementStockUseCase;
-  final SalesRepository salesRepository;
-  final StockRepository stockRepository;
-  final CustomerRepository customerRepository;
+  final CompleteSaleUseCase completeSaleUseCase;
 
   BillingBloc({
     required this.getProductByBarcodeUseCase,
-    required this.decrementStockUseCase,
-    required this.salesRepository,
-    required this.stockRepository,
-    required this.customerRepository,
+    required this.completeSaleUseCase,
   }) : super(const BillingState()) {
     on<AddProductToCartEvent>(_onAddProductToCart);
     on<RemoveProductFromCartEvent>(_onRemoveProductFromCart);
@@ -41,32 +32,49 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
 
   void _onAddProductToCart(
       AddProductToCartEvent event, Emitter<BillingState> emit) {
-    // Clear error when adding
-    final cleanState = state.copyWith(error: null);
-
-    final existingIndex = cleanState.cartItems
+    final existingIndex = state.cartItems
         .indexWhere((item) => item.product.id == event.product.id);
+    
+    int currentInCart = 0;
+    if (existingIndex >= 0) {
+      currentInCart = state.cartItems[existingIndex].quantity;
+    }
+
+    if (event.product.stock < currentInCart + event.quantity) {
+      emit(state.copyWith(
+        error: 'Insufficient stock for ${event.product.name}. Available: ${event.product.stock}, In Cart: $currentInCart',
+      ));
+      return;
+    }
+
     List<CartItem> updatedItems;
     if (existingIndex >= 0) {
-      final existingItem = cleanState.cartItems[existingIndex];
-      updatedItems = List<CartItem>.from(cleanState.cartItems);
+      final existingItem = state.cartItems[existingIndex];
+      updatedItems = List<CartItem>.from(state.cartItems);
       updatedItems[existingIndex] =
           existingItem.copyWith(quantity: existingItem.quantity + event.quantity);
     } else {
       final newItem = CartItem(product: event.product, quantity: event.quantity);
-      updatedItems = [...cleanState.cartItems, newItem];
+      updatedItems = [...state.cartItems, newItem];
     }
-    final newTotal = _calculateTotal(updatedItems);
-    emit(cleanState.copyWith(cartItems: updatedItems, totalAmount: newTotal, error: null));
+    
+    emit(state.copyWith(
+      cartItems: updatedItems, 
+      totalAmount: _calculateTotal(updatedItems), 
+      error: null,
+    ));
   }
 
   void _onRemoveProductFromCart(
       RemoveProductFromCartEvent event, Emitter<BillingState> emit) {
-    final updatedList = state.cartItems
+    final updatedItems = state.cartItems
         .where((item) => item.product.id != event.productId)
         .toList();
-    final newTotal = _calculateTotal(updatedList);
-    emit(state.copyWith(cartItems: updatedList, totalAmount: newTotal));
+    emit(state.copyWith(
+      cartItems: updatedItems,
+      totalAmount: _calculateTotal(updatedItems),
+      error: null,
+    ));
   }
 
   void _onUpdateQuantity(
@@ -78,11 +86,24 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
 
     final index = state.cartItems
         .indexWhere((item) => item.product.id == event.productId);
+    
     if (index >= 0) {
+      final product = state.cartItems[index].product;
+      
+      if (product.stock < event.quantity) {
+        emit(state.copyWith(
+          error: 'Cannot update quantity. Only ${product.stock} available for ${product.name}.',
+        ));
+        return;
+      }
+
       final items = List<CartItem>.from(state.cartItems);
       items[index] = items[index].copyWith(quantity: event.quantity);
-      final newTotal = _calculateTotal(items);
-      emit(state.copyWith(cartItems: items, totalAmount: newTotal));
+      emit(state.copyWith(
+        cartItems: items, 
+        totalAmount: _calculateTotal(items), 
+        error: null,
+      ));
     }
   }
 
@@ -104,122 +125,32 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
 
     emit(state.copyWith(isProcessingSale: true, error: null));
 
-    try {
-      double totalSaleAmount = state.totalAmount;
+    final result = await TaskEither<Failure, void>(() => completeSaleUseCase(CompleteSaleParams(
+      cartItems: state.cartItems,
+      totalAmount: state.totalAmount,
+      customerId: event.customerId,
+      shiftId: event.shiftId,
+    ))).run();
 
-      // If this is a credit sale, check customer credit limit
-      if (event.customerId != 'cash') {
-        final customerResult = await customerRepository.getCustomerById(event.customerId);
-        customerResult.fold(
-          (failure) => throw Exception('Customer not found: ${failure.message}'),
-          (customer) {
-            if (customer == null) {
-              throw Exception('Customer not found');
-            }
-            if (customer.currentBalance + totalSaleAmount > customer.creditLimit && customer.creditLimit > 0) {
-              throw Exception('Sale would exceed customer credit limit');
-            }
-          },
-        );
-      }
-
-      // Record each cart item as a sales transaction
-      for (final cartItem in state.cartItems) {
-        final transactionId = '${event.shiftId}_${cartItem.product.id}_${DateTime.now().millisecondsSinceEpoch}';
-
-        final transaction = SalesTransaction(
-          id: transactionId,
-          productId: cartItem.product.id,
-          productName: cartItem.product.name,
-          sellingPrice: cartItem.product.price,
-          costPrice: cartItem.product.costPrice,
-          quantity: cartItem.quantity,
-          timestamp: DateTime.now(),
-          shiftId: event.shiftId,
-          customerId: event.customerId,
-        );
-
-        final result = await salesRepository.recordSale(transaction);
-        result.fold(
-          (failure) => throw Exception('Failed to record sale: ${failure.message}'),
-          (_) => null,
-        );
-
-        // Record stock movement for sale
-        final stockMovement = StockMovement(
-          id: '${transactionId}_movement',
-          productId: cartItem.product.id,
-          type: MovementType.sale,
-          quantity: -cartItem.quantity, // Negative for reduction
-          previousStock: cartItem.product.stock,
-          newStock: cartItem.product.stock - cartItem.quantity,
-          timestamp: DateTime.now(),
-          reference: transactionId,
-          notes: 'Sale to customer ${event.customerId}',
-        );
-
-        final movementResult = await stockRepository.recordStockMovement(stockMovement);
-        movementResult.fold(
-          (failure) => throw Exception('Failed to record stock movement: ${failure.message}'),
-          (_) => null,
-        );
-
-        // Decrement stock
-        final stockResult = await decrementStockUseCase(
-          DecrementStockParams(
-            cartItem.product.id,
-            cartItem.quantity,
-          ),
-        );
-
-        stockResult.fold(
-          (failure) => throw Exception('Failed to update stock: ${failure.message}'),
-          (_) => null,
-        );
-      }
-
-      // Record customer transaction for credit sales
-      if (event.customerId != 'cash') {
-        final customerResult = await customerRepository.getCustomerById(event.customerId);
-        final customer = customerResult.getOrElse((_) => throw Exception('Customer not found'));
-
-        final customerTransaction = CustomerTransaction(
-          id: '${event.shiftId}_credit_${DateTime.now().millisecondsSinceEpoch}',
-          customerId: event.customerId,
-          type: CustomerTransactionType.creditSale,
-          amount: totalSaleAmount,
-          previousBalance: customer!.currentBalance,
-          newBalance: customer.currentBalance + totalSaleAmount,
-          timestamp: DateTime.now(),
-          reference: event.shiftId,
-          notes: 'Credit sale for shift ${event.shiftId}',
-        );
-
-        final customerTransactionResult = await customerRepository.recordCustomerTransaction(customerTransaction);
-        customerTransactionResult.fold(
-          (failure) => throw Exception('Failed to record customer transaction: ${failure.message}'),
-          (_) => null,
-        );
-      }
-
-      emit(state.copyWith(
+    result.fold(
+      (failure) => emit(state.copyWith(
         isProcessingSale: false,
-        saleCompleted: true,
-        cartItems: [],
-        totalAmount: 0.0,
-      ));
+        error: failure.message,
+      )),
+      (_) {
+        emit(state.copyWith(
+          isProcessingSale: false,
+          saleCompleted: true,
+          cartItems: [],
+          totalAmount: 0.0,
+        ));
 
-      // Reset sale completed flag after a short delay
-      Future.delayed(const Duration(seconds: 2), () {
-        if (!isClosed) {
-          add(const ClearSaleCompletedEvent());
-        }
-      });
-    } catch (e) {
-      emit(state.copyWith(
-        isProcessingSale: false,
-        error: 'Sale failed: $e',
-      ));
-    }
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!isClosed) {
+            add(const ClearSaleCompletedEvent());
+          }
+        });
+      },
+    );
   }
 }

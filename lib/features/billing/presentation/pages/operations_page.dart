@@ -7,6 +7,8 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../finance/domain/entities/transaction.dart';
 
+import '../../domain/entities/shift.dart';
+
 class OperationsPage extends StatefulWidget {
   const OperationsPage({super.key});
 
@@ -24,8 +26,35 @@ class _OperationsPageState extends State<OperationsPage> {
 
   void _toggleShift(BuildContext context) {
     final settingsBox = HiveDatabase.settingsBox;
-    final newActive = !(settingsBox.get('shiftActive', defaultValue: false) as bool);
+    final shiftBox = HiveDatabase.shiftBox;
+    final isShiftActive = settingsBox.get('shiftActive', defaultValue: false) as bool;
+    
+    final newActive = !isShiftActive;
+    
+    if (newActive) {
+      // Starting a new shift
+      final newShift = Shift(
+        id: 'shift_${DateTime.now().millisecondsSinceEpoch}',
+        startTime: DateTime.now(),
+        cashierId: 'default_cashier', // In a real app, get current user id
+      );
+      shiftBox.put('current_shift', newShift);
+      settingsBox.put('currentShiftId', newShift.id);
+    } else {
+      // Ending current shift
+      final currentShift = shiftBox.get('current_shift');
+      if (currentShift != null) {
+        final endedShift = currentShift.copyWith(
+          endTime: DateTime.now(),
+        );
+        // Save to history and clear current
+        shiftBox.put(currentShift.id, endedShift);
+        shiftBox.delete('current_shift');
+      }
+    }
+
     settingsBox.put('shiftActive', newActive);
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(newActive ? AppLocalizations.of(context)!.shiftStarted : AppLocalizations.of(context)!.shiftEnded),
@@ -60,6 +89,8 @@ class _OperationsPageState extends State<OperationsPage> {
             onPressed: () {
               final amount = double.tryParse(controller.text);
               if (amount == null || amount <= 0) return;
+              
+              // Record in transactions
               final txn = Transaction(
                 id: 'cashdrop_${DateTime.now().millisecondsSinceEpoch}',
                 description: l10n.cashDrop,
@@ -70,6 +101,16 @@ class _OperationsPageState extends State<OperationsPage> {
                 type: TransactionType.expense,
               );
               HiveDatabase.transactionBox.add(txn);
+              
+              // Update current shift cash drop
+              final shiftBox = HiveDatabase.shiftBox;
+              final currentShift = shiftBox.get('current_shift');
+              if (currentShift != null) {
+                shiftBox.put('current_shift', currentShift.copyWith(
+                  cashDrop: currentShift.cashDrop + amount,
+                ));
+              }
+
               Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(l10n.cashDropRecorded(AppTheme.getCurrencySymbol(HiveDatabase.settingsBox.get('selectedCurrency', defaultValue: 'TZS')), amount.toStringAsFixed(0)))),
@@ -81,6 +122,7 @@ class _OperationsPageState extends State<OperationsPage> {
       ),
     );
   }
+
 
   void _loadOperationsData() {
     // Refresh shift data from Hive
@@ -224,7 +266,10 @@ class _OperationsPageState extends State<OperationsPage> {
                      children: [
                        Expanded(child: _buildQuickActionCard(AppLocalizations.of(context)!.cashDrop, Icons.money, AppTheme.primaryColor, () => _showCashDropDialog(context))),
                        const SizedBox(width: 12),
-                       Expanded(child: _buildQuickActionCard(AppLocalizations.of(context)!.endOfDay, Icons.assessment, AppTheme.primaryColor, () => context.push('/shift-report'))),
+                       Expanded(child: _buildQuickActionCard(AppLocalizations.of(context)!.endOfDay, Icons.assessment, AppTheme.primaryColor, () {
+                         final shiftId = HiveDatabase.settingsBox.get('currentShiftId', defaultValue: 'default');
+                         context.push('/shift-report?id=$shiftId');
+                       })),
                      ],
                    ),
                    const SizedBox(height: 12),

@@ -92,6 +92,7 @@ class CsvService {
               taxPercentage: row.length > 9 ? double.tryParse(row[9].toString()) ?? 0.0 : 0.0,
               lastStockUpdate: row.length > 10 ? DateTime.tryParse(row[10].toString()) ?? DateTime.now() : DateTime.now(),
               totalSold: row.length > 11 ? int.tryParse(row[11].toString()) ?? 0 : 0,
+              updatedAt: DateTime.now(),
             );
             products.add(product);
           } catch (e) {
@@ -162,6 +163,7 @@ class CsvService {
         taxPercentage: 0.0,
         lastStockUpdate: DateTime.now(),
         totalSold: 0,
+        updatedAt: DateTime.now(),
       )
     ], l10n);
   }

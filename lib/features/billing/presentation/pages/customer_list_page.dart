@@ -6,7 +6,7 @@ import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../billing/domain/entities/customer.dart';
-import '../../../billing/domain/repositories/customer_repository.dart';
+import '../bloc/customer/customer_bloc.dart';
 
 class CustomerListPage extends StatefulWidget {
   const CustomerListPage({super.key});
@@ -17,19 +17,14 @@ class CustomerListPage extends StatefulWidget {
 
 class _CustomerListPageState extends State<CustomerListPage> {
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-  List<Customer> _customers = [];
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    context.read<CustomerBloc>().add(LoadCustomersEvent());
     _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text.toLowerCase();
-      });
+      context.read<CustomerBloc>().add(SearchCustomersEvent(_searchController.text));
     });
-    _loadCustomers();
   }
 
   @override
@@ -38,107 +33,98 @@ class _CustomerListPageState extends State<CustomerListPage> {
     super.dispose();
   }
 
-  Future<void> _loadCustomers() async {
-    setState(() => _isLoading = true);
-    try {
-      final customerRepo = context.read<CustomerRepository>();
-      final result = await customerRepo.getCustomers();
-
-      result.fold(
-        (failure) {
-          if (mounted) {
-            final l10n = AppLocalizations.of(context)!;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.failedToLoadCustomers(failure.toString()))),
-            );
-          }
-        },
-        (customers) {
-          if (mounted) {
-            setState(() {
-              _customers = customers;
-              _isLoading = false;
-            });
-          }
-        },
-      );
-    } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorLoadingCustomers(e.toString()))),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final filteredCustomers = _customers.where((customer) {
-      return customer.name.toLowerCase().contains(_searchQuery) ||
-             customer.phone.toLowerCase().contains(_searchQuery) ||
-             customer.email.toLowerCase().contains(_searchQuery);
-    }).toList();
-
     final padding = Responsive.getPadding(context);
     final isDesktop = Responsive.isDesktop(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.customerManagement, style: const TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadCustomers,
-            tooltip: l10n.refreshList,
+    return BlocListener<CustomerBloc, CustomerState>(
+      listener: (context, state) {
+        if (state is CustomerError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.failedToLoadCustomers(state.message))),
+          );
+        } else if (state is CustomerOperationSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          title: Text(l10n.customerManagement, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
+            onPressed: () => context.canPop() ? context.pop() : context.go('/'),
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(padding),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: l10n.searchCustomerHint,
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () => _searchController.clear(),
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: Theme.of(context).cardColor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () => context.read<CustomerBloc>().add(LoadCustomersEvent()),
+              tooltip: l10n.refreshList,
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(padding, 8, padding, 16),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: l10n.searchCustomerHint,
+                    prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () => _searchController.clear(),
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Theme.of(context).cardColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),
               ),
-            ),
-            _buildHeaderMetrics(),
-            const SizedBox(height: 16),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _loadCustomers,
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : filteredCustomers.isEmpty
-                        ? _buildEmptyState()
-                        : isDesktop
+              BlocBuilder<CustomerBloc, CustomerState>(
+                builder: (context, state) {
+                  if (state is CustomerLoaded) {
+                    return _buildHeaderMetrics(state.customers);
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: RefreshIndicator(
+                  color: Theme.of(context).primaryColor,
+                  onRefresh: () async {
+                    context.read<CustomerBloc>().add(LoadCustomersEvent());
+                  },
+                  child: BlocBuilder<CustomerBloc, CustomerState>(
+                    builder: (context, state) {
+                      if (state is CustomerLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is CustomerLoaded) {
+                        final filteredCustomers = state.filteredCustomers;
+                        if (filteredCustomers.isEmpty) {
+                          return _buildEmptyState(state.searchQuery);
+                        }
+                        return isDesktop
                             ? GridView.builder(
                                 padding: EdgeInsets.all(padding),
                                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -151,34 +137,38 @@ class _CustomerListPageState extends State<CustomerListPage> {
                                 itemBuilder: (context, index) => _buildModernCustomerCard(filteredCustomers[index]),
                               )
                             : ListView.builder(
-                                padding: EdgeInsets.only(
-                                  left: padding,
-                                  right: padding,
-                                  bottom: MediaQuery.of(context).padding.bottom + 80,
-                                ),
+                                padding: EdgeInsets.fromLTRB(padding, 8, padding, MediaQuery.of(context).padding.bottom + 80),
                                 physics: const BouncingScrollPhysics(),
                                 itemCount: filteredCustomers.length,
                                 itemBuilder: (context, index) => _buildModernCustomerCard(filteredCustomers[index]),
-                              ),
+                              );
+                      } else if (state is CustomerError) {
+                        return Center(child: Text(state.message));
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/customers/add'),
-        icon: const Icon(Icons.person_add),
-        label: Text(l10n.addCustomer),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => context.push('/customers/add'),
+          icon: const Icon(Icons.person_add_rounded),
+          label: Text(l10n.addCustomer, style: const TextStyle(fontWeight: FontWeight.bold)),
+          elevation: 4,
+        ),
       ),
     );
   }
 
-  Widget _buildHeaderMetrics() {
+  Widget _buildHeaderMetrics(List<Customer> customers) {
     final l10n = AppLocalizations.of(context)!;
     final padding = Responsive.getPadding(context);
     final currency = Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
     final symbol = AppTheme.getCurrencySymbol(currency);
-    final totalDebt = _customers.fold(0.0, (sum, c) => sum + c.currentBalance);
+    final totalDebt = customers.fold(0.0, (sum, c) => sum + c.currentBalance);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: padding),
@@ -186,20 +176,20 @@ class _CustomerListPageState extends State<CustomerListPage> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            _buildMetricChip(l10n.total, _customers.length.toString(), Icons.people, Colors.blue),
+            _buildMetricChip(l10n.total, customers.length.toString(), Icons.people, Colors.blue),
             const SizedBox(width: 8),
             _buildMetricChip(l10n.debt, '$symbol${totalDebt.toStringAsFixed(0)}', Icons.account_balance, Colors.red),
             const SizedBox(width: 8),
-            _buildMetricChip(l10n.active, _customers.where((c) => c.isActive).length.toString(), Icons.check_circle, Colors.green),
+            _buildMetricChip(l10n.active, customers.where((c) => c.isActive).length.toString(), Icons.check_circle, Colors.green),
             const SizedBox(width: 8),
-            _buildMetricChip(l10n.good, _customers.where((c) => c.debtStatus == DebtStatus.good).length.toString(), Icons.thumb_up, Colors.indigo),
+            _buildMetricChip(l10n.good, customers.where((c) => c.debtStatus == DebtStatus.good).length.toString(), Icons.thumb_up, Colors.indigo),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(String searchQuery) {
     final l10n = AppLocalizations.of(context)!;
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
@@ -217,10 +207,10 @@ class _CustomerListPageState extends State<CustomerListPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _searchQuery.isEmpty ? l10n.noProductsFound : l10n.noProductsMatchSearch,
+                  searchQuery.isEmpty ? l10n.noProductsFound : l10n.noProductsMatchSearch,
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
-                if (_searchQuery.isNotEmpty)
+                if (searchQuery.isNotEmpty)
                   TextButton(
                     onPressed: () => _searchController.clear(),
                     child: Text(l10n.clearCache),
@@ -235,34 +225,43 @@ class _CustomerListPageState extends State<CustomerListPage> {
 
   Widget _buildMetricChip(String label, String value, IconData icon, Color color) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: color.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 value,
-                style: TextStyle(
-                  color: color,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 16,
                 ),
               ),
               Text(
                 label,
                 style: TextStyle(
-                  color: color.withValues(alpha: 0.7),
-                  fontSize: 10,
+                  color: Colors.grey[500],
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -279,90 +278,104 @@ class _CustomerListPageState extends State<CustomerListPage> {
     final currency = Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
     final symbol = AppTheme.getCurrencySymbol(currency);
     
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: statusColor.withValues(alpha: 0.2)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
       ),
-      child: InkWell(
-        onTap: () => _showCustomerDetails(customer),
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  customer.name.isNotEmpty ? customer.name[0].toUpperCase() : '?',
-                  style: TextStyle(
-                    color: statusColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showCustomerDetails(customer),
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [statusColor.withValues(alpha: 0.2), statusColor.withValues(alpha: 0.05)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    customer.name.isNotEmpty ? customer.name[0].toUpperCase() : '?',
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        customer.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.phone_outlined, size: 12, color: Colors.grey[500]),
+                          const SizedBox(width: 4),
+                          Text(
+                            customer.phone,
+                            style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          _getDebtStatusText(status, l10n),
+                          style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      customer.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      customer.phone,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                      '$symbol${customer.currentBalance.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: statusColor,
                       ),
-                      child: Text(
-                        _getDebtStatusText(status, l10n),
-                        style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        _buildActionIcon(Icons.history_rounded, () => _viewCustomerTransactions(customer)),
+                        const SizedBox(width: 8),
+                        _buildActionIcon(Icons.edit_rounded, () => _editCustomer(customer)),
+                      ],
                     ),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '$symbol${customer.currentBalance.toStringAsFixed(0)}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: statusColor,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      _buildActionIcon(Icons.history, () => _viewCustomerTransactions(customer)),
-                      const SizedBox(width: 8),
-                      _buildActionIcon(Icons.edit_outlined, () => _editCustomer(customer)),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

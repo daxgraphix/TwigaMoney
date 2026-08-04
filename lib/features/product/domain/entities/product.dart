@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/data/sync_status.dart';
 
 class Product extends Equatable {
   final String id; // Using barcode as ID usually, but keeping separate ID is safer
@@ -13,6 +14,8 @@ class Product extends Equatable {
   final double taxPercentage;
   final DateTime lastStockUpdate; // Track when stock was last updated
   final int totalSold; // Total units sold (for analytics)
+  final SyncStatus syncStatus;
+  final DateTime updatedAt;
 
   const Product({
     required this.id,
@@ -27,6 +30,8 @@ class Product extends Equatable {
     this.taxPercentage = 0.0,
     required this.lastStockUpdate,
     this.totalSold = 0,
+    this.syncStatus = SyncStatus.pending,
+    required this.updatedAt,
   });
 
   @override
@@ -43,6 +48,8 @@ class Product extends Equatable {
         taxPercentage,
         lastStockUpdate,
         totalSold,
+        syncStatus,
+        updatedAt,
       ];
 
   Product copyWith({
@@ -58,6 +65,8 @@ class Product extends Equatable {
     double? taxPercentage,
     DateTime? lastStockUpdate,
     int? totalSold,
+    SyncStatus? syncStatus,
+    DateTime? updatedAt,
   }) {
     return Product(
       id: id ?? this.id,
@@ -72,6 +81,8 @@ class Product extends Equatable {
       taxPercentage: taxPercentage ?? this.taxPercentage,
       lastStockUpdate: lastStockUpdate ?? this.lastStockUpdate,
       totalSold: totalSold ?? this.totalSold,
+      syncStatus: syncStatus ?? this.syncStatus,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -103,6 +114,8 @@ class Product extends Equatable {
       'taxPercentage': taxPercentage,
       'lastStockUpdate': lastStockUpdate.toIso8601String(),
       'totalSold': totalSold,
+      'syncStatus': syncStatus.name,
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
@@ -120,6 +133,10 @@ class Product extends Equatable {
       taxPercentage: (json['taxPercentage'] as num?)?.toDouble() ?? 0.0,
       lastStockUpdate: DateTime.parse(json['lastStockUpdate'] as String),
       totalSold: json['totalSold'] as int,
+      syncStatus: json['syncStatus'] != null
+          ? SyncStatus.values.firstWhere((e) => e.name == json['syncStatus'], orElse: () => SyncStatus.pending)
+          : SyncStatus.pending,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : DateTime.now(),
     );
   }
 
@@ -130,6 +147,7 @@ class Product extends Equatable {
       barcode: '',
       price: 0.0,
       lastStockUpdate: DateTime(0),
+      updatedAt: DateTime(0),
     );
   }
 }

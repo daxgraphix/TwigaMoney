@@ -90,6 +90,7 @@ class ProductRepositoryImpl implements ProductRepository {
         taxPercentage: product.taxPercentage,
         lastStockUpdate: DateTime.now(),
         totalSold: product.totalSold + totalSoldIncrement,
+        updatedAt: DateTime.now(),
       );
       await box.put(productId, updatedProduct);
       return const Right(null);
@@ -123,6 +124,7 @@ class ProductRepositoryImpl implements ProductRepository {
         taxPercentage: product.taxPercentage,
         lastStockUpdate: DateTime.now(),
         totalSold: product.totalSold + quantity,
+        updatedAt: DateTime.now(),
       );
       await box.put(productId, updatedProduct);
       return const Right(null);

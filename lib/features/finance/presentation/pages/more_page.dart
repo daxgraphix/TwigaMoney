@@ -9,7 +9,9 @@ class MorePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final crossAxisCount = Responsive.isDesktop(context) ? 4 : (Responsive.isTablet(context) ? 3 : 2);
+    final crossAxisCount = Responsive.isDesktop(context)
+        ? 4
+        : (Responsive.isTablet(context) ? 3 : 2);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.more),
@@ -23,7 +25,8 @@ class MorePage extends StatelessWidget {
         crossAxisSpacing: 16,
         childAspectRatio: Responsive.isDesktop(context) ? 1.2 : 1.0,
         children: [
-          _buildTile(context, l10n.addTransaction, Icons.add_circle_outline, () {
+          _buildTile(context, l10n.addTransaction, Icons.add_circle_outline,
+              () {
             context.push('/add-transaction');
           }),
           _buildTile(context, l10n.categories, Icons.category_outlined, () {
@@ -35,7 +38,8 @@ class MorePage extends StatelessWidget {
           _buildTile(context, l10n.reports, Icons.bar_chart_outlined, () {
             context.push('/reports');
           }),
-          _buildTile(context, l10n.financialTools, Icons.calculate_outlined, () {
+          _buildTile(context, l10n.financialTools, Icons.calculate_outlined,
+              () {
             context.push('/financial-tools');
           }),
           _buildTile(context, l10n.settings, Icons.settings_outlined, () {
@@ -52,7 +56,8 @@ class MorePage extends StatelessWidget {
     );
   }
 
-  Widget _buildTile(BuildContext context, String title, IconData icon, VoidCallback onTap) {
+  Widget _buildTile(
+      BuildContext context, String title, IconData icon, VoidCallback onTap) {
     return Card(
       elevation: 2,
       child: InkWell(

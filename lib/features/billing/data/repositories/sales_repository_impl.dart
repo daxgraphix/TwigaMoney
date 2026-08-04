@@ -167,6 +167,11 @@ class SalesRepositoryImpl implements SalesRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, List<SalesTransaction>>> getSalesTransactionsByDateRange(DateTime start, DateTime end) async {
+    return getSalesByDateRange(start, end);
+  }
+
   int _getCurrentStock(String productId) {
     final productBox = HiveDatabase.productBox;
     final productModel = productBox.get(productId);

@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import '../../../../core/data/sync_status.dart';
 import '../../domain/entities/product.dart';
 
 part 'product_model.g.dart'; // Hive generator
@@ -53,6 +54,14 @@ class ProductModel extends Product {
   @HiveField(11)
   final int totalSold; // ignore: overridden_fields
 
+  @override
+  @HiveField(12)
+  final SyncStatus syncStatus; // ignore: overridden_fields
+
+  @override
+  @HiveField(13)
+  final DateTime updatedAt; // ignore: overridden_fields
+
   const ProductModel({
     required this.id,
     required this.name,
@@ -66,6 +75,8 @@ class ProductModel extends Product {
     this.taxPercentage = 0.0,
     required this.lastStockUpdate,
     this.totalSold = 0,
+    this.syncStatus = SyncStatus.pending,
+    required this.updatedAt,
   }) : super(
              id: id,
              name: name,
@@ -79,6 +90,8 @@ class ProductModel extends Product {
              taxPercentage: taxPercentage,
              lastStockUpdate: lastStockUpdate,
              totalSold: totalSold,
+             syncStatus: syncStatus,
+             updatedAt: updatedAt,
            );
 
   factory ProductModel.fromEntity(Product product) {
@@ -95,6 +108,8 @@ class ProductModel extends Product {
       taxPercentage: product.taxPercentage,
       lastStockUpdate: product.lastStockUpdate,
       totalSold: product.totalSold,
+      syncStatus: product.syncStatus,
+      updatedAt: product.updatedAt,
     );
   }
 
@@ -112,6 +127,8 @@ class ProductModel extends Product {
       taxPercentage: taxPercentage,
       lastStockUpdate: lastStockUpdate,
       totalSold: totalSold,
+      syncStatus: syncStatus,
+      updatedAt: updatedAt,
     );
   }
 
@@ -130,6 +147,8 @@ class ProductModel extends Product {
       'taxPercentage': taxPercentage,
       'lastStockUpdate': lastStockUpdate.toIso8601String(),
       'totalSold': totalSold,
+      'syncStatus': syncStatus.name,
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
@@ -149,6 +168,12 @@ class ProductModel extends Product {
             ? DateTime.parse(json['lastStockUpdate'] as String)
             : DateTime.now(),
         totalSold: json['totalSold'] as int? ?? 0,
+        syncStatus: json['syncStatus'] != null
+            ? SyncStatus.values.firstWhere((e) => e.name == json['syncStatus'], orElse: () => SyncStatus.pending)
+            : SyncStatus.pending,
+        updatedAt: json['updatedAt'] != null
+            ? DateTime.parse(json['updatedAt'] as String)
+            : DateTime.now(),
       );
     }
 
@@ -166,6 +191,8 @@ class ProductModel extends Product {
     double? taxPercentage,
     DateTime? lastStockUpdate,
     int? totalSold,
+    SyncStatus? syncStatus,
+    DateTime? updatedAt,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -180,6 +207,8 @@ class ProductModel extends Product {
       taxPercentage: taxPercentage ?? this.taxPercentage,
       lastStockUpdate: lastStockUpdate ?? this.lastStockUpdate,
       totalSold: totalSold ?? this.totalSold,
+      syncStatus: syncStatus ?? this.syncStatus,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

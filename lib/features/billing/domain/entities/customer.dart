@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import '../../../../core/data/sync_status.dart';
 
 part 'customer.g.dart';
 
@@ -34,6 +35,12 @@ class Customer extends HiveObject {
   @HiveField(9)
   final bool isActive;
 
+  @HiveField(10)
+  final SyncStatus syncStatus;
+
+  @HiveField(11)
+  final DateTime updatedAt;
+
   Customer({
     required this.id,
     required this.name,
@@ -45,8 +52,11 @@ class Customer extends HiveObject {
     DateTime? createdAt,
     DateTime? lastTransaction,
     this.isActive = true,
+    this.syncStatus = SyncStatus.pending,
+    DateTime? updatedAt,
   })  : createdAt = createdAt ?? DateTime.now(),
-        lastTransaction = lastTransaction ?? DateTime.now();
+        lastTransaction = lastTransaction ?? DateTime.now(),
+        updatedAt = updatedAt ?? DateTime.now();
 
   Customer copyWith({
     String? id,
@@ -59,6 +69,8 @@ class Customer extends HiveObject {
     DateTime? createdAt,
     DateTime? lastTransaction,
     bool? isActive,
+    SyncStatus? syncStatus,
+    DateTime? updatedAt,
   }) {
     return Customer(
       id: id ?? this.id,
@@ -71,6 +83,8 @@ class Customer extends HiveObject {
       createdAt: createdAt ?? this.createdAt,
       lastTransaction: lastTransaction ?? this.lastTransaction,
       isActive: isActive ?? this.isActive,
+      syncStatus: syncStatus ?? this.syncStatus,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -100,6 +114,8 @@ class Customer extends HiveObject {
       'createdAt': createdAt.toIso8601String(),
       'lastTransaction': lastTransaction.toIso8601String(),
       'isActive': isActive,
+      'syncStatus': syncStatus.name,
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
@@ -115,6 +131,10 @@ class Customer extends HiveObject {
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
       lastTransaction: json['lastTransaction'] != null ? DateTime.parse(json['lastTransaction'] as String) : null,
       isActive: json['isActive'] as bool? ?? true,
+      syncStatus: json['syncStatus'] != null
+          ? SyncStatus.values.firstWhere((e) => e.name == json['syncStatus'], orElse: () => SyncStatus.pending)
+          : SyncStatus.pending,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : null,
     );
   }
 

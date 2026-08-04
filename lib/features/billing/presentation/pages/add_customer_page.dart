@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../billing/domain/entities/customer.dart';
+import '../bloc/customer/customer_bloc.dart';
 
 class AddCustomerPage extends StatefulWidget {
   const AddCustomerPage({super.key});
@@ -30,19 +34,19 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
     super.dispose();
   }
 
-  void _submit() async {
-    final l10n = AppLocalizations.of(context)!;
+  void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    // Here you would create the customer and save it
-    // For now, just show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.customerAddedSuccessfully),
-        backgroundColor: Colors.green,
-      ),
+    final customer = Customer(
+      id: const Uuid().v4(),
+      name: _nameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      email: _emailController.text.trim(),
+      address: _addressController.text.trim(),
+      creditLimit: _creditLimit,
     );
-    if (context.canPop()) { context.pop(); } else { context.go('/'); }
+
+    context.read<CustomerBloc>().add(AddCustomerEvent(customer));
   }
 
   @override
@@ -51,118 +55,145 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
     final currency = Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
     final symbol = AppTheme.getCurrencySymbol(currency);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.addCustomer),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
-          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
+    return BlocListener<CustomerBloc, CustomerState>(
+      listener: (context, state) {
+        if (state is CustomerOperationSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green,
+            ),
+          );
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/customers');
+          }
+        } else if (state is CustomerError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.addCustomer),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/customers');
+              }
+            },
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(Responsive.getPadding(context)),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: l10n.fullName,
-                  prefixIcon: const Icon(Icons.person),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return l10n.nameIsRequired;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _phoneController,
-                decoration: InputDecoration(
-                  labelText: l10n.phoneNumber,
-                  prefixIcon: const Icon(Icons.phone),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return l10n.phoneNumberRequired;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: '${l10n.emailAddress} (${l10n.optional})',
-                  prefixIcon: const Icon(Icons.email),
-                ),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                    if (!emailRegex.hasMatch(value.trim())) {
-                      return l10n.enterValidEmail;
-                    }
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _addressController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: '${l10n.addressLine1} (${l10n.optional})',
-                  prefixIcon: const Icon(Icons.location_on),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                initialValue: _creditLimit.toString(),
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: l10n.creditLimit,
-                  prefixText: '$symbol ',
-                  prefixIcon: const Icon(Icons.credit_card),
-                ),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final limit = double.tryParse(value);
-                    if (limit == null || limit < 0) {
-                      return l10n.enterValidCreditLimit;
-                    }
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  _creditLimit = double.tryParse(value) ?? 0.0;
-                },
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(Responsive.getPadding(context)),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: l10n.fullName,
+                    prefixIcon: const Icon(Icons.person),
                   ),
-                  child: Text(l10n.addCustomer),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return l10n.nameIsRequired;
+                    }
+                    return null;
+                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: InputDecoration(
+                    labelText: l10n.phoneNumber,
+                    prefixIcon: const Icon(Icons.phone),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return l10n.phoneNumberRequired;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: '${l10n.emailAddress} (${l10n.optional})',
+                    prefixIcon: const Icon(Icons.email),
+                  ),
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                      if (!emailRegex.hasMatch(value.trim())) {
+                        return l10n.enterValidEmail;
+                      }
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _addressController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: '${l10n.addressLine1} (${l10n.optional})',
+                    prefixIcon: const Icon(Icons.location_on),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  initialValue: _creditLimit.toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: l10n.creditLimit,
+                    prefixText: '$symbol ',
+                    prefixIcon: const Icon(Icons.credit_card),
+                  ),
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      final limit = double.tryParse(value);
+                      if (limit == null || limit < 0) {
+                        return l10n.enterValidCreditLimit;
+                      }
+                    }
+                    return null;
+                  },
+                  onChanged: (value) {
+                    _creditLimit = double.tryParse(value) ?? 0.0;
+                  },
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text(l10n.addCustomer),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
-
-

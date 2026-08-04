@@ -11,4 +11,5 @@ abstract class SalesRepository {
   Future<Either<Failure, List<ProductAnalytics>>> getLowTurnoverProducts();
   Future<Either<Failure, Map<String, double>>> getDailyRevenue(DateTime start, DateTime end);
   Future<Either<Failure, Map<String, double>>> getDailyProfit(DateTime start, DateTime end);
+  Future<Either<Failure, List<SalesTransaction>>> getSalesTransactionsByDateRange(DateTime start, DateTime end);
 }

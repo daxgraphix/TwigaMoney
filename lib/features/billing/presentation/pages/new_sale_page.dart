@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/data/hive_database.dart';
@@ -41,6 +42,8 @@ class _NewSalePageState extends State<NewSalePage> {
     super.dispose();
   }
 
+  bool _isQuickScanMode = false;
+
   void _addManualToCart() {
     final name = _productNameController.text.trim();
     final price = double.tryParse(_priceController.text) ?? 0;
@@ -76,6 +79,7 @@ class _NewSalePageState extends State<NewSalePage> {
           stock: 999,
           lastStockUpdate: DateTime.now(),
           category: 'Manual',
+          updatedAt: DateTime.now(),
         );
 
     context
@@ -99,6 +103,114 @@ class _NewSalePageState extends State<NewSalePage> {
         duration: const Duration(seconds: 1),
       ),
     );
+  }
+
+  void _showBarcodeScanner() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 16, 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Scan Barcode', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        const Text('Quick Scan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                        Switch(
+                          value: _isQuickScanMode,
+                          onChanged: (val) {
+                            setState(() => _isQuickScanMode = val);
+                            setModalState(() {});
+                          },
+                        ),
+                        IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    MobileScanner(
+                      onDetect: (capture) {
+                        final List<Barcode> barcodes = capture.barcodes;
+                        if (barcodes.isNotEmpty) {
+                          final code = barcodes.first.rawValue;
+                          if (code != null) {
+                            if (!_isQuickScanMode) {
+                              Navigator.pop(context);
+                            }
+                            _handleScannedBarcode(code);
+                          }
+                        }
+                      },
+                    ),
+                    // Scanner Overlay
+                    Center(
+                      child: Container(
+                        width: 250,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppTheme.primaryColor, width: 2),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_isQuickScanMode)
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Text(
+                    'Quick Scan Mode Active: Scanned items are added instantly.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleScannedBarcode(String code) {
+    try {
+      final product = _availableProducts.firstWhere((p) => p.barcode == code);
+      setState(() {
+        _selectedProductId = product.id;
+        _productNameController.text = product.name;
+        _priceController.text = product.price.toStringAsFixed(0);
+      });
+      _addManualToCart();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Product not found for barcode: $code'), backgroundColor: Colors.orange),
+      );
+    }
   }
 
   @override
@@ -161,12 +273,7 @@ class _NewSalePageState extends State<NewSalePage> {
                                   style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                                 ),
                                 IconButton.filledTonal(
-                                  onPressed: () {
-                                    // Placeholder for barcode scanner
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Barcode scanner coming soon!')),
-                                    );
-                                  },
+                                  onPressed: _showBarcodeScanner,
                                   icon: const Icon(Icons.qr_code_scanner),
                                 ),
                               ],

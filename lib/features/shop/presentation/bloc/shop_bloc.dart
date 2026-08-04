@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:fpdart/fpdart.dart';
 import '../../domain/entities/shop.dart';
 import '../../domain/usecases/shop_usecases.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/error/failure.dart';
 
 part 'shop_event.dart';
 part 'shop_state.dart';
@@ -21,7 +23,12 @@ class ShopBloc extends Bloc<ShopEvent, ShopState> {
 
   Future<void> _onLoadShop(LoadShopEvent event, Emitter<ShopState> emit) async {
     emit(ShopLoading());
-    final result = await getShopUseCase(NoParams());
+    
+    final result = await TaskEither.tryCatch(
+      () => getShopUseCase(NoParams()),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to load shop: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(ShopError(failure.message)),
       (shop) => emit(ShopLoaded(shop)),
@@ -31,11 +38,15 @@ class ShopBloc extends Bloc<ShopEvent, ShopState> {
   Future<void> _onUpdateShop(
       UpdateShopEvent event, Emitter<ShopState> emit) async {
     emit(ShopLoading());
-    final result = await updateShopUseCase(event.shop);
+    
+    final result = await TaskEither.tryCatch(
+      () => updateShopUseCase(event.shop),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to update shop: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(ShopError(failure.message)),
       (_) {
-        // Reload shop to update state with latest data (though local is same)
         add(LoadShopEvent());
         emit(ShopOperationSuccess());
       },

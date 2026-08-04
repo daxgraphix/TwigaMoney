@@ -1,3 +1,5 @@
+import 'package:fpdart/fpdart.dart';
+import 'package:twigamoney/core/error/failure.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/account.dart';
@@ -75,7 +77,12 @@ class AccountCubit extends Cubit<AccountState> {
 
   Future<void> loadAccounts() async {
     emit(AccountLoading(accounts: state.accounts));
-    final result = await repository.getAccounts();
+    final task = TaskEither<Failure, List<Account>>.tryCatch(
+      () => repository.getAccounts().then((value) => value.getOrElse((l) => throw l)),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure(error.toString()),
+    );
+    
+    final result = await task.run();
     result.fold(
       (failure) => emit(AccountError(failure.message, accounts: state.accounts)),
       (accounts) => emit(AccountLoaded(accounts)),
@@ -83,7 +90,12 @@ class AccountCubit extends Cubit<AccountState> {
   }
 
   Future<void> addAccount(Account account) async {
-    final result = await repository.addAccount(account);
+    final task = TaskEither<Failure, Account>.tryCatch(
+      () => repository.addAccount(account).then((value) => value.getOrElse((l) => throw l)),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure(error.toString()),
+    );
+    
+    final result = await task.run();
     result.fold(
       (failure) => emit(AccountError(failure.message, accounts: state.accounts)),
       (newAccount) {
@@ -94,7 +106,12 @@ class AccountCubit extends Cubit<AccountState> {
   }
 
   Future<void> updateAccount(Account account) async {
-    final result = await repository.updateAccount(account);
+    final task = TaskEither<Failure, void>.tryCatch(
+      () => repository.updateAccount(account).then((value) => value.getOrElse((l) => throw l)),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure(error.toString()),
+    );
+
+    final result = await task.run();
     result.fold(
       (failure) => emit(AccountError(failure.message, accounts: state.accounts)),
       (_) {
@@ -107,7 +124,12 @@ class AccountCubit extends Cubit<AccountState> {
   }
 
   Future<void> deleteAccount(String id) async {
-    final result = await repository.deleteAccount(id);
+    final task = TaskEither<Failure, void>.tryCatch(
+      () => repository.deleteAccount(id).then((value) => value.getOrElse((l) => throw l)),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure(error.toString()),
+    );
+
+    final result = await task.run();
     result.fold(
       (failure) => emit(AccountError(failure.message, accounts: state.accounts)),
       (_) {

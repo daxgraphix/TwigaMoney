@@ -87,13 +87,18 @@ class _TransactionListPageState extends State<TransactionListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: const Text('Transactions', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
+          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.file_download),
+            icon: const Icon(Icons.file_download_outlined),
             onPressed: () => _exportTransactions(context),
             tooltip: 'Export CSV',
           ),
@@ -131,10 +136,17 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Search transactions...',
-                      prefixIcon: const Icon(Icons.search),
+                      prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Theme.of(context).cardColor,
                       contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     ),
                     onChanged: (val) {
@@ -147,14 +159,15 @@ class _TransactionListPageState extends State<TransactionListPage> {
             ),
             _buildFilterChips(),
             _buildDateFilterChips(),
+            const SizedBox(height: 8),
             Expanded(child: _buildTransactionList()),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/add-transaction'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.add),
+        elevation: 4,
+        child: const Icon(Icons.add_rounded, size: 28),
       ),
     );
   }
@@ -234,7 +247,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
         }
 
         return ListView.builder(
-          padding: EdgeInsets.fromLTRB(padding, 8, padding, padding + 16),
+          padding: EdgeInsets.fromLTRB(padding, 8, padding, padding + 80),
+          physics: const BouncingScrollPhysics(),
           itemCount: _filteredTransactions.length,
           itemBuilder: (context, index) {
             final tx = _filteredTransactions[index];
@@ -255,10 +269,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     padding: const EdgeInsets.only(right: 20),
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(24),
                     ),
-                    child: const Icon(Icons.delete, color: Colors.white),
+                    child: const Icon(Icons.delete_outline, color: Colors.red),
                   ),
                   confirmDismiss: (_) async {
                     return await showDialog<bool>(
@@ -289,27 +303,41 @@ class _TransactionListPageState extends State<TransactionListPage> {
                           backgroundColor: Colors.green),
                     );
                   },
-                  child: Card(
+                  child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    elevation: Responsive.getCardElevation(context),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: AppTheme.softShadow,
+                      border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
+                    ),
                     child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: category.color.withValues(alpha: 0.1),
-                        child: Icon(category.icon, color: category.color, size: 20),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      leading: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: category.color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(category.icon, color: category.color, size: 22),
                       ),
                       title: Text(tx.description,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w500)),
-                      subtitle: Text(
-                        '${_dateFmt.format(tx.date)}${account != null ? ' • ${account.name}' : ''}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '${_dateFmt.format(tx.date)}${account != null ? ' • ${account.name}' : ''}',
+                          style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                        ),
                       ),
                       trailing: Text(
-                        '${isIncome ? '+' : '-'}$_currencySymbol${tx.amount.toStringAsFixed(2)}',
+                        '${isIncome ? '+' : '-'}$_currencySymbol${tx.amount.toStringAsFixed(0)}',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
+                            fontSize: 17,
                             color: isIncome ? Colors.green : Colors.red),
                       ),
                       onTap: () => _showDetailSheet(context, tx, category, account),

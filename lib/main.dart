@@ -10,6 +10,8 @@ import 'core/data/hive_database.dart';
 import 'l10n/app_localizations.dart';
 import 'features/billing/presentation/bloc/dashboard_bloc.dart';
 import 'features/billing/presentation/bloc/billing_bloc.dart';
+import 'features/billing/presentation/bloc/customer/customer_bloc.dart';
+import 'features/billing/presentation/bloc/analytics/analytics_bloc.dart';
 import 'features/product/presentation/bloc/product_bloc.dart';
 import 'features/shop/presentation/bloc/shop_bloc.dart';
 import 'features/finance/presentation/bloc/finance_bloc.dart';
@@ -21,6 +23,8 @@ import 'features/finance/presentation/bloc/budget_cubit.dart';
 import 'features/finance/presentation/bloc/account_cubit.dart';
 import 'features/finance/presentation/bloc/report_cubit.dart';
 import 'features/finance/presentation/bloc/transaction_bloc.dart';
+import 'features/settings/presentation/cubit/settings_cubit.dart';
+import 'features/settings/domain/repositories/settings_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -148,6 +152,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         RepositoryProvider<TransactionRepository>(
           create: (context) => di.sl<TransactionRepository>(),
         ),
+        RepositoryProvider<SettingsRepository>(
+          create: (context) => di.sl<SettingsRepository>(),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -159,6 +166,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               create: (context) => di.sl<ShopBloc>()),
           BlocProvider<BillingBloc>(
               create: (context) => di.sl<BillingBloc>()),
+          BlocProvider<CustomerBloc>(
+              create: (context) => di.sl<CustomerBloc>()),
           BlocProvider<FinanceBloc>(
             create: (context) => di.sl<FinanceBloc>()),
           BlocProvider<BudgetCubit>(
@@ -169,6 +178,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               create: (context) => di.sl<ReportCubit>()),
           BlocProvider<TransactionBloc>(
               create: (context) => di.sl<TransactionBloc>()),
+          BlocProvider<SettingsCubit>(
+              create: (context) => di.sl<SettingsCubit>()),
+          BlocProvider<AnalyticsBloc>(
+              create: (context) => di.sl<AnalyticsBloc>()),
         ],
         child: ValueListenableBuilder<ThemeMode>(
           valueListenable: AppTheme.themeModeNotifier,

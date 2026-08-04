@@ -13,7 +13,7 @@ class MainNavigationShell extends StatelessWidget {
     int currentIndex = 0;
     if (location == '/') {
       currentIndex = 0;
-    } else if (location.startsWith('/new-sale') || location.startsWith('/customers') || location.startsWith('/operations')) {
+    } else if (location.startsWith('/new-sale')) {
       currentIndex = 1;
     } else if (location.startsWith('/transactions') ||
         location.startsWith('/budgets') ||

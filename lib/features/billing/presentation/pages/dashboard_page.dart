@@ -43,6 +43,16 @@ class _DashboardPageState extends State<DashboardPage> {
     return l10n.user;
   }
 
+  String _getProfitComparison(DashboardState state, String symbol, AppLocalizations l10n) {
+    if (state.yesterdayProfit == 0) return '';
+    
+    final difference = state.todayProfit - state.yesterdayProfit;
+    final percentChange = (difference / state.yesterdayProfit) * 100;
+    
+    final sign = difference >= 0 ? '+' : '';
+    return '$sign${percentChange.toStringAsFixed(1)}% vs ${l10n.yesterdaySalesLabel.split(' ').first}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -87,23 +97,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
-          appBar: AppBar(
-            title: Text(shopName,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            backgroundColor: AppTheme.primaryColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            centerTitle: false,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () => context
-                    .read<DashboardBloc>()
-                    .add(const LoadDashboardDataEvent(forceRefresh: true)),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
+          appBar: null,
           body: RefreshIndicator(
             onRefresh: () async {
               context
@@ -118,12 +112,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   // --- Header / Welcome Section ---
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+                    padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 10, 20, 32),
                     decoration: BoxDecoration(
                       gradient: AppTheme.primaryGradient,
                       borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(40),
-                        bottomRight: Radius.circular(40),
+                        bottomLeft: Radius.circular(32),
+                        bottomRight: Radius.circular(32),
                       ),
                     ),
                     child: Column(
@@ -132,100 +126,80 @@ class _DashboardPageState extends State<DashboardPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(l10n.hello(_getUserDisplayName(l10n)),
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 26,
-                                          fontWeight: FontWeight.bold),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis),
-                                  Text(l10n.businessSummary,
-                                      style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
-                                ],
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(shopName,
+                                    style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.9),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500)),
+                                Text(l10n.hello(_getUserDisplayName(l10n)),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold)),
+                              ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(Icons.notifications_outlined,
-                                  color: Colors.white),
+                            Row(
+                              children: [
+                                _headerActionButton(
+                                  icon: Icons.refresh,
+                                  onTap: () => context.read<DashboardBloc>().add(
+                                      const LoadDashboardDataEvent(forceRefresh: true)),
+                                ),
+                                const SizedBox(width: 8),
+                                _headerActionButton(
+                                  icon: Icons.notifications_outlined,
+                                  onTap: () {},
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 28),
-                        // Net Position Card
+                        const SizedBox(height: 24),
+                        // Unified Summary Card
                         Container(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: theme.cardColor,
+                            color: theme.brightness == Brightness.light 
+                                ? Colors.white 
+                                : AppTheme.darkSurfaceColor,
                             borderRadius: BorderRadius.circular(24),
-                            boxShadow: AppTheme.softShadow,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(l10n.netPosition,
-                                        style: TextStyle(
-                                            color: Colors.grey[500],
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 6),
-                                    FittedBox(
-                                      child: Text(
-                                        '$symbol${netPosition.toStringAsFixed(0)}',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                          color: netPosition >= 0
-                                              ? AppTheme.secondaryColor
-                                              : Colors.red,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                height: 40,
-                                width: 1,
-                                color: Colors.grey.withValues(alpha: 0.2),
-                                margin: const EdgeInsets.symmetric(horizontal: 16),
-                              ),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(l10n.profit,
-                                        style: TextStyle(
-                                            color: Colors.grey[500],
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 6),
-                                    FittedBox(
-                                      child: Text(
-                                        '$symbol${state.todayProfit.toStringAsFixed(0)}',
-                                        style: const TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
                               ),
                             ],
+                          ),
+                          child: IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _summaryItem(
+                                    l10n.netPosition,
+                                    '$symbol${netPosition.toStringAsFixed(0)}',
+                                    netPosition >= 0 ? AppTheme.secondaryColor : Colors.red,
+                                    subtitle: '${l10n.today}: $symbol${state.todayRevenue.toStringAsFixed(0)}',
+                                  ),
+                                ),
+                                VerticalDivider(
+                                  color: Colors.grey.withValues(alpha: 0.2),
+                                  thickness: 1,
+                                  width: 32,
+                                ),
+                                Expanded(
+                                  child: _summaryItem(
+                                    l10n.profit,
+                                    '$symbol${state.todayProfit.toStringAsFixed(0)}',
+                                    Colors.green,
+                                    subtitle: _getProfitComparison(state, symbol, l10n),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -377,48 +351,99 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Widget _headerActionButton({required IconData icon, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
+    );
+  }
+
+  Widget _summaryItem(String label, String value, Color valueColor, {String? subtitle}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[500],
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        FittedBox(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: valueColor,
+              letterSpacing: -0.5,
+            ),
+          ),
+        ),
+        if (subtitle != null && subtitle.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: subtitle.contains('+') ? Colors.green : (subtitle.contains('-') ? Colors.red : Colors.grey[600]),
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildKPICard(BuildContext context, String title, String value,
       IconData icon, Color color) {
     final isSmall = MediaQuery.of(context).size.width < 380;
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.softShadow,
-        border: Border.all(color: color.withValues(alpha: 0.05)),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.05)),
       ),
       padding: EdgeInsets.all(isSmall ? 12 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: isSmall ? 18 : 22),
+            child: Icon(icon, color: color, size: isSmall ? 18 : 20),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(value,
-                    style: TextStyle(
-                        fontSize: isSmall ? 18 : 22,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface)),
-              ),
-              const SizedBox(height: 4),
-              Text(title,
-                  style: TextStyle(
-                      fontSize: isSmall ? 11 : 13,
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.w500)),
-            ],
+          const Spacer(),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value,
+                style: TextStyle(
+                    fontSize: isSmall ? 18 : 20,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                    color: theme.colorScheme.onSurface)),
           ),
+          const SizedBox(height: 2),
+          Text(title,
+              style: TextStyle(
+                  fontSize: isSmall ? 11 : 12,
+                  color: Colors.grey[500],
+                  fontWeight: FontWeight.w500)),
         ],
       ),
     );

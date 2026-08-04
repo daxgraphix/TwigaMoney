@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import '../../../../core/data/sync_status.dart';
 
 part 'sales_transaction.g.dart';
 
@@ -58,6 +59,12 @@ class SalesTransaction extends HiveObject {
   @HiveField(15)
   final DateTime createdAt;
 
+  @HiveField(16)
+  final SyncStatus syncStatus;
+
+  @HiveField(17)
+  final DateTime updatedAt;
+
   SalesTransaction({
     required this.id,
     required this.productId,
@@ -71,11 +78,14 @@ class SalesTransaction extends HiveObject {
     this.status = TransactionStatus.pending,
     this.items = const [],
     DateTime? createdAt,
+    this.syncStatus = SyncStatus.pending,
+    DateTime? updatedAt,
   })  : totalRevenue = sellingPrice * quantity,
         totalCost = costPrice * quantity,
         totalProfit = (sellingPrice * quantity) - (costPrice * quantity),
         marginPercentage = costPrice > 0 ? (((sellingPrice - costPrice) / costPrice) * 100) : 0.0,
-        createdAt = createdAt ?? timestamp;
+        createdAt = createdAt ?? timestamp,
+        updatedAt = updatedAt ?? DateTime.now();
 
   Map<String, dynamic> toJson() {
     return {
@@ -95,6 +105,8 @@ class SalesTransaction extends HiveObject {
       'status': status.name,
       'items': items,
       'createdAt': createdAt.toIso8601String(),
+      'syncStatus': syncStatus.name,
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
@@ -115,6 +127,44 @@ class SalesTransaction extends HiveObject {
       ),
       items: (json['items'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
+      syncStatus: json['syncStatus'] != null
+          ? SyncStatus.values.firstWhere((e) => e.name == json['syncStatus'], orElse: () => SyncStatus.pending)
+          : SyncStatus.pending,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : null,
+    );
+  }
+
+  SalesTransaction copyWith({
+    String? id,
+    String? productId,
+    String? productName,
+    double? sellingPrice,
+    double? costPrice,
+    int? quantity,
+    DateTime? timestamp,
+    String? shiftId,
+    String? customerId,
+    TransactionStatus? status,
+    List<String>? items,
+    DateTime? createdAt,
+    SyncStatus? syncStatus,
+    DateTime? updatedAt,
+  }) {
+    return SalesTransaction(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      productName: productName ?? this.productName,
+      sellingPrice: sellingPrice ?? this.sellingPrice,
+      costPrice: costPrice ?? this.costPrice,
+      quantity: quantity ?? this.quantity,
+      timestamp: timestamp ?? this.timestamp,
+      shiftId: shiftId ?? this.shiftId,
+      customerId: customerId ?? this.customerId,
+      status: status ?? this.status,
+      items: items ?? this.items,
+      createdAt: createdAt ?? this.createdAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 

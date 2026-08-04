@@ -2973,6 +2973,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Help'**
   String get help;
+
+  /// No description provided for @type.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get type;
+
+  /// No description provided for @invalidInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid numbers in all fields'**
+  String get invalidInput;
+
+  /// No description provided for @result.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get result;
+
+  /// No description provided for @cashFlowTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash Flow Trend'**
+  String get cashFlowTrend;
+
+  /// No description provided for @expenseByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense by Category'**
+  String get expenseByCategory;
+
+  /// No description provided for @debtAging.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt Aging'**
+  String get debtAging;
+
+  /// No description provided for @outstandingBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Outstanding Balances'**
+  String get outstandingBalances;
+
+  /// No description provided for @peakHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak Hours Analysis'**
+  String get peakHours;
+
+  /// No description provided for @savingsGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings Goal'**
+  String get savingsGoal;
 }
 
 class _AppLocalizationsDelegate

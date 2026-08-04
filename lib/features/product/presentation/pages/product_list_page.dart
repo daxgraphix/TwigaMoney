@@ -207,7 +207,7 @@ class _ProductListPageState extends State<ProductListPage> {
                   );
                 }
 
-                return ListView.separated(
+                return ListView.builder(
                   padding: EdgeInsets.only(
                     left: Responsive.getPadding(context),
                     right: Responsive.getPadding(context),
@@ -215,100 +215,101 @@ class _ProductListPageState extends State<ProductListPage> {
                     bottom: 100,
                   ),
                   itemCount: filteredProducts.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     final product = filteredProducts[index];
                     final isLowStock = product.stock <= product.minStockThreshold;
                     
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: AppTheme.softShadow,
-                        border: Border.all(
-                          color: isLowStock 
-                            ? Colors.red.withValues(alpha: 0.2) 
-                            : Colors.grey.withValues(alpha: 0.05)
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: AppTheme.softShadow,
+                          border: Border.all(
+                            color: isLowStock 
+                              ? Colors.red.withValues(alpha: 0.2) 
+                              : Colors.grey.withValues(alpha: 0.05)
+                          ),
                         ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Container(
-                                width: 6,
-                                color: isLowStock ? Colors.red : AppTheme.primaryColor,
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              product.name,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  color: isLowStock ? Colors.red : AppTheme.primaryColor,
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                product.name,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Text(
+                                              '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${product.price.toStringAsFixed(0)}',
                                               style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
+                                                  color: AppTheme.primaryColor,
                                                   fontSize: 16),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                          ),
-                                          Text(
-                                            '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${product.price.toStringAsFixed(0)}',
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: AppTheme.primaryColor,
-                                                fontSize: 16),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        product.category,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[500],
-                                          fontWeight: FontWeight.w500,
+                                          ],
                                         ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          _buildStockIndicator(product.stock, product.minStockThreshold),
-                                          const Spacer(),
-                                          _buildActionIconButton(
-                                            icon: Icons.edit_outlined,
-                                            color: Colors.blue,
-                                            onTap: () => context.push('/products/edit/${product.id}', extra: product),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          product.category,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[500],
+                                            fontWeight: FontWeight.w500,
                                           ),
-                                          const SizedBox(width: 8),
-                                          _buildActionIconButton(
-                                            icon: Icons.add_box_outlined,
-                                            color: Colors.green,
-                                            onTap: () => _returnItem(context, product),
-                                            tooltip: l10n.restock,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          _buildActionIconButton(
-                                            icon: Icons.delete_outline,
-                                            color: Colors.red,
-                                            onTap: () => _confirmDelete(context, product),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          children: [
+                                            _buildStockIndicator(product.stock, product.minStockThreshold),
+                                            const Spacer(),
+                                            _buildActionIconButton(
+                                              icon: Icons.edit_outlined,
+                                              color: Colors.blue,
+                                              onTap: () => context.push('/products/edit/${product.id}', extra: product),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            _buildActionIconButton(
+                                              icon: Icons.add_box_outlined,
+                                              color: Colors.green,
+                                              onTap: () => _returnItem(context, product),
+                                              tooltip: l10n.restock,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            _buildActionIconButton(
+                                              icon: Icons.delete_outline,
+                                              color: Colors.red,
+                                              onTap: () => _confirmDelete(context, product),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),

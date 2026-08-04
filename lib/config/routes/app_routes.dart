@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/billing/presentation/pages/dashboard_page.dart';
 import '../../features/billing/presentation/pages/reports_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/billing/presentation/pages/new_sale_page.dart';
 import '../../features/billing/presentation/pages/checkout_page.dart';
 import '../../features/billing/presentation/pages/operations_page.dart';
 import '../../features/planner/presentation/pages/planner_page.dart';
@@ -45,29 +46,47 @@ GoRouter createRouter() {
       ShellRoute(
         builder: (context, state, child) => MainNavigationShell(child: child),
         routes: [
-          GoRoute(path: '/', builder: (context, state) => const DashboardPage()),
-          GoRoute(path: '/transactions', builder: (context, state) => const TransactionListPage()),
-          GoRoute(path: '/budgets', builder: (context, state) => const BudgetListPage(), routes: [
-            GoRoute(
-              path: 'add',
-              pageBuilder: (context, state) => SwipeToPopPage.create(state, const EditBudgetPage()),
-            ),
-            GoRoute(
-              path: 'edit/:id',
-              pageBuilder: (context, state) {
-                final budget = state.extra as Budget?;
-                return SwipeToPopPage.create(state, EditBudgetPage(budget: budget));
-              },
-            ),
-          ]),
-          GoRoute(path: '/accounts', builder: (context, state) => const AccountListPage()),
-          GoRoute(path: '/categories', builder: (context, state) => const CategoryListPage()),
-          GoRoute(path: '/analysis', builder: (context, state) => const AnalysisPage()),
+          GoRoute(
+              path: '/', builder: (context, state) => const DashboardPage()),
+          GoRoute(
+              path: '/new-sale',
+              builder: (context, state) => const NewSalePage()),
+          GoRoute(
+              path: '/transactions',
+              builder: (context, state) => const TransactionListPage()),
+          GoRoute(
+              path: '/budgets',
+              builder: (context, state) => const BudgetListPage(),
+              routes: [
+                GoRoute(
+                  path: 'add',
+                  pageBuilder: (context, state) =>
+                      SwipeToPopPage.create(state, const EditBudgetPage()),
+                ),
+                GoRoute(
+                  path: 'edit/:id',
+                  pageBuilder: (context, state) {
+                    final budget = state.extra as Budget?;
+                    return SwipeToPopPage.create(
+                        state, EditBudgetPage(budget: budget));
+                  },
+                ),
+              ]),
+          GoRoute(
+              path: '/accounts',
+              builder: (context, state) => const AccountListPage()),
+          GoRoute(
+              path: '/categories',
+              builder: (context, state) => const CategoryListPage()),
+          GoRoute(
+              path: '/analysis',
+              builder: (context, state) => const AnalysisPage()),
           GoRoute(
             path: '/edit-account',
             pageBuilder: (context, state) {
               final account = state.extra as Account?;
-              return SwipeToPopPage.create(state, EditAccountPage(account: account));
+              return SwipeToPopPage.create(
+                  state, EditAccountPage(account: account));
             },
           ),
           GoRoute(path: '/more', builder: (context, state) => const MorePage()),
@@ -75,101 +94,123 @@ GoRouter createRouter() {
       ),
       GoRoute(
         path: '/shop',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const ShopDetailsPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const ShopDetailsPage()),
       ),
       GoRoute(
         path: '/add-transaction',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const AddTransactionPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const AddTransactionPage()),
       ),
       GoRoute(
         path: '/invoice/:id',
         pageBuilder: (context, state) => SwipeToPopPage.create(
-          state, InvoiceDetailPage(invoiceId: state.pathParameters['id']!),
+          state,
+          InvoiceDetailPage(invoiceId: state.pathParameters['id']!),
         ),
       ),
       GoRoute(
         path: '/shift-report',
         pageBuilder: (context, state) => SwipeToPopPage.create(
-          state, ShiftReportPage(shiftId: state.uri.queryParameters['id'] ?? 'default'),
+          state,
+          ShiftReportPage(
+              shiftId: state.uri.queryParameters['id'] ?? 'default'),
         ),
       ),
       GoRoute(
         path: '/checkout',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const CheckoutPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const CheckoutPage()),
       ),
       GoRoute(
         path: '/operations',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const OperationsPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const OperationsPage()),
       ),
       GoRoute(
         path: '/planner',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const PlannerPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const PlannerPage()),
       ),
       GoRoute(
         path: '/financial-tools',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const FinancialCalculatorsPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const FinancialCalculatorsPage()),
       ),
       GoRoute(
         path: '/about',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const AboutAppPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const AboutAppPage()),
       ),
       GoRoute(
         path: '/terms',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const TermsConditionsPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const TermsConditionsPage()),
       ),
       GoRoute(
         path: '/privacy',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const PrivacyPolicyPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const PrivacyPolicyPage()),
       ),
       GoRoute(
         path: '/help-support',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const HelpSupportPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const HelpSupportPage()),
       ),
       GoRoute(
         path: '/reports',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const ReportsPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const ReportsPage()),
       ),
       GoRoute(
         path: '/settings',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const SettingsPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const SettingsPage()),
       ),
       GoRoute(
         path: '/products',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const ProductListPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const ProductListPage()),
         routes: [
           GoRoute(
             path: 'add',
-            pageBuilder: (context, state) => SwipeToPopPage.create(state, const AddProductPage()),
+            pageBuilder: (context, state) =>
+                SwipeToPopPage.create(state, const AddProductPage()),
           ),
           GoRoute(
             path: 'edit/:id',
             pageBuilder: (context, state) {
               final product = state.extra as Product?;
-              return SwipeToPopPage.create(state, EditProductPage(product: product ?? Product.empty()));
+              return SwipeToPopPage.create(
+                  state, EditProductPage(product: product ?? Product.empty()));
             },
           ),
         ],
       ),
       GoRoute(
         path: '/customers',
-        pageBuilder: (context, state) => SwipeToPopPage.create(state, const CustomerListPage()),
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const CustomerListPage()),
         routes: [
           GoRoute(
             path: 'add',
-            pageBuilder: (context, state) => SwipeToPopPage.create(state, const AddCustomerPage()),
+            pageBuilder: (context, state) =>
+                SwipeToPopPage.create(state, const AddCustomerPage()),
           ),
           GoRoute(
             path: 'edit/:id',
             pageBuilder: (context, state) {
               final customer = state.extra as Customer?;
-              return SwipeToPopPage.create(state, EditCustomerPage(customer: customer ?? Customer.empty()));
+              return SwipeToPopPage.create(state,
+                  EditCustomerPage(customer: customer ?? Customer.empty()));
             },
           ),
           GoRoute(
             path: 'transactions/:id',
             pageBuilder: (context, state) {
               final customerId = state.pathParameters['id']!;
-              return SwipeToPopPage.create(state, CustomerTransactionsPage(customerId: customerId));
+              return SwipeToPopPage.create(
+                  state, CustomerTransactionsPage(customerId: customerId));
             },
           ),
         ],

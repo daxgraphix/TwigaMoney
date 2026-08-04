@@ -38,6 +38,7 @@ class _AddProductPageState extends State<AddProductPage> {
         stock: _stock,
         category: _category,
         lastStockUpdate: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
       context.read<ProductBloc>().add(AddProduct(product));

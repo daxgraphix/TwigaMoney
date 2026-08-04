@@ -1,18 +1,17 @@
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/data/hive_database.dart';
 import 'package:twigamoney/features/shop/data/models/shop_model.dart';
+import '../cubit/settings_cubit.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -27,153 +26,149 @@ class _SettingsPageState extends State<SettingsPage> {
     final l10n = AppLocalizations.of(context)!;
     final primary = AppTheme.primaryColor;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settings, style: const TextStyle(fontWeight: FontWeight.bold)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Appearance Section
-            _buildSectionHeader(l10n.appearance),
-            _buildListGroup(
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.settings, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ValueListenableBuilder<ThemeMode>(
-                  valueListenable: AppTheme.themeModeNotifier,
-                  builder: (context, themeMode, child) {
-                    return _buildListItem(
-                      icon: themeMode == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode,
+                // Appearance Section
+                _buildSectionHeader(l10n.appearance),
+                _buildListGroup(
+                  children: [
+                    _buildListItem(
+                      icon: state.isDarkMode ? Icons.dark_mode : Icons.light_mode,
                       title: l10n.darkMode,
-                      subtitle: themeMode == ThemeMode.dark ? l10n.enabled : l10n.disabled,
+                      subtitle: state.isDarkMode ? l10n.enabled : l10n.disabled,
                       trailingWidget: Switch(
-                        value: themeMode == ThemeMode.dark,
+                        value: state.isDarkMode,
                         activeThumbColor: primary,
                         onChanged: (value) {
+                          context.read<SettingsCubit>().toggleDarkMode(value);
                           AppTheme.themeModeNotifier.value =
                               value ? ThemeMode.dark : ThemeMode.light;
-                          Hive.box('settings').put('darkMode', value);
-                          Hive.box('settings').put('themeMode',
-                              value ? 'dark' : 'light');
                         },
                       ),
                       onTap: () {
-                        final isDark = themeMode == ThemeMode.dark;
-                        final newMode = isDark ? ThemeMode.light : ThemeMode.dark;
-                        AppTheme.themeModeNotifier.value = newMode;
-                        Hive.box('settings').put('darkMode', !isDark);
-                        Hive.box('settings').put('themeMode', isDark ? 'light' : 'dark');
+                        final newValue = !state.isDarkMode;
+                        context.read<SettingsCubit>().toggleDarkMode(newValue);
+                        AppTheme.themeModeNotifier.value =
+                            newValue ? ThemeMode.dark : ThemeMode.light;
                       },
-                    );
-                  },
-                ),
-                _buildDivider(),
-                ValueListenableBuilder<Locale>(
-                  valueListenable: AppTheme.localeNotifier,
-                  builder: (context, locale, child) {
-                    return _buildListItem(
+                    ),
+                    _buildDivider(),
+                    _buildListItem(
                       icon: Icons.translate,
                       title: l10n.language,
-                      subtitle: l10n.english,
+                      subtitle: state.languageCode == 'en' ? l10n.english : state.languageCode,
                       onTap: () => _showLanguageDialog(context),
-                    );
-                  },
+                    ),
+                    _buildDivider(),
+                    _buildListItem(
+                      icon: Icons.currency_exchange,
+                      title: l10n.currency,
+                      subtitle: state.currencyCode,
+                      onTap: () => _showCurrencyDialog(context),
+                    ),
+                    _buildDivider(),
+                    _buildListItem(
+                      icon: Icons.calendar_today,
+                      title: l10n.dateFormat,
+                      subtitle: state.dateFormat,
+                      onTap: () => _showDateFormatDialog(context),
+                    ),
+                  ],
                 ),
-                _buildDivider(),
-                _buildListItem(
-                  icon: Icons.currency_exchange,
-                  title: l10n.currency,
-                subtitle: Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'),
-                onTap: () => _showCurrencyDialog(context),
-              ),
-              _buildDivider(),
-              _buildListItem(
-                icon: Icons.calendar_today,
-                title: l10n.dateFormat,
-                subtitle: Hive.box('settings').get('dateFormat', defaultValue: 'dd MMM yyyy'),
-                onTap: () => _showDateFormatDialog(context),
-              ),
+
+                const SizedBox(height: 32),
+
+                // Profile Section
+                _buildSectionHeader(l10n.business),
+                _buildListGroup(
+                  children: [
+                    _buildListItem(
+                      icon: Icons.store_outlined,
+                      title: l10n.shopDetails,
+                      subtitle: l10n.nameAddressContact,
+                      onTap: _editShopProfile,
+                    ),
+                    _buildDivider(),
+                    _buildListItem(
+                      icon: Icons.person_outline,
+                      title: l10n.ownerProfile,
+                      subtitle: l10n.ownerProfileDesc,
+                      onTap: () => _editUserProfile(state),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
+                // Data Section
+                _buildSectionHeader(l10n.dataManagement),
+                _buildListGroup(
+                  children: [
+                    _buildListItem(
+                      icon: Icons.cloud_upload_outlined,
+                      title: l10n.backupData,
+                      subtitle: l10n.exportData,
+                      onTap: _backupData,
+                    ),
+                    _buildDivider(),
+                    _buildListItem(
+                      icon: Icons.cloud_download_outlined,
+                      title: l10n.restoreData,
+                      subtitle: l10n.restoreFromBackup,
+                      onTap: _restoreData,
+                    ),
+                    _buildDivider(),
+                    _buildListItem(
+                      icon: Icons.delete_outline,
+                      title: l10n.clearCache,
+                      subtitle: l10n.clearCacheDesc,
+                      onTap: () {
+                        context.read<SettingsCubit>().clearCache();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.cacheClearedSuccessfully)),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 32),
+
+                // Support Section
+                _buildSectionHeader(l10n.support),
+                _buildListGroup(
+                  children: [
+                    _buildListItem(
+                      icon: Icons.help_outline,
+                      title: l10n.helpCenter,
+                      subtitle: l10n.helpCenterDesc,
+                      onTap: () => context.push('/help-support'),
+                    ),
+                    _buildDivider(),
+                    _buildListItem(
+                      icon: Icons.info_outline,
+                      title: l10n.aboutTwigaMoney,
+                      subtitle: 'v1.0.0',
+                      onTap: () => context.push('/about'),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 48),
               ],
             ),
-
-            const SizedBox(height: 32),
-
-            // Profile Section
-            _buildSectionHeader(l10n.business),
-            _buildListGroup(
-              children: [
-                _buildListItem(
-                  icon: Icons.store_outlined,
-                  title: l10n.shopDetails,
-                  subtitle: l10n.nameAddressContact,
-                  onTap: _editShopProfile,
-                ),
-                _buildDivider(),
-                _buildListItem(
-                  icon: Icons.person_outline,
-                  title: l10n.ownerProfile,
-                  subtitle: l10n.ownerProfileDesc,
-                  onTap: _editUserProfile,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            // Data Section
-            _buildSectionHeader(l10n.dataManagement),
-            _buildListGroup(
-              children: [
-                _buildListItem(
-                  icon: Icons.cloud_upload_outlined,
-                  title: l10n.backupData,
-                  subtitle: l10n.exportData,
-                  onTap: _backupData,
-                ),
-                _buildDivider(),
-                _buildListItem(
-                  icon: Icons.cloud_download_outlined,
-                  title: l10n.restoreData,
-                  subtitle: l10n.restoreFromBackup,
-                  onTap: _restoreData,
-                ),
-                _buildDivider(),
-                _buildListItem(
-                  icon: Icons.delete_outline,
-                  title: l10n.clearCache,
-                  subtitle: l10n.clearCacheDesc,
-                  onTap: _clearCache,
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 32),
-
-            // Support Section
-            _buildSectionHeader(l10n.support),
-            _buildListGroup(
-              children: [
-                _buildListItem(
-                  icon: Icons.help_outline,
-                  title: l10n.helpCenter,
-                  subtitle: l10n.helpCenterDesc,
-                  onTap: () => context.push('/help-support'),
-                ),
-                _buildDivider(),
-                _buildListItem(
-                  icon: Icons.info_outline,
-                  title: l10n.aboutTwigaMoney,
-                  subtitle: 'v1.0.0',
-                  onTap: () => context.push('/about'),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 48),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -181,7 +176,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(l10n.selectCurrency),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -189,17 +184,15 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               title: Text(l10n.tanzanianShilling),
               onTap: () {
-                Hive.box('settings').put('selectedCurrency', 'TZS');
-                Navigator.pop(context);
-                setState(() {});
+                context.read<SettingsCubit>().setCurrency('TZS');
+                Navigator.pop(dialogContext);
               },
             ),
             ListTile(
               title: Text(l10n.usDollar),
               onTap: () {
-                Hive.box('settings').put('selectedCurrency', 'USD');
-                Navigator.pop(context);
-                setState(() {});
+                context.read<SettingsCubit>().setCurrency('USD');
+                Navigator.pop(dialogContext);
               },
             ),
           ],
@@ -212,7 +205,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(l10n.selectDateFormat),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -220,33 +213,29 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               title: Text(l10n.dateFormatMedium),
               onTap: () {
-                Hive.box('settings').put('dateFormat', 'dd MMM yyyy');
-                Navigator.pop(context);
-                setState(() {});
+                context.read<SettingsCubit>().setDateFormat('dd MMM yyyy');
+                Navigator.pop(dialogContext);
               },
             ),
             ListTile(
               title: Text(l10n.dateFormatShort),
               onTap: () {
-                Hive.box('settings').put('dateFormat', 'MM/dd/yyyy');
-                Navigator.pop(context);
-                setState(() {});
+                context.read<SettingsCubit>().setDateFormat('MM/dd/yyyy');
+                Navigator.pop(dialogContext);
               },
             ),
             ListTile(
               title: Text(l10n.dateFormatIso),
               onTap: () {
-                Hive.box('settings').put('dateFormat', 'yyyy-MM-dd');
-                Navigator.pop(context);
-                setState(() {});
+                context.read<SettingsCubit>().setDateFormat('yyyy-MM-dd');
+                Navigator.pop(dialogContext);
               },
             ),
             ListTile(
               title: Text(l10n.dateFormatEuropean),
               onTap: () {
-                Hive.box('settings').put('dateFormat', 'dd/MM/yyyy');
-                Navigator.pop(context);
-                setState(() {});
+                context.read<SettingsCubit>().setDateFormat('dd/MM/yyyy');
+                Navigator.pop(dialogContext);
               },
             ),
           ],
@@ -317,7 +306,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(l10n.selectLanguage),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -325,9 +314,9 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               title: Text(l10n.english),
               onTap: () {
+                context.read<SettingsCubit>().setLanguage('en');
                 AppTheme.localeNotifier.value = const Locale('en');
-                Hive.box('settings').put('languageCode', 'en');
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               },
             ),
           ],
@@ -339,75 +328,28 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _backupData() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final backupFile = File('${directory.path}/TwigaMoney_backup_$timestamp.json');
-
-      final products = HiveDatabase.productBox.values.map((p) => p.toJson()).toList();
-      final shop = HiveDatabase.shopBox.get('shop_details');
+      final json = await context.read<SettingsCubit>().settingsRepository.exportData();
       
-      // Finance Data
-      final transactions = HiveDatabase.transactionBox.values.map((t) => {
-        'id': t.id,
-        'description': t.description,
-        'amount': t.amount,
-        'date': t.date.toIso8601String(),
-        'type': t.type.name,
-        'categoryId': t.categoryId,
-        'accountId': t.accountId,
-      }).toList();
-      
-      final budgets = HiveDatabase.budgetBox.values.map((b) => {
-        'id': b.id,
-        'name': b.name,
-        'amount': b.amount,
-        'categoryId': b.categoryId,
-        'period': b.period.name,
-        'startDate': b.startDate.toIso8601String(),
-        'endDate': b.endDate?.toIso8601String(),
-        'spent': b.spent,
-        'limitAlertThreshold': b.limitAlertThreshold,
-      }).toList();
-      
-      final categories = HiveDatabase.categoryBox.values.map((c) => {
-        'id': c.id,
-        'name': c.name,
-        'colorValue': c.colorValue,
-        'iconName': c.iconName,
-      }).toList();
-      
-      final accounts = HiveDatabase.accountBox.values.map((a) => {
-        'id': a.id,
-        'name': a.name,
-        'balance': a.balance,
-        'type': a.type,
-      }).toList();
+      await json.fold(
+        (failure) async {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.backupFailed(failure.message)), backgroundColor: Colors.red),
+          );
+        },
+        (jsonString) async {
+          final tempDir = await Directory.systemTemp.createTemp();
+          final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+          final file = File('${tempDir.path}/TwigaMoney_backup_$timestamp.json');
+          await file.writeAsString(jsonString);
 
-      final settingsMap = <String, dynamic>{};
-      for (var key in HiveDatabase.settingsBox.keys) {
-        settingsMap[key.toString()] = HiveDatabase.settingsBox.get(key);
-      }
-
-      final backup = {
-        'version': '1.0.0',
-        'timestamp': DateTime.now().toIso8601String(),
-        'products': products,
-        'shop': shop is ShopModel ? shop.toJson() : shop,
-        'settings': settingsMap,
-        'transactions': transactions,
-        'budgets': budgets,
-        'categories': categories,
-        'accounts': accounts,
-      };
-
-      await backupFile.writeAsString(jsonEncode(backup));
-
-      if (mounted) {
-        await Share.shareXFiles([XFile(backupFile.path)], text: 'TwigaMoney Backup $timestamp');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.backupCreatedAndShared)),
-        );
-      }
+          if (mounted) {
+            await Share.shareXFiles([XFile(file.path)], text: 'TwigaMoney Backup $timestamp');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.backupCreatedAndShared)),
+            );
+          }
+        },
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -451,36 +393,27 @@ class _SettingsPageState extends State<SettingsPage> {
       final file = File(result.files.single.path!);
       final jsonString = await file.readAsString();
       
-      await HiveDatabase.importAllData(jsonString);
+      final restoreResult = await context.read<SettingsCubit>().settingsRepository.importData(jsonString);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.restoreSuccessful)),
-        );
-      }
+      restoreResult.fold(
+        (failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.restoreFailed(failure.message)), backgroundColor: Colors.red),
+          );
+        },
+        (_) {
+          context.read<SettingsCubit>().loadSettings();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.restoreSuccessful)),
+          );
+        },
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.restoreFailed(e.toString())), backgroundColor: Colors.red),
         );
       }
-    }
-  }
-
-  Future<void> _clearCache() async {
-    final l10n = AppLocalizations.of(context)!;
-    try {
-      final dir = await getTemporaryDirectory();
-      if (dir.existsSync()) {
-        dir.deleteSync(recursive: true);
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.cacheClearedSuccessfully)),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.errorClearingCache(e.toString()))),
-      );
     }
   }
 
@@ -498,7 +431,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
+      builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text(l10n.shopProfile),
           content: SingleChildScrollView(
@@ -561,7 +494,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(l10n.cancel)),
             ElevatedButton(
               onPressed: () {
                 if (nameController.text.trim().isEmpty) {
@@ -587,7 +520,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   logoText: logoController.text.trim(),
                 );
                 shopBox.put('shop_details', updatedShop);
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(l10n.shopProfileUpdatedSuccessfully)),
@@ -603,19 +536,15 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Future<void> _editUserProfile() async {
+  Future<void> _editUserProfile(SettingsState state) async {
     final l10n = AppLocalizations.of(context)!;
-    final settingsBox = Hive.box('settings');
-    final nameController = TextEditingController(
-        text: settingsBox.get('userName', defaultValue: ''));
-    final emailController = TextEditingController(
-        text: settingsBox.get('userEmail', defaultValue: ''));
-    final phoneController = TextEditingController(
-        text: settingsBox.get('userPhone', defaultValue: ''));
+    final nameController = TextEditingController(text: state.userName);
+    final emailController = TextEditingController(text: state.userEmail);
+    final phoneController = TextEditingController(text: state.userPhone);
 
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(l10n.myProfile),
         content: SingleChildScrollView(
           child: Column(
@@ -643,23 +572,24 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
-              settingsBox.put('userName', nameController.text.trim());
-              settingsBox.put('userEmail', emailController.text.trim());
-              settingsBox.put('userPhone', phoneController.text.trim());
+              context.read<SettingsCubit>().updateProfile(
+                name: nameController.text.trim(),
+                email: emailController.text.trim(),
+                phone: phoneController.text.trim(),
+              );
 
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                       content: Text(l10n.profileUpdatedSuccessfully)),
                 );
               }
-              setState(() {});
             },
             child: Text(l10n.save),
           ),
@@ -668,4 +598,3 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
-

@@ -10,6 +10,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../shop/presentation/bloc/shop_bloc.dart';
 import '../bloc/billing_bloc.dart';
 
+import '../../../../core/data/hive_database.dart';
+
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
 
@@ -219,9 +221,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
                           final completeButton = ElevatedButton.icon(
                             onPressed: billingState.isProcessingSale ? null : () {
+                              final currentShiftId = HiveDatabase.settingsBox.get('currentShiftId', defaultValue: 'sale_${DateTime.now().millisecondsSinceEpoch}');
                               context.read<BillingBloc>().add(
                                     CompleteSaleEvent(
-                                      shiftId: 'sale_${DateTime.now().millisecondsSinceEpoch}',
+                                      shiftId: currentShiftId,
                                     ),
                                   );
                             },

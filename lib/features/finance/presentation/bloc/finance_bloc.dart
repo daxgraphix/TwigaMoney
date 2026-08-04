@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:fpdart/fpdart.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/error/failure.dart';
 import '../../domain/usecases/finance_usecases.dart';
 import '../../domain/usecases/monthly_report_usecase.dart';
 
@@ -10,6 +12,7 @@ import '../../domain/entities/budget.dart';
 import '../../domain/entities/recurring_transaction.dart';
 
 // Events
+// ... (rest of events and states)
 abstract class FinanceEvent extends Equatable {
   @override
   List<Object?> get props => [];
@@ -266,7 +269,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onLoadCategories(LoadCategoriesEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await getCategoriesUseCase(NoParams());
+    final result = await TaskEither.tryCatch(
+      () => getCategoriesUseCase(NoParams()),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to load categories: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (categories) => emit(CategoriesLoaded(categories)),
@@ -275,7 +282,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onAddCategory(AddCategoryEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await addCategoryUseCase(event.category);
+    final result = await TaskEither.tryCatch(
+      () => addCategoryUseCase(event.category),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to add category: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadCategoriesEvent()),
@@ -284,7 +295,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onUpdateCategory(UpdateCategoryEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await updateCategoryUseCase(event.category);
+    final result = await TaskEither.tryCatch(
+      () => updateCategoryUseCase(event.category),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to update category: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadCategoriesEvent()),
@@ -293,7 +308,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onDeleteCategory(DeleteCategoryEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await deleteCategoryUseCase(event.id);
+    final result = await TaskEither.tryCatch(
+      () => deleteCategoryUseCase(event.id),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to delete category: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadCategoriesEvent()),
@@ -302,7 +321,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onLoadAccounts(LoadAccountsEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await getAccountsUseCase(NoParams());
+    final result = await TaskEither.tryCatch(
+      () => getAccountsUseCase(NoParams()),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to load accounts: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (accounts) => emit(AccountsLoaded(accounts)),
@@ -311,7 +334,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onAddAccount(AddAccountEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await addAccountUseCase(event.account);
+    final result = await TaskEither.tryCatch(
+      () => addAccountUseCase(event.account),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to add account: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadAccountsEvent()),
@@ -320,7 +347,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onUpdateAccount(UpdateAccountEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await updateAccountUseCase(event.account);
+    final result = await TaskEither.tryCatch(
+      () => updateAccountUseCase(event.account),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to update account: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadAccountsEvent()),
@@ -329,7 +360,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onDeleteAccount(DeleteAccountEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await deleteAccountUseCase(event.id);
+    final result = await TaskEither.tryCatch(
+      () => deleteAccountUseCase(event.id),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to delete account: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadAccountsEvent()),
@@ -338,7 +373,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onLoadBudgets(LoadBudgetsEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await getBudgetsUseCase(NoParams());
+    final result = await TaskEither.tryCatch(
+      () => getBudgetsUseCase(NoParams()),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to load budgets: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (budgets) => emit(BudgetsLoaded(budgets)),
@@ -347,7 +386,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onAddBudget(AddBudgetEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await addBudgetUseCase(event.budget);
+    final result = await TaskEither.tryCatch(
+      () => addBudgetUseCase(event.budget),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to add budget: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadBudgetsEvent()),
@@ -356,7 +399,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onUpdateBudget(UpdateBudgetEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await updateBudgetUseCase(event.budget);
+    final result = await TaskEither.tryCatch(
+      () => updateBudgetUseCase(event.budget),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to update budget: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadBudgetsEvent()),
@@ -365,7 +412,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onDeleteBudget(DeleteBudgetEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await deleteBudgetUseCase(event.id);
+    final result = await TaskEither.tryCatch(
+      () => deleteBudgetUseCase(event.id),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to delete budget: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadBudgetsEvent()),
@@ -374,7 +425,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onLoadRecurringTransactions(LoadRecurringTransactionsEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await getRecurringTransactionsUseCase(NoParams());
+    final result = await TaskEither.tryCatch(
+      () => getRecurringTransactionsUseCase(NoParams()),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to load recurring transactions: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (transactions) => emit(RecurringTransactionsLoaded(transactions)),
@@ -383,7 +438,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onAddRecurringTransaction(AddRecurringTransactionEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await addRecurringTransactionUseCase(event.transaction);
+    final result = await TaskEither.tryCatch(
+      () => addRecurringTransactionUseCase(event.transaction),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to add recurring transaction: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadRecurringTransactionsEvent()),
@@ -392,7 +451,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onUpdateRecurringTransaction(UpdateRecurringTransactionEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await updateRecurringTransactionUseCase(event.transaction);
+    final result = await TaskEither.tryCatch(
+      () => updateRecurringTransactionUseCase(event.transaction),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to update recurring transaction: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadRecurringTransactionsEvent()),
@@ -401,7 +464,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onDeleteRecurringTransaction(DeleteRecurringTransactionEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await deleteRecurringTransactionUseCase(event.id);
+    final result = await TaskEither.tryCatch(
+      () => deleteRecurringTransactionUseCase(event.id),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to delete recurring transaction: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (_) => add(LoadRecurringTransactionsEvent()),
@@ -410,7 +477,11 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
   void _onLoadMonthlyReport(LoadMonthlyReportEvent event, Emitter<FinanceState> emit) async {
     emit(FinanceLoading());
-    final result = await getMonthlyReportUseCase(event.month);
+    final result = await TaskEither.tryCatch(
+      () => getMonthlyReportUseCase(event.month),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to load monthly report: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(FinanceError(failure.message)),
       (report) => emit(MonthlyReportLoaded(report)),

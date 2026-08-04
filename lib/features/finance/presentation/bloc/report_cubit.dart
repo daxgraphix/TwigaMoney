@@ -60,8 +60,7 @@ class ReportLoaded extends ReportState {
 }
 
 class ReportError extends ReportState {
-  const ReportError(String message)
-      : super(isLoading: false, error: message);
+  const ReportError(String message) : super(isLoading: false, error: message);
 }
 
 // Cubit
@@ -87,7 +86,8 @@ class ReportCubit extends Cubit<ReportState> {
 
   Future<void> loadComprehensiveReport(DateTime start, DateTime end) async {
     emit(ReportLoading());
-    final result = await comprehensiveReportUseCase(ReportParams(startDate: start, endDate: end));
+    final result = await comprehensiveReportUseCase(
+        ReportParams(startDate: start, endDate: end));
     result.fold(
       (failure) => emit(ReportError(failure.message)),
       (data) => emit(ReportLoaded(data)),

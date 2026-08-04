@@ -9,14 +9,11 @@ import 'package:csv/csv.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import '../bloc/analytics/analytics_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../billing/domain/repositories/sales_repository.dart';
-import '../../../billing/domain/entities/sales_transaction.dart';
-import '../../../finance/domain/repositories/transaction_repository.dart';
 import '../../../finance/domain/entities/transaction.dart';
-import '../../../billing/domain/repositories/customer_repository.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key});
@@ -29,102 +26,25 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
   late TabController _tabController;
   DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
   DateTime _endDate = DateTime.now();
-  Map<String, dynamic> _reportData = {};
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _loadReportData();
+    _loadAnalytics();
+  }
+
+  void _loadAnalytics() {
+    context.read<AnalyticsBloc>().add(LoadAnalyticsEvent(
+          startDate: _startDate,
+          endDate: _endDate,
+        ));
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadReportData() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final salesRepo = context.read<SalesRepository>();
-      final financeRepo = context.read<TransactionRepository>();
-      final customerRepo = context.read<CustomerRepository>();
-
-      // Sales data
-      final salesResult = await salesRepo.getSalesByDateRange(_startDate, _endDate);
-      final dailyRevenueResult = await salesRepo.getDailyRevenue(_startDate, _endDate);
-      final dailyProfitResult = await salesRepo.getDailyProfit(_startDate, _endDate);
-
-      // Product analytics
-      final topProductsResult = await salesRepo.getTopPerformingProducts(_startDate, _endDate);
-      final lowTurnoverResult = await salesRepo.getLowTurnoverProducts();
-
-      // Financial data
-      final transactions = await financeRepo.getTransactionsByDateRange(_startDate, _endDate);
-
-      // Customer data
-      final customersResult = await customerRepo.getCustomers();
-
-      salesResult.fold(
-        (failure) => _showError(AppLocalizations.of(context)!.failedToLoadSalesData),
-        (sales) {
-          dailyRevenueResult.fold(
-            (failure) => _showError(AppLocalizations.of(context)!.failedToLoadRevenueData),
-            (dailyRevenue) {
-              dailyProfitResult.fold(
-                (failure) => _showError(AppLocalizations.of(context)!.failedToLoadProfitData),
-                (dailyProfit) {
-                  topProductsResult.fold(
-                    (failure) => _showError(AppLocalizations.of(context)!.failedToLoadProductAnalytics),
-                    (topProducts) {
-                      lowTurnoverResult.fold(
-                        (failure) => _showError(AppLocalizations.of(context)!.failedToLoadLowTurnoverData),
-                        (lowTurnover) {
-                          transactions.fold(
-                            (failure) => _showError(AppLocalizations.of(context)!.failedToLoadFinancialData),
-                            (financeTransactions) {
-                              customersResult.fold(
-                                (failure) => _showError(AppLocalizations.of(context)!.failedToLoadCustomerData),
-                                (customers) {
-                                  setState(() {
-                                    _reportData = {
-                                      'sales': sales,
-                                      'dailyRevenue': dailyRevenue,
-                                      'dailyProfit': dailyProfit,
-                                      'topProducts': topProducts,
-                                      'lowTurnover': lowTurnover,
-                                      'financeTransactions': financeTransactions,
-                                      'customers': customers,
-                                    };
-                                    _isLoading = false;
-                                  });
-                                },
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-              );
-            },
-          );
-        },
-      );
-    } catch (e) {
-      _showError(AppLocalizations.of(context)!.errorLoadingReportData(e.toString()));
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
   }
 
   Future<void> _exportReportToPDF() async {
@@ -170,17 +90,17 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
 
   Future<void> _exportReportToCSV() async {
     try {
+      final state = context.read<AnalyticsBloc>().state;
       final l10n = AppLocalizations.of(context)!;
-      final sales = _reportData['sales'] as List<SalesTransaction>? ?? [];
+      final transactions = state.transactions;
       final csvData = [
-        ['ID', l10n.products, l10n.quantity, l10n.revenue, l10n.profit, l10n.date],
-        ...sales.map((s) => [
-              s.id,
-              s.productName,
-              s.quantity,
-              s.totalRevenue.toStringAsFixed(2),
-              s.totalProfit.toStringAsFixed(2),
-              s.timestamp.toIso8601String(),
+        ['ID', l10n.description, l10n.amount, l10n.date, l10n.type],
+        ...transactions.map((t) => [
+              t.id,
+              t.description,
+              t.amount.toStringAsFixed(2),
+              t.date.toIso8601String(),
+              t.type.name,
             ]),
       ];
 
@@ -275,7 +195,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   _startDate = start;
                   _endDate = end;
                 });
-                _loadReportData();
+                _loadAnalytics();
                 
                 ScaffoldMessenger.of(this.context).showSnackBar(
                   SnackBar(content: Text(l10n.customReportPeriod(type))),
@@ -302,289 +222,500 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
         _startDate = picked.start;
         _endDate = picked.end;
       });
-      _loadReportData();
+      _loadAnalytics();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.reports),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor),
-          onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.tune),
-            onPressed: _showCustomReportDialog,
-            tooltip: AppLocalizations.of(context)!.generateCustomReport,
-          ),
-          IconButton(
-            icon: const Icon(Icons.date_range),
-            onPressed: _selectDateRange,
-            tooltip: AppLocalizations.of(context)!.selectDateRange,
-          ),
+    return BlocBuilder<AnalyticsBloc, AnalyticsState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: AppBar(
+            title: Text(AppLocalizations.of(context)!.reports, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.chevron_left, color: Theme.of(context).primaryColor, size: 28),
+              onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.tune),
+                onPressed: _showCustomReportDialog,
+                tooltip: AppLocalizations.of(context)!.generateCustomReport,
+              ),
+              IconButton(
+                icon: const Icon(Icons.date_range),
+                onPressed: _selectDateRange,
+                tooltip: AppLocalizations.of(context)!.selectDateRange,
+              ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (value) {
-              switch (value) {
-                case 'pdf':
-                  _exportReportToPDF();
-                  break;
-                case 'csv':
-                  _exportReportToCSV();
-                  break;
-                case 'share':
-                  _exportReportToPDF();
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'pdf', child: Text(AppLocalizations.of(context)!.exportPdf)),
-              PopupMenuItem(value: 'csv', child: Text(AppLocalizations.of(context)!.exportCsv)),
-              PopupMenuItem(value: 'share', child: Text(AppLocalizations.of(context)!.shareReport)),
+                icon: const Icon(Icons.download),
+                onSelected: (value) {
+                  switch (value) {
+                    case 'pdf':
+                      _exportReportToPDF();
+                      break;
+                    case 'csv':
+                      _exportReportToCSV();
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'pdf', 
+                    child: Row(
+                      children: [
+                        const Icon(Icons.picture_as_pdf, size: 20, color: Colors.red),
+                        const SizedBox(width: 12),
+                        Text(AppLocalizations.of(context)!.exportPdf),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'csv', 
+                    child: Row(
+                      children: [
+                        const Icon(Icons.table_chart, size: 20, color: Colors.green),
+                        const SizedBox(width: 12),
+                        Text(AppLocalizations.of(context)!.exportCsv),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.share_outlined),
+                onPressed: _exportReportToPDF,
+                tooltip: AppLocalizations.of(context)!.shareReport,
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: _loadAnalytics,
+                tooltip: AppLocalizations.of(context)!.refreshData,
+              ),
             ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadReportData,
-            tooltip: AppLocalizations.of(context)!.refreshData,
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          indicatorSize: TabBarIndicatorSize.label,
-          labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: AppTheme.primaryColor,
-          tabs: [
-            Tab(text: AppLocalizations.of(context)!.sales),
-            Tab(text: AppLocalizations.of(context)!.products),
-            Tab(text: AppLocalizations.of(context)!.finance),
-            Tab(text: AppLocalizations.of(context)!.customers),
-          ],
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
+            bottom: TabBar(
               controller: _tabController,
-              children: [
-                _buildSalesTab(),
-                _buildProductsTab(),
-                _buildFinanceTab(),
-                _buildCustomersTab(),
+              isScrollable: true,
+              indicatorSize: TabBarIndicatorSize.label,
+              labelColor: AppTheme.primaryColor,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: AppTheme.primaryColor,
+              tabs: [
+                Tab(text: AppLocalizations.of(context)!.sales),
+                Tab(text: AppLocalizations.of(context)!.products),
+                Tab(text: AppLocalizations.of(context)!.finance),
+                Tab(text: AppLocalizations.of(context)!.customers),
               ],
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCustomReportDialog,
-        icon: const Icon(Icons.add_chart),
-        label: Text(AppLocalizations.of(context)!.newReport),
-      ),
+          ),
+          body: state.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildSalesTab(state),
+                    _buildProductsTab(state),
+                    _buildFinanceTab(state),
+                    _buildCustomersTab(state),
+                  ],
+                ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: _showCustomReportDialog,
+            icon: const Icon(Icons.add_chart),
+            label: Text(AppLocalizations.of(context)!.newReport),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildSalesTab() {
-    final sales = _reportData['sales'] as List<SalesTransaction>? ?? [];
-    final dailyRevenue = _reportData['dailyRevenue'] as Map<String, double>? ?? {};
-    final dailyProfit = _reportData['dailyProfit'] as Map<String, double>? ?? {};
-
-    final today = DateTime.now();
-    final yesterday = today.subtract(const Duration(days: 1));
-
-    final todaySales = sales.where((s) =>
-        s.timestamp.year == today.year &&
-        s.timestamp.month == today.month &&
-        s.timestamp.day == today.day).toList();
-
-    final yesterdaySales = sales.where((s) =>
-        s.timestamp.year == yesterday.year &&
-        s.timestamp.month == yesterday.month &&
-        s.timestamp.day == yesterday.day).toList();
-
-    final totalRevenue = sales.fold<double>(0, (sum, sale) => sum + sale.totalRevenue);
-    final totalProfit = sales.fold<double>(0, (sum, sale) => sum + sale.totalProfit);
-
+  Widget _buildSalesTab(AnalyticsState state) {
+    final dailyRevenue = state.dailyRevenue;
+    final dailyProfit = state.dailyProfit;
+    final totalSales = state.transactions.where((t) => t.type == TransactionType.income).length;
+    
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.all(Responsive.getPadding(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Summary Cards
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryCard(
-                  AppLocalizations.of(context)!.todaySalesLabel,
-                  '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${todaySales.fold<double>(0, (sum, s) => sum + s.totalRevenue).toStringAsFixed(2)}',
-                  AppLocalizations.of(context)!.transactionsWithCount(todaySales.length),
-                  Icons.today,
-                  Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildSummaryCard(
-                  AppLocalizations.of(context)!.yesterdaySalesLabel,
-                  '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${yesterdaySales.fold<double>(0, (sum, s) => sum + s.totalRevenue).toStringAsFixed(2)}',
-                  AppLocalizations.of(context)!.transactionsWithCount(yesterdaySales.length),
-                  Icons.calendar_today,
-                  Colors.green,
-                ),
-              ),
-            ],
-          ),
+          _buildDateRangeHeader(),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryCard(
-                  AppLocalizations.of(context)!.totalRevenueLabel,
-                  '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${totalRevenue.toStringAsFixed(2)}',
-                  AppLocalizations.of(context)!.transactionsWithCount(sales.length),
-                  Icons.attach_money,
-                  Colors.purple,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildSummaryCard(
-                  AppLocalizations.of(context)!.totalProfitLabel,
-                  '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${totalProfit.toStringAsFixed(2)}',
-                  '${totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toStringAsFixed(1) : '0.0'}% margin',
-                  Icons.trending_up,
-                  Colors.orange,
-                ),
-              ),
-            ],
-          ),
-
+          _buildSummaryCards(state, totalSales),
           const SizedBox(height: 24),
-
-            // Revenue Chart
+          _buildSectionHeader(AppLocalizations.of(context)!.revenueTrend),
+          const SizedBox(height: 12),
           _buildChartCard(
-            AppLocalizations.of(context)!.revenueTrend,
+            "",
             SizedBox(
-              height: MediaQuery.of(context).size.width < 380 ? 140 : 180,
-              child: LineChart(
-                LineChartData(
-                  gridData: const FlGridData(show: false),
-                  titlesData: const FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: dailyRevenue.entries.map((entry) {
-                        final date = DateTime.parse(entry.key);
-                        final days = date.difference(_startDate).inDays;
-                        return FlSpot(days.toDouble(), entry.value);
-                      }).toList(),
-                      isCurved: true,
-                      color: Colors.blue,
-                      barWidth: 3,
-                      belowBarData: BarAreaData(show: false),
+              height: 220,
+              child: dailyRevenue.isEmpty 
+                ? _buildEmptyState()
+                : LineChart(
+                    LineChartData(
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              final date = _startDate.add(Duration(days: value.toInt()));
+                              // Only show every few days to avoid crowding
+                              if (value.toInt() % (state.dailyRevenue.length > 10 ? 5 : 2) != 0) return const SizedBox();
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  DateFormat('dd/MM').format(date),
+                                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                                ),
+                              );
+                            },
+                            reservedSize: 30,
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) => Text(
+                              NumberFormat.compact().format(value),
+                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                            ),
+                            reservedSize: 40,
+                          ),
+                        ),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: dailyRevenue.entries.map((entry) {
+                            final date = DateTime.tryParse(entry.key) ?? DateTime.now();
+                            final days = date.difference(_startDate).inDays.toDouble();
+                            return FlSpot(days, entry.value);
+                          }).toList()
+                            ..sort((a, b) => a.x.compareTo(b.x)),
+                          isCurved: true,
+                          color: AppTheme.primaryColor,
+                          barWidth: 4,
+                          isStrokeCapRound: true,
+                          dotData: const FlDotData(show: false),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.primaryColor.withValues(alpha: 0.2),
+                                AppTheme.primaryColor.withValues(alpha: 0.0),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                      ],
+                      lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          tooltipBgColor: AppTheme.secondaryColor,
+                          getTooltipItems: (spots) => spots.map((spot) {
+                            return LineTooltipItem(
+                              '${NumberFormat.compact().format(spot.y)}',
+                              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            );
+                          }).toList(),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-            // Profit Chart
-          _buildChartCard(
-            AppLocalizations.of(context)!.profitTrend,
-            SizedBox(
-              height: MediaQuery.of(context).size.width < 380 ? 140 : 180,
-              child: LineChart(
-                LineChartData(
-                  gridData: const FlGridData(show: false),
-                  titlesData: const FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: dailyProfit.entries.map((entry) {
-                        final date = DateTime.parse(entry.key);
-                        final days = date.difference(_startDate).inDays;
-                        return FlSpot(days.toDouble(), entry.value);
-                      }).toList(),
-                      isCurved: true,
-                      color: Colors.green,
-                      barWidth: 3,
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Recent Sales
-          _buildListCard(
-            AppLocalizations.of(context)!.recentSales,
-            itemBuilder: (context, index) {
-              final sale = sales[index];
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.receipt_long, color: Colors.blue, size: 20),
-                ),
-                title: Text(
-                  '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${sale.totalRevenue.toStringAsFixed(0)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  DateFormat('MMM dd, HH:mm').format(sale.timestamp),
-                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${sale.quantity} ${AppLocalizations.of(context)!.items}',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(AppLocalizations.of(context)!.profitTrend),
+          const SizedBox(height: 12),
+          _buildChartCard(
+            "",
+            SizedBox(
+              height: 220,
+              child: dailyProfit.isEmpty 
+                ? _buildEmptyState()
+                : LineChart(
+                    LineChartData(
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              final date = _startDate.add(Duration(days: value.toInt()));
+                              if (value.toInt() % (state.dailyProfit.length > 10 ? 5 : 2) != 0) return const SizedBox();
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  DateFormat('dd/MM').format(date),
+                                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                                ),
+                              );
+                            },
+                            reservedSize: 30,
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) => Text(
+                              NumberFormat.compact().format(value),
+                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                            ),
+                            reservedSize: 40,
+                          ),
+                        ),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: dailyProfit.entries.map((entry) {
+                            final date = DateTime.tryParse(entry.key) ?? DateTime.now();
+                            final days = date.difference(_startDate).inDays.toDouble();
+                            return FlSpot(days, entry.value);
+                          }).toList()
+                            ..sort((a, b) => a.x.compareTo(b.x)),
+                          isCurved: true,
+                          color: Colors.green,
+                          barWidth: 4,
+                          isStrokeCapRound: true,
+                          dotData: const FlDotData(show: false),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.green.withValues(alpha: 0.2),
+                                Colors.green.withValues(alpha: 0.0),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      '+${sale.totalProfit.toStringAsFixed(0)} ${AppLocalizations.of(context)!.profit.toLowerCase()}',
-                      style: const TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.w600),
+                  ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(AppLocalizations.of(context)!.peakHours),
+          const SizedBox(height: 12),
+          _buildChartCard(
+            "",
+            SizedBox(
+              height: 200,
+              child: state.peakHours.isEmpty
+                ? _buildEmptyState()
+                : BarChart(
+                    BarChartData(
+                      gridData: const FlGridData(show: false),
+                      borderData: FlBorderData(show: false),
+                      barGroups: state.peakHours.entries.map((e) => BarChartGroupData(
+                        x: e.key,
+                        barRods: [
+                          BarChartRodData(
+                            toY: e.value.toDouble(), 
+                            color: AppTheme.secondaryColor,
+                            width: 12,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(4),
+                              topRight: Radius.circular(4),
+                            ),
+                          )
+                        ],
+                      )).toList(),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              if (value.toInt() % 4 != 0) return const SizedBox();
+                              return Text('${value.toInt()}h', style: TextStyle(fontSize: 10, color: Colors.grey[600]));
+                            },
+                          ),
+                        ),
+                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
                     ),
-                  ],
-                ),
-              );
-            },
-            itemCount: sales.length > 10 ? 10 : sales.length,
+                  ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateRangeHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.calendar_today, size: 16, color: AppTheme.primaryColor),
+          const SizedBox(width: 12),
+          Text(
+            '${DateFormat('MMM dd, yyyy').format(_startDate)} - ${DateFormat('MMM dd, yyyy').format(_endDate)}',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: AppTheme.primaryColor,
+              fontSize: 13,
+            ),
+          ),
+          const Spacer(),
+          TextButton(
+            onPressed: _selectDateRange,
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+            child: Text(AppLocalizations.of(context)!.edit),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProductsTab() {
-    final topProducts = _reportData['topProducts'] as List<dynamic>? ?? [];
-    final lowTurnover = _reportData['lowTurnover'] as List<dynamic>? ?? [];
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 16,
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.bar_chart, size: 48, color: Colors.grey[300]),
+          const SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context)!.noData,
+            style: TextStyle(color: Colors.grey[500], fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryCards(AnalyticsState state, int totalSales) {
+    final totalRevenue = state.dailyRevenue.values.fold<double>(0, (sum, val) => sum + val);
+    final totalProfit = state.dailyProfit.values.fold<double>(0, (sum, val) => sum + val);
+    final currency = Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
+    final symbol = AppTheme.getCurrencySymbol(currency);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
+        return GridView.count(
+          crossAxisCount: crossAxisCount,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1.5,
+          children: [
+            _buildSummaryCard(
+              AppLocalizations.of(context)!.totalRevenueLabel,
+              '$symbol${NumberFormat.compact().format(totalRevenue)}',
+              '',
+              Icons.payments_outlined,
+              Colors.blue,
+            ),
+            _buildSummaryCard(
+              AppLocalizations.of(context)!.totalProfitLabel,
+              '$symbol${NumberFormat.compact().format(totalProfit)}',
+              '${totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toStringAsFixed(1) : '0.0'}% margin',
+              Icons.trending_up,
+              Colors.green,
+            ),
+            if (constraints.maxWidth > 600 || true) // Show 3rd card
+              _buildSummaryCard(
+                AppLocalizations.of(context)!.transactionsCount,
+                totalSales.toString(),
+                'avg $symbol${totalSales > 0 ? NumberFormat.compact().format(totalRevenue / totalSales) : 0}',
+                Icons.shopping_cart_outlined,
+                Colors.orange,
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildProductsTab(AnalyticsState state) {
+    final topProducts = state.topPerformingProducts;
+    final lowTurnover = state.lowTurnoverProducts;
 
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.all(Responsive.getPadding(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Best Sellers
+          _buildDateRangeHeader(),
+          const SizedBox(height: 16),
+          _buildSummaryCard(
+            AppLocalizations.of(context)!.topProducts,
+            topProducts.length.toString(),
+            'analyzed over period',
+            Icons.inventory_2_outlined,
+            Colors.indigo,
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(AppLocalizations.of(context)!.bestSellers),
+          const SizedBox(height: 12),
           _buildListCard(
-            AppLocalizations.of(context)!.bestSellers,
+            "",
             itemBuilder: (context, index) {
               final product = topProducts[index];
               return ListTile(
@@ -592,267 +723,431 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                 leading: Container(
                   width: 40,
                   height: 40,
-                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(
-                    '${index + 1}',
-                    style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                  child: Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
-                title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(
-                  '${product.totalSold} sold • ${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${product.totalRevenue.toStringAsFixed(0)} rev',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '${product.marginPercentage.toStringAsFixed(0)}% mgn',
-                    style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              );
-            },
-            itemCount: topProducts.length > 10 ? 10 : topProducts.length,
-          ),
-
-          const SizedBox(height: 24),
-
-          // Low Turnover Products
-          _buildListCard(
-            AppLocalizations.of(context)!.lowTurnoverProducts,
-            itemBuilder: (context, index) {
-              final product = lowTurnover[index];
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.inventory_2_outlined, color: Colors.orange, size: 20),
-                ),
-                title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(
-                  'Rate: ${product.turnoverRate.toStringAsFixed(2)} • ${product.totalSold} sold',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                trailing: Text(
-                  '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${product.totalRevenue.toStringAsFixed(0)}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              );
-            },
-            itemCount: lowTurnover.length > 10 ? 10 : lowTurnover.length,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFinanceTab() {
-    final transactions =
-        _reportData['financeTransactions'] as List<dynamic>? ?? [];
-
-    final expenses = transactions
-        .where((t) =>
-            t is Transaction &&
-            t.type == TransactionType.expense)
-        .toList();
-    final income = transactions
-        .where(
-            (t) => t is Transaction && t.type == TransactionType.income)
-        .toList();
-
-    final totalExpenses = expenses.fold<double>(0, (sum, t) => sum + t.amount);
-    final totalIncome = income.fold<double>(0, (sum, t) => sum + t.amount);
-
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(Responsive.getPadding(context)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Financial Summary
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryCard(
-                  AppLocalizations.of(context)!.totalIncome,
-                  '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${totalIncome.toStringAsFixed(2)}',
-                  AppLocalizations.of(context)!.transactionsWithCount(income.length),
-                  Icons.arrow_upward,
-                  Colors.green,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildSummaryCard(
-                  AppLocalizations.of(context)!.totalExpenses,
-                  '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${totalExpenses.toStringAsFixed(2)}',
-                  AppLocalizations.of(context)!.transactionsWithCount(expenses.length),
-                  Icons.arrow_downward,
-                  Colors.red,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // Recent Transactions
-          _buildListCard(
-            AppLocalizations.of(context)!.recentTransactions,
-            itemBuilder: (context, index) {
-              final transaction = transactions[index];
-              final isExpense = transaction is Transaction &&
-                  transaction.type == TransactionType.expense;
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isExpense ? Colors.red.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isExpense ? Icons.arrow_downward : Icons.arrow_upward,
-                    color: isExpense ? Colors.red : Colors.green,
-                    size: 20,
-                  ),
-                ),
-                title: Text(transaction.description, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(AppTheme.getDateFormat().format(transaction.date), style: const TextStyle(fontSize: 12)),
-                trailing: Text(
-                  '${!isExpense ? '+' : '-'}${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${transaction.amount.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    color: !isExpense ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-              );
-            },
-            itemCount: transactions.length > 20 ? 20 : transactions.length,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCustomersTab() {
-    final customers = _reportData['customers'] as List<dynamic>? ?? [];
-
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(Responsive.getPadding(context)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Customer Summary
-          _buildSummaryCard(
-            AppLocalizations.of(context)!.totalCustomers,
-            '${customers.length}',
-            AppLocalizations.of(context)!.active,
-            Icons.people,
-            Colors.blue,
-          ),
-
-          const SizedBox(height: 24),
-
-          // Customer List
-          _buildListCard(
-            AppLocalizations.of(context)!.customerList,
-            itemBuilder: (context, index) {
-              final customer = customers[index];
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                leading: CircleAvatar(
-                  backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                  child: Text(
-                    customer.name.isNotEmpty ? customer.name[0].toUpperCase() : '?',
-                    style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                title: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(customer.phone.isNotEmpty ? customer.phone : AppLocalizations.of(context)!.noPhone, style: const TextStyle(fontSize: 12)),
+                title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text('${product.totalSold} units sold'),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${customer.currentBalance.toStringAsFixed(0)}',
-                      style: TextStyle(
-                        color: customer.currentBalance > 0 ? Colors.red : Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      NumberFormat.compact().format(product.totalRevenue),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Text(AppLocalizations.of(context)!.balance, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    Text(
+                      '${product.marginPercentage.toStringAsFixed(1)}% margin',
+                      style: TextStyle(fontSize: 10, color: Colors.green[600]),
+                    ),
                   ],
                 ),
               );
             },
-            itemCount: customers.length > 20 ? 20 : customers.length,
+            itemCount: topProducts.length,
           ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(AppLocalizations.of(context)!.lowTurnoverProducts),
+          const SizedBox(height: 12),
+          _buildListCard(
+            "",
+            itemBuilder: (context, index) {
+              final product = lowTurnover[index];
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                ),
+                title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text('Turnover Rate: ${product.turnoverRate.toStringAsFixed(2)}'),
+                trailing: Text(
+                  '${product.totalSold} sold',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                ),
+              );
+            },
+            itemCount: lowTurnover.length,
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinanceTab(AnalyticsState state) {
+    final transactions = state.transactions;
+    final categoryDist = state.categoryDistribution;
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: EdgeInsets.all(Responsive.getPadding(context)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDateRangeHeader(),
+          const SizedBox(height: 16),
+          _buildSectionHeader(AppLocalizations.of(context)!.cashFlowTrend),
+          const SizedBox(height: 12),
+          _buildChartCard(
+            "",
+            SizedBox(
+              height: 220,
+              child: transactions.isEmpty 
+                ? _buildEmptyState()
+                : BarChart(
+                    BarChartData(
+                      barGroups: _generateFinanceBarGroups(transactions),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              final date = _startDate.add(Duration(days: value.toInt()));
+                              if (value.toInt() % 5 != 0) return const SizedBox();
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  DateFormat('dd/MM').format(date),
+                                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                                ),
+                              );
+                            },
+                            reservedSize: 30,
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) => Text(
+                              NumberFormat.compact().format(value),
+                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                            ),
+                            reservedSize: 40,
+                          ),
+                        ),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      borderData: FlBorderData(show: false),
+                    ),
+                  ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(AppLocalizations.of(context)!.expenseByCategory),
+          const SizedBox(height: 12),
+          _buildChartCard(
+            "",
+            SizedBox(
+              height: 240,
+              child: categoryDist.isEmpty 
+                ? _buildEmptyState()
+                : Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: PieChart(
+                          PieChartData(
+                            sectionsSpace: 4,
+                            centerSpaceRadius: 40,
+                            sections: categoryDist.entries.map((entry) {
+                              final index = categoryDist.keys.toList().indexOf(entry.key);
+                              return PieChartSectionData(
+                                value: entry.value,
+                                title: '', // Don't show title on pie to avoid clutter
+                                color: Colors.primaries[index % Colors.primaries.length],
+                                radius: 50,
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 3,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: categoryDist.length > 5 ? 5 : categoryDist.length,
+                          itemBuilder: (context, index) {
+                            final entry = categoryDist.entries.elementAt(index);
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      color: Colors.primaries[index % Colors.primaries.length],
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      entry.key,
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Text(
+                                    NumberFormat.compact().format(entry.value),
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(AppLocalizations.of(context)!.recentTransactions),
+          const SizedBox(height: 12),
+          _buildListCard(
+            "",
+            itemBuilder: (context, index) {
+              final tx = transactions[index];
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: (tx.type == TransactionType.expense ? Colors.red : Colors.green).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    tx.type == TransactionType.expense ? Icons.remove : Icons.add,
+                    color: tx.type == TransactionType.expense ? Colors.red : Colors.green,
+                  ),
+                ),
+                title: Text(tx.description, style: const TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text(DateFormat('MMM dd, HH:mm').format(tx.date)),
+                trailing: Text(
+                  '${tx.type == TransactionType.expense ? "-" : "+"}${NumberFormat.compact().format(tx.amount)}',
+                  style: TextStyle(
+                    color: tx.type == TransactionType.expense ? Colors.red : Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
+            },
+            itemCount: transactions.length > 10 ? 10 : transactions.length,
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  List<BarChartGroupData> _generateFinanceBarGroups(List<Transaction> transactions) {
+    final Map<int, double> dailyFlow = {};
+    for (var tx in transactions) {
+      final days = tx.date.difference(_startDate).inDays;
+      if (days < 0) continue;
+      final amount = tx.type == TransactionType.expense ? -tx.amount : tx.amount;
+      dailyFlow[days] = (dailyFlow[days] ?? 0) + amount;
+    }
+    
+    return dailyFlow.entries.map((e) => BarChartGroupData(
+      x: e.key,
+      barRods: [
+        BarChartRodData(
+          toY: e.value, 
+          color: e.value >= 0 ? Colors.green : Colors.red,
+          width: 8,
+          borderRadius: BorderRadius.circular(2),
+        )
+      ],
+    )).toList();
+  }
+
+  Widget _buildCustomersTab(AnalyticsState state) {
+    final outstanding = state.outstandingCustomers;
+    final debtAging = state.debtAging;
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: EdgeInsets.all(Responsive.getPadding(context)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDateRangeHeader(),
+          const SizedBox(height: 16),
+          _buildSummaryCard(
+            AppLocalizations.of(context)!.totalCustomers,
+            outstanding.length.toString(),
+            'with active balances',
+            Icons.people_outline,
+            Colors.purple,
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(AppLocalizations.of(context)!.debtAging),
+          const SizedBox(height: 12),
+          _buildChartCard(
+            "",
+            SizedBox(
+              height: 250,
+              child: debtAging.isEmpty
+                ? _buildEmptyState()
+                : BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: (debtAging.values.fold<double>(0, (max, val) => val > max ? val : max) * 1.2),
+                      barGroups: [
+                        BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: debtAging['0-30'] ?? 0, color: Colors.blue, width: 40, borderRadius: BorderRadius.circular(8))]),
+                        BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: debtAging['31-60'] ?? 0, color: Colors.orange, width: 40, borderRadius: BorderRadius.circular(8))]),
+                        BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: debtAging['60+'] ?? 0, color: Colors.red, width: 40, borderRadius: BorderRadius.circular(8))]),
+                      ],
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        show: true,
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              String text = '';
+                              switch (value.toInt()) {
+                                case 0: text = '0-30'; break;
+                                case 1: text = '31-60'; break;
+                                case 2: text = '60+'; break;
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              );
+                            },
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) => Text(
+                              NumberFormat.compact().format(value),
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                            reservedSize: 40,
+                          ),
+                        ),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      borderData: FlBorderData(show: false),
+                    ),
+                  ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(AppLocalizations.of(context)!.outstandingBalances),
+          const SizedBox(height: 12),
+          _buildListCard(
+            "",
+            itemBuilder: (context, index) {
+              final customer = outstanding[index];
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                leading: CircleAvatar(
+                  backgroundColor: Colors.purple.withValues(alpha: 0.1),
+                  child: Text(
+                    customer.name.substring(0, 1).toUpperCase(),
+                    style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text(customer.phone.isNotEmpty ? customer.phone : AppLocalizations.of(context)!.noPhone),
+                trailing: Text(
+                  NumberFormat.compact().format(customer.currentBalance),
+                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              );
+            },
+            itemCount: outstanding.length,
+          ),
+          const SizedBox(height: 32),
         ],
       ),
     );
   }
 
   Widget _buildSummaryCard(String title, String value, String subtitle, IconData icon, Color color) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
       ),
-      child: Padding(
-        padding: EdgeInsets.all(MediaQuery.of(context).size.width < 380 ? 12 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: color, size: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                    ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
             ),
+          ),
+          if (subtitle.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               subtitle,
@@ -862,49 +1157,48 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
               ),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildChartCard(String title, Widget chart) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 20),
-            chart,
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+          chart,
+        ],
       ),
     );
   }
 
   Widget _buildListCard(
     String title, {
-    List<Widget>? items,
     Widget Function(BuildContext, int)? itemBuilder,
     int? itemCount,
   }) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -919,12 +1213,12 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
               ),
             ),
           ),
-          if ((items?.isEmpty ?? false) || (itemCount == 0))
+          if (itemCount == 0 || itemCount == null)
             Padding(
               padding: const EdgeInsets.all(20),
               child: Text(AppLocalizations.of(context)!.noData),
             )
-          else if (itemBuilder != null && itemCount != null)
+          else
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -932,22 +1226,13 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
               separatorBuilder: (context, index) => Divider(
                 height: 1,
                 indent: 70,
-                color: Colors.grey.withValues(alpha: 0.1),
+                color: Colors.grey.withValues(alpha: 0.05),
               ),
-              itemBuilder: itemBuilder,
-            )
-          else if (items != null)
-            ...items,
+              itemBuilder: itemBuilder!,
+            ),
           const SizedBox(height: 10),
         ],
       ),
     );
   }
 }
-
-
-
-
-
-
-

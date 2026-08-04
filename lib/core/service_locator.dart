@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:hive/hive.dart';
 import '../../features/product/data/repositories/product_repository_impl.dart';
 import '../../features/product/domain/repositories/product_repository.dart';
 import '../../features/product/domain/usecases/product_usecases.dart';
@@ -12,10 +13,17 @@ import '../../features/billing/presentation/bloc/billing_bloc.dart';
 import '../../features/billing/data/repositories/sales_repository_impl.dart';
 import '../../features/billing/domain/repositories/sales_repository.dart';
 import '../../features/billing/domain/usecases/analytics_usecases.dart';
+import '../../features/billing/presentation/bloc/analytics/analytics_bloc.dart';
+import '../../features/billing/domain/usecases/complete_sale_usecase.dart';
+import '../../features/billing/domain/usecases/customer_usecases.dart';
+import '../../features/billing/presentation/bloc/customer/customer_bloc.dart';
 import '../../features/product/data/repositories/stock_repository_impl.dart';
 import '../../features/product/domain/repositories/stock_repository.dart';
 import '../../features/billing/data/repositories/customer_repository_impl.dart';
 import '../../features/billing/domain/repositories/customer_repository.dart';
+import '../../features/settings/data/repositories/settings_repository_impl.dart';
+import '../../features/settings/domain/repositories/settings_repository.dart';
+import '../../features/settings/presentation/cubit/settings_cubit.dart';
 import '../../features/finance/data/repositories/transaction_repository_impl.dart';
 import '../../features/finance/data/repositories/category_repository_impl.dart';
 import '../../features/finance/data/repositories/account_repository_impl.dart';
@@ -83,6 +91,10 @@ Future<void> init() async {
 
    sl.registerLazySingleton<CustomerRepository>(
      () => const CustomerRepositoryImpl(),
+   );
+
+   sl.registerLazySingleton<SettingsRepository>(
+     () => SettingsRepositoryImpl(settingsBox: Hive.box('settings')),
    );
 
   // ============================================
@@ -155,10 +167,33 @@ Future<void> init() async {
   // Sales Analytics Use Cases
   sl.registerLazySingleton(() => GetTopPerformingProductsUseCase(sl()));
   sl.registerLazySingleton(() => GetLowTurnoverProductsUseCase(sl()));
+  
+  // Customer Use Cases
+  sl.registerLazySingleton(() => GetCustomersUseCase(sl()));
+  sl.registerLazySingleton(() => AddCustomerUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateCustomerUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteCustomerUseCase(sl()));
+
+  sl.registerLazySingleton(() => CompleteSaleUseCase(
+        salesRepository: sl(),
+        stockRepository: sl(),
+        customerRepository: sl(),
+        decrementStockUseCase: sl(),
+      ));
 
   // ============================================
   // BLOCs (Factories - depend on use cases)
   // ============================================
+  sl.registerFactory(
+    () => AnalyticsBloc(
+      getTopPerformingProductsUseCase: sl(),
+      getLowTurnoverProductsUseCase: sl(),
+      salesRepository: sl(),
+      transactionRepository: sl(),
+      customerRepository: sl(),
+    ),
+  );
+
   sl.registerFactory(
     () => DashboardBloc(
       salesRepository: sl(),
@@ -189,10 +224,22 @@ Future<void> init() async {
   sl.registerFactory(
     () => BillingBloc(
       getProductByBarcodeUseCase: sl(),
-      decrementStockUseCase: sl(),
-      salesRepository: sl(),
-      stockRepository: sl(),
-      customerRepository: sl(),
+      completeSaleUseCase: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => CustomerBloc(
+      getCustomersUseCase: sl(),
+      addCustomerUseCase: sl(),
+      updateCustomerUseCase: sl(),
+      deleteCustomerUseCase: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => SettingsCubit(
+      settingsRepository: sl(),
     ),
   );
 

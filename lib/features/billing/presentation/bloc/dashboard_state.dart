@@ -4,6 +4,8 @@ class DashboardState extends Equatable {
   final bool isLoading;
   final double todayRevenue;
   final double todayProfit;
+  final double yesterdayRevenue;
+  final double yesterdayProfit;
   final int todayTransactions;
   final List<String> lowStockAlerts;
   final double totalOutstandingDebt;
@@ -16,6 +18,8 @@ class DashboardState extends Equatable {
     this.isLoading = false,
     this.todayRevenue = 0.0,
     this.todayProfit = 0.0,
+    this.yesterdayRevenue = 0.0,
+    this.yesterdayProfit = 0.0,
     this.todayTransactions = 0,
     this.lowStockAlerts = const [],
     this.totalOutstandingDebt = 0.0,
@@ -29,6 +33,8 @@ class DashboardState extends Equatable {
     bool? isLoading,
     double? todayRevenue,
     double? todayProfit,
+    double? yesterdayRevenue,
+    double? yesterdayProfit,
     int? todayTransactions,
     List<String>? lowStockAlerts,
     double? totalOutstandingDebt,
@@ -41,6 +47,8 @@ class DashboardState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
       todayRevenue: todayRevenue ?? this.todayRevenue,
       todayProfit: todayProfit ?? this.todayProfit,
+      yesterdayRevenue: yesterdayRevenue ?? this.yesterdayRevenue,
+      yesterdayProfit: yesterdayProfit ?? this.yesterdayProfit,
       todayTransactions: todayTransactions ?? this.todayTransactions,
       lowStockAlerts: lowStockAlerts ?? this.lowStockAlerts,
       totalOutstandingDebt: totalOutstandingDebt ?? this.totalOutstandingDebt,
@@ -56,6 +64,8 @@ class DashboardState extends Equatable {
         isLoading,
         todayRevenue,
         todayProfit,
+        yesterdayRevenue,
+        yesterdayProfit,
         todayTransactions,
         lowStockAlerts,
         totalOutstandingDebt,

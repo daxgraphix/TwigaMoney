@@ -27,13 +27,15 @@ class CustomerAdapter extends TypeAdapter<Customer> {
       createdAt: fields[6] as DateTime?,
       lastTransaction: fields[7] as DateTime?,
       isActive: fields[9] as bool,
+      syncStatus: fields[10] as SyncStatus,
+      updatedAt: fields[11] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Customer obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +55,11 @@ class CustomerAdapter extends TypeAdapter<Customer> {
       ..writeByte(8)
       ..write(obj.address)
       ..writeByte(9)
-      ..write(obj.isActive);
+      ..write(obj.isActive)
+      ..writeByte(10)
+      ..write(obj.syncStatus)
+      ..writeByte(11)
+      ..write(obj.updatedAt);
   }
 
   @override

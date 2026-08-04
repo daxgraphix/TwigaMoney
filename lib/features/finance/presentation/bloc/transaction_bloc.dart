@@ -1,10 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:fpdart/fpdart.dart';
+import '../../../../core/error/failure.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/repositories/transaction_repository.dart';
 
-
 // Events
+// ... (events remain same)
 abstract class TransactionEvent extends Equatable {
   @override
   List<Object?> get props => [];
@@ -84,7 +86,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     Emitter<TransactionState> emit,
   ) async {
     emit(TransactionLoading(transactions: state.transactions));
-    final result = await repository.getTransactions();
+    
+    final result = await TaskEither.tryCatch(
+      () => repository.getTransactions(),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to load transactions: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(TransactionError(failure.message, transactions: state.transactions)),
       (transactions) => emit(TransactionLoaded(transactions)),
@@ -95,7 +102,11 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     AddTransactionEvent event,
     Emitter<TransactionState> emit,
   ) async {
-    final result = await repository.addTransaction(event.transaction);
+    final result = await TaskEither.tryCatch(
+      () => repository.addTransaction(event.transaction),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to add transaction: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(TransactionError(failure.message, transactions: state.transactions)),
       (newTransaction) {
@@ -109,7 +120,11 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     UpdateTransactionEvent event,
     Emitter<TransactionState> emit,
   ) async {
-    final result = await repository.updateTransaction(event.transaction);
+    final result = await TaskEither.tryCatch(
+      () => repository.updateTransaction(event.transaction),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to update transaction: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(TransactionError(failure.message, transactions: state.transactions)),
       (_) {
@@ -125,7 +140,11 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     DeleteTransactionEvent event,
     Emitter<TransactionState> emit,
   ) async {
-    final result = await repository.deleteTransaction(event.id);
+    final result = await TaskEither.tryCatch(
+      () => repository.deleteTransaction(event.id),
+      (error, stackTrace) => error is Failure ? error : DatabaseFailure('Failed to delete transaction: $error'),
+    ).flatMap((either) => TaskEither.fromEither(either)).run();
+
     result.fold(
       (failure) => emit(TransactionError(failure.message, transactions: state.transactions)),
       (_) {
