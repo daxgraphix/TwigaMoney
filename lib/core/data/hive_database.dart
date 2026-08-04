@@ -164,6 +164,8 @@ class HiveDatabase {
       put('json', v.toJson());
     } else if (v is StockMovement) {
       put('json', v.toJson());
+    } else if (v is Shift) {
+      put('json', v.toJson());
     } else if (v is Map) {
       return Map<String, dynamic>.from(v);
     } else if (v is num || v is bool || v is String) {
@@ -232,6 +234,7 @@ class HiveDatabase {
       salesTransactionBox.clear(),
       stockMovementBox.clear(),
       customerTransactionBox.clear(),
+      shiftBox.clear(),
       plannerEventsBox.clear(),
       plannerNotesBox.clear(),
     ]);
@@ -353,13 +356,10 @@ class HiveDatabase {
     // Shifts
     final shiftData = boxes[shiftBoxName];
     if (shiftData is Map) {
-      // for (final entry in shiftData.entries) {
-      //   // final m = entry.value as Map<String, dynamic>;
-      //   // Assuming Shift has a fromJson if we want to import, but for now we might not have it.
-      //   // If Shift is a plain class with @HiveType, Hive might handle it if we put the object.
-      //   // However, for generic import/export we usually need to/from Json.
-      //   // Let's check Shift class again. It doesn't have fromJson.
-      // }
+      for (final entry in shiftData.entries) {
+        final m = entry.value as Map<String, dynamic>;
+        await shiftBox.put(entry.key, Shift.fromJson(m['json'] ?? m));
+      }
     }
 
     // Planner events
@@ -403,6 +403,7 @@ class HiveDatabase {
       salesTransactionBox.clear(),
       stockMovementBox.clear(),
       customerTransactionBox.clear(),
+      shiftBox.clear(),
       plannerEventsBox.clear(),
       plannerNotesBox.clear(),
     ]);
@@ -420,6 +421,7 @@ class HiveDatabase {
       'recurringTransactions': recurringTransactionBox.values.map((e) => e.toJson()).toList(),
       'stockMovements': stockMovementBox.values.map((e) => e.toJson()).toList(),
       'customerTransactions': customerTransactionBox.values.map((e) => e.toJson()).toList(),
+      'shifts': shiftBox.values.map((e) => e.toJson()).toList(),
     };
   }
 }

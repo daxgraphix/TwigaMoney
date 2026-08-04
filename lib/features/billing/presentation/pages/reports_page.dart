@@ -7,7 +7,6 @@ import 'package:pdf/widgets.dart' as pdf_widgets;
 import 'package:csv/csv.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import '../bloc/analytics/analytics_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -51,24 +50,14 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
   Future<void> _exportReportToPDF() async {
     final l10n = AppLocalizations.of(context)!;
     
-    if (Platform.isAndroid) {
-      final status = await Permission.storage.request();
-      if (status.isDenied) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.storagePermissionRequired)),
-          );
-        }
-        return;
-      }
-    }
-
     try {
       final pdf = pdf_widgets.Document();
+      final state = context.read<AnalyticsBloc>().state;
+      final transactions = state.transactions;
+      
       pdf.addPage(
         pdf_widgets.Page(
           build: (pdf_widgets.Context contextInside) {
-            final l10n = AppLocalizations.of(context)!;
             return pdf_widgets.Column(
               crossAxisAlignment: pdf_widgets.CrossAxisAlignment.start,
               children: [
@@ -78,6 +67,8 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                 pdf_widgets.Text(l10n.period(DateFormat('yyyy-MM-dd').format(_startDate), DateFormat('yyyy-MM-dd').format(_endDate))),
                 pdf_widgets.SizedBox(height: 20),
                 pdf_widgets.Text(l10n.reportGeneratedOn(DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now()))),
+                pdf_widgets.SizedBox(height: 20),
+                pdf_widgets.Text('Total Transactions: ${transactions.length}'),
               ],
             );
           },
@@ -88,16 +79,16 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
       final file = File('${dir.path}/report_${DateTime.now().millisecondsSinceEpoch}.pdf');
       await file.writeAsBytes(await pdf.save());
 
-      await Share.shareXFiles([XFile(file.path)], text: AppLocalizations.of(context)!.twigaMoneyReport);
+      await Share.shareXFiles([XFile(file.path)], text: l10n.twigaMoneyReport);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.reportExportedSuccessfully)),
+          SnackBar(content: Text(l10n.reportExportedSuccessfully)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.exportFailed(e.toString())), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.exportFailed(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
@@ -106,21 +97,8 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
   Future<void> _exportReportToCSV() async {
     final l10n = AppLocalizations.of(context)!;
     
-    if (Platform.isAndroid) {
-      final status = await Permission.storage.request();
-      if (status.isDenied) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.storagePermissionRequired)),
-          );
-        }
-        return;
-      }
-    }
-
     try {
       final state = context.read<AnalyticsBloc>().state;
-      final l10n = AppLocalizations.of(context)!;
       final transactions = state.transactions;
       final csvData = [
         ['ID', l10n.description, l10n.amount, l10n.date, l10n.type],
@@ -138,16 +116,16 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
       final file = File('${dir.path}/report_${DateTime.now().millisecondsSinceEpoch}.csv');
       await file.writeAsString(csv);
 
-      await Share.shareXFiles([XFile(file.path)], text: '${AppLocalizations.of(context)!.twigaMoneyReport} CSV');
+      await Share.shareXFiles([XFile(file.path)], text: '${l10n.twigaMoneyReport} CSV');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.csvReportExported)),
+          SnackBar(content: Text(l10n.csvReportExported)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.exportFailed(e.toString())), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.exportFailed(e.toString())), backgroundColor: Colors.red),
         );
       }
     }

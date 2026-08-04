@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:csv/csv.dart';
 
 import 'package:twigamoney/core/service_locator.dart' as di;
 import 'package:twigamoney/l10n/app_localizations.dart';
@@ -786,23 +790,34 @@ class _ReportsTabState extends State<ReportsTab> {
   Future<void> _exportReport(MonthlyReport report) async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final csv = StringBuffer();
-      csv.writeln('Description,Category,Type,Amount,Date');
-      for (final t in report.transactions) {
-        csv.writeln(
-            '"${t.description}","${t.categoryId}",${t.type},${t.amount},${t.date.toIso8601String()}');
+      final csvData = [
+        [l10n.description, l10n.category, l10n.type, l10n.amount, l10n.date],
+        ...report.transactions.map((t) => [
+              t.description,
+              t.categoryId,
+              t.type.toString(),
+              t.amount.toString(),
+              t.date.toIso8601String(),
+            ]),
+      ];
+      final csv = const ListToCsvConverter().convert(csvData);
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/monthly_report_${DateTime.now().millisecondsSinceEpoch}.csv');
+      await file.writeAsString(csv);
+
+      await Share.shareXFiles([XFile(file.path)], text: l10n.monthlyReport);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.reportExportedSuccessfully)),
+        );
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              l10n.reportExportedCount(report.transactions.length)),
-          action: SnackBarAction(
-              label: l10n.share, onPressed: () => _shareReport(report)),
-        ),
-      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('${l10n.exportFailed(e.toString())}'), backgroundColor: Colors.red));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.exportFailed(e.toString())), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -817,10 +832,11 @@ ${l10n.netPosition}: ${report.netIncome}
 
 ${l10n.transactions}: ${report.transactions.length}
 ''';
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${l10n.reportReadyShare}\n$summary')));
+    
+    await Share.share(summary, subject: l10n.monthlyReport);
   }
 }
+
 
 // The other tabs (AccountsTab, BudgetsTab, CategoriesTab, PlannerTab) are identical to the version you pasted
 // (they were already correct and render properly).

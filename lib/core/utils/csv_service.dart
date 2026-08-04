@@ -1,35 +1,17 @@
 import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../features/product/domain/entities/product.dart';
 
 class CsvService {
-  static const String _productsFileName = 'products_export.csv';
-
   /// Export products to CSV file
   static Future<String?> exportProducts(List<Product> products, AppLocalizations l10n) async {
     try {
-      // Request storage permission
-      final status = await Permission.storage.request();
-      if (!status.isGranted) {
-        throw Exception('Storage permission denied');
-      }
-
-      // Get downloads directory
-      final directory = await getExternalStorageDirectory();
-      if (directory == null) {
-        throw Exception('Could not access storage directory');
-      }
-
-      final downloadsDir = Directory('${directory.path}/Download');
-      if (!downloadsDir.existsSync()) {
-        downloadsDir.createSync(recursive: true);
-      }
-
-      final filePath = '${downloadsDir.path}/$_productsFileName';
+      // Get temporary directory (no permissions required for sharing)
+      final directory = await getTemporaryDirectory();
+      final filePath = '${directory.path}/products_export_${DateTime.now().millisecondsSinceEpoch}.csv';
 
       // Convert products to CSV data
       final csvData = _productsToCsv(products, l10n);

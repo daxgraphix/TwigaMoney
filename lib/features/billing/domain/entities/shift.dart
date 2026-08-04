@@ -34,6 +34,30 @@ class Shift extends Equatable {
   @override
   List<Object?> get props => [id, startTime, endTime, cashierId, totalSales, totalProfit, cashDrop];
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'startTime': startTime.toIso8601String(),
+      'endTime': endTime?.toIso8601String(),
+      'cashierId': cashierId,
+      'totalSales': totalSales,
+      'totalProfit': totalProfit,
+      'cashDrop': cashDrop,
+    };
+  }
+
+  factory Shift.fromJson(Map<String, dynamic> json) {
+    return Shift(
+      id: json['id'] as String,
+      startTime: DateTime.parse(json['startTime'] as String),
+      endTime: json['endTime'] != null ? DateTime.parse(json['endTime'] as String) : null,
+      cashierId: json['cashierId'] as String,
+      totalSales: (json['totalSales'] as num).toDouble(),
+      totalProfit: (json['totalProfit'] as num).toDouble(),
+      cashDrop: (json['cashDrop'] as num).toDouble(),
+    );
+  }
+
   Shift copyWith({
     String? id,
     DateTime? startTime,

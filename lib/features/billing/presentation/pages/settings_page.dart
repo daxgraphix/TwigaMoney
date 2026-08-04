@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:csv/csv.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/data/hive_database.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -25,6 +26,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   late String _selectedCurrency;
   late String _selectedDateFormat;
+  late String _selectedLanguage;
   late bool _isDarkMode;
 
   @override
@@ -37,6 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final settingsBox = Hive.box('settings');
     _selectedCurrency = settingsBox.get('selectedCurrency', defaultValue: 'TZS');
     _selectedDateFormat = settingsBox.get('dateFormat', defaultValue: 'dd MMM yyyy');
+    _selectedLanguage = settingsBox.get('languageCode', defaultValue: 'en');
     // Read darkMode bool first, then fall back to themeMode string for backward compat
     _isDarkMode = settingsBox.get('darkMode',
             defaultValue: settingsBox.get('themeMode', defaultValue: 'light') == 'dark') as bool;
@@ -47,6 +50,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       if (key == 'selectedCurrency') _selectedCurrency = value;
       if (key == 'dateFormat') _selectedDateFormat = value;
+      if (key == 'languageCode') _selectedLanguage = value;
       if (key == 'isDarkMode') {
         _isDarkMode = value;
         Hive.box('settings').put('themeMode', value ? 'dark' : 'light');
@@ -63,18 +67,28 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.selectLanguage),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(l10n.english),
-              onTap: () {
-                _saveSetting('languageCode', 'en');
-                AppTheme.localeNotifier.value = const Locale('en');
-                Navigator.pop(context);
-              },
-            ),
-          ],
+        content: RadioGroup<String>(
+          groupValue: _selectedLanguage,
+          onChanged: (value) {
+            if (value != null) {
+              _saveSetting('languageCode', value);
+              AppTheme.localeNotifier.value = Locale(value);
+              Navigator.pop(context);
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<String>(
+                title: Text(l10n.english),
+                value: 'en',
+              ),
+              RadioListTile<String>(
+                title: Text(l10n.swahili),
+                value: 'sw',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -168,7 +182,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingTile(
                 icon: Icons.language,
                 title: l10n.language,
-                subtitle: l10n.english,
+                subtitle: _selectedLanguage == 'sw' ? l10n.swahili : l10n.english,
                 onTap: _showLanguageDialog,
               ),
               _SettingTile(
@@ -406,7 +420,7 @@ class _SettingsPageState extends State<SettingsPage> {
            '${dir.path}/twigamoney_data_${DateTime.now().millisecondsSinceEpoch}.csv');
        await file.writeAsString(csv);
 
-       await Share.shareXFiles([XFile(file.path)], text: 'TwigaMoney Data Backup');
+       await Share.shareXFiles([XFile(file.path)], text: l10n.backupData);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -437,7 +451,7 @@ class _SettingsPageState extends State<SettingsPage> {
       await file.writeAsString(jsonData);
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'TwigaMoney Data Backup',
+        text: l10n.backupData,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -456,30 +470,16 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _restoreData() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final dir = await getTemporaryDirectory();
-      // Find the most recent backup file in the temp directory
-      final tempDir = Directory(dir.path);
-      final entities = await tempDir.list().toList();
-      final backupEntry = entities
-          .whereType<File>()
-          .where((f) => f.path.contains('twigamoney_backup_') && f.path.endsWith('.json'))
-          .cast<File>()
-          .toList()
-        ..sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
 
-      if (backupEntry.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.noBackupFound),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
+      if (result == null || result.files.single.path == null) {
         return;
       }
 
-      final backupFile = backupEntry.first;
+      final backupFile = File(result.files.single.path!);
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(

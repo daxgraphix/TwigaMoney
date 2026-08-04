@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:twigamoney/l10n/app_localizations.dart';
 
 import '../bloc/product_bloc.dart';
@@ -449,14 +450,14 @@ class _ProductListPageState extends State<ProductListPage> {
     final l10n = AppLocalizations.of(context)!;
     try {
       final state = context.read<ProductBloc>().state;
-      if (state.status == ProductStatus.loaded) {
+      if (state.products.isNotEmpty) {
         final filePath = await CsvService.exportProducts(state.products, l10n);
         if (filePath != null && mounted) {
+          await Share.shareXFiles([XFile(filePath)], text: l10n.exportCsv);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(l10n.productsExportedTo(filePath)),
+              content: Text(l10n.reportExportedSuccessfully),
               backgroundColor: Colors.green,
-              duration: const Duration(seconds: 5),
             ),
           );
         }

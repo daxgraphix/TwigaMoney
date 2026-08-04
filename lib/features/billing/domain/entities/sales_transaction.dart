@@ -3,7 +3,7 @@ import '../../../../core/data/sync_status.dart';
 
 part 'sales_transaction.g.dart';
 
-@HiveType(typeId: 21)
+@HiveType(typeId: 27)
 enum TransactionStatus {
   @HiveField(0)
   pending,

@@ -89,7 +89,7 @@ class SalesTransactionAdapter extends TypeAdapter<SalesTransaction> {
 
 class TransactionStatusAdapter extends TypeAdapter<TransactionStatus> {
   @override
-  final int typeId = 21;
+  final int typeId = 27;
 
   @override
   TransactionStatus read(BinaryReader reader) {
