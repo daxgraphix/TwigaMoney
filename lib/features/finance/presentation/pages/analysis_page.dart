@@ -507,8 +507,8 @@ class _AnalysisPageState extends State<AnalysisPage> {
           crossAxisSpacing: 12,
           childAspectRatio: 2.5,
           children: [
-            _buildStatCard('Projected Revenue', report.projectedRevenue, Colors.purple, symbol),
-            _buildStatCard('Projected Profit', report.projectedProfit, Colors.deepPurple, symbol),
+            _buildStatCard('Projected Revenue', report.projectedRevenue, Colors.purple, symbol, Icons.trending_up),
+            _buildStatCard('Projected Profit', report.projectedProfit, Colors.deepPurple, symbol, Icons.payments),
           ],
         ),
       ],

@@ -320,7 +320,7 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
       itemCount: dayEvents.length,
       itemBuilder: (context, index) {
         return Container(
-          margin: const EdgeInsets.bottom(12),
+          margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -369,7 +369,7 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
       itemCount: _notes.length,
       itemBuilder: (context, index) {
         return Container(
-          margin: const EdgeInsets.bottom(12),
+          margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
             borderRadius: BorderRadius.circular(16),

@@ -141,12 +141,15 @@ class _HomePageState extends State<HomePage> {
                               style: const TextStyle(
                                   color: Colors.white70, fontSize: 13)),
                           const SizedBox(height: 2),
-                          Text(
-                            '$symbol${totalBalance.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '$symbol${totalBalance.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ],
                       ),

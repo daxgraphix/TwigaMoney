@@ -170,9 +170,10 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
 
   Future<void> _exportReportToCSV() async {
     try {
+      final l10n = AppLocalizations.of(context)!;
       final sales = _reportData['sales'] as List<SalesTransaction>? ?? [];
       final csvData = [
-        ['ID', 'Product', 'Quantity', 'Revenue', 'Profit', 'Date'],
+        ['ID', l10n.products, l10n.quantity, l10n.revenue, l10n.profit, l10n.date],
         ...sales.map((s) => [
               s.id,
               s.productName,
@@ -218,7 +219,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                value: reportType,
+                initialValue: reportType,
                 decoration: InputDecoration(labelText: l10n.reportType),
                 items: [
                   DropdownMenuItem(value: 'Sales', child: Text(l10n.salesReport)),
@@ -840,12 +841,16 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.5,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
             const SizedBox(height: 4),

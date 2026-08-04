@@ -8,7 +8,7 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/data/hive_database.dart';
@@ -25,7 +25,6 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppTheme.primaryColor;
 
     return Scaffold(
@@ -50,7 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       subtitle: themeMode == ThemeMode.dark ? l10n.enabled : l10n.disabled,
                       trailingWidget: Switch(
                         value: themeMode == ThemeMode.dark,
-                        activeColor: primary,
+                        activeThumbColor: primary,
                         onChanged: (value) {
                           AppTheme.themeModeNotifier.value =
                               value ? ThemeMode.dark : ThemeMode.light;
@@ -388,7 +387,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text(l10n.continue_, style: const TextStyle(color: Colors.white)),
+              child: Text(l10n.continueButton, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),

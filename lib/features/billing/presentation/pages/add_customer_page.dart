@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 
@@ -99,7 +99,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: '${l10n.emailAddress} (${l10n.optional ?? "Optional"})',
+                  labelText: '${l10n.emailAddress} (${l10n.optional})',
                   prefixIcon: const Icon(Icons.email),
                 ),
                 validator: (value) {
@@ -117,7 +117,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
                 controller: _addressController,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  labelText: '${l10n.addressLine1} (${l10n.optional ?? "Optional"})',
+                  labelText: '${l10n.addressLine1} (${l10n.optional})',
                   prefixIcon: const Icon(Icons.location_on),
                 ),
               ),

@@ -1,4 +1,3 @@
-import 'package:twigamoney/core/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -21,7 +20,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = AppTheme.primaryColor;
 
     return PopScope(
         canPop: false,
@@ -267,37 +265,5 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
           ),
         ));
-  }
-
-  Widget _buildHeaderCell(String text, TextAlign align) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      child: Text(
-        text.toUpperCase(),
-        textAlign: align,
-        style: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1,
-          color: Colors.grey,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDataCell(String text, TextAlign align,
-      {bool isBold = false, bool isSubtitle = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      child: Text(
-        text,
-        textAlign: align,
-        style: TextStyle(
-          fontSize: isSubtitle ? 12 : 14,
-          fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-          color: isSubtitle ? Colors.grey[500] : Colors.black87,
-        ),
-      ),
-    );
   }
 }

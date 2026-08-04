@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../shop/presentation/bloc/shop_bloc.dart';
@@ -119,9 +119,9 @@ class _DashboardPageState extends State<DashboardPage> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(40),
                         bottomRight: Radius.circular(40),
                       ),

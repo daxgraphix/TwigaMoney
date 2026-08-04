@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 
 import '../bloc/product_bloc.dart';
 import '../../domain/entities/product.dart';

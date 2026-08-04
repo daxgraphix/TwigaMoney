@@ -1,12 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/data/hive_database.dart';
-import '../../../../core/utils/responsive.dart';
 import '../../../product/domain/entities/product.dart';
 import '../../../product/presentation/bloc/product_bloc.dart';
 import '../bloc/billing_bloc.dart';
@@ -26,7 +23,6 @@ class _NewSalePageState extends State<NewSalePage> {
   final TextEditingController _notesController = TextEditingController();
   String? _selectedProductId;
   List<Product> _availableProducts = [];
-  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -37,27 +33,12 @@ class _NewSalePageState extends State<NewSalePage> {
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
     _productNameController.dispose();
     _priceController.dispose();
     _qtyController.dispose();
     _discountController.dispose();
     _notesController.dispose();
     super.dispose();
-  }
-
-  bool get _canAddToCart {
-    final name = _productNameController.text.trim();
-    final price = double.tryParse(_priceController.text) ?? 0;
-    final qty = int.tryParse(_qtyController.text) ?? 1;
-    return (name.isNotEmpty || _selectedProductId != null) && price > 0 && qty > 0;
-  }
-
-  void _debouncedRebuild() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      if (mounted) setState(() {});
-    });
   }
 
   void _addManualToCart() {
@@ -110,9 +91,10 @@ class _NewSalePageState extends State<NewSalePage> {
       _selectedProductId = null;
     });
     
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$productName added to cart'),
+        content: Text(l10n.productAddedToCart),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 1),
       ),
@@ -144,10 +126,10 @@ class _NewSalePageState extends State<NewSalePage> {
                   padding: const EdgeInsets.only(right: 8.0),
                   child: IconButton(
                     onPressed: () {
-                      context.read<BillingBloc>().add(const ClearCartEvent());
+                      context.read<BillingBloc>().add(ClearCartEvent());
                     },
                     icon: const Icon(Icons.delete_sweep_outlined, color: Colors.redAccent),
-                    tooltip: 'Clear Cart',
+                    tooltip: l10n.clearAll,
                   ),
                 ),
             ],

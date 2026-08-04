@@ -3,13 +3,14 @@ import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../features/product/domain/entities/product.dart';
 
 class CsvService {
   static const String _productsFileName = 'products_export.csv';
 
   /// Export products to CSV file
-  static Future<String?> exportProducts(List<Product> products) async {
+  static Future<String?> exportProducts(List<Product> products, AppLocalizations l10n) async {
     try {
       // Request storage permission
       final status = await Permission.storage.request();
@@ -31,7 +32,7 @@ class CsvService {
       final filePath = '${downloadsDir.path}/$_productsFileName';
 
       // Convert products to CSV data
-      final csvData = _productsToCsv(products);
+      final csvData = _productsToCsv(products, l10n);
 
       // Write to file
       final file = File(filePath);
@@ -107,16 +108,16 @@ class CsvService {
   }
 
   /// Convert products list to CSV string
-  static String _productsToCsv(List<Product> products) {
+  static String _productsToCsv(List<Product> products, AppLocalizations l10n) {
     final headers = [
       'ID',
-      'Name',
+      l10n.productName,
       'Barcode',
-      'Price',
+      l10n.price,
       'Cost Price',
-      'Stock',
+      l10n.stock,
       'Min Stock Threshold',
-      'Category',
+      l10n.category,
       'Discount Percentage',
       'Tax Percentage',
       'Last Stock Update',
@@ -146,7 +147,7 @@ class CsvService {
   }
 
   /// Get CSV template for products
-  static String getProductsTemplate() {
+  static String getProductsTemplate(AppLocalizations l10n) {
     return _productsToCsv([
       Product(
         id: 'sample-id',
@@ -162,6 +163,6 @@ class CsvService {
         lastStockUpdate: DateTime.now(),
         totalSold: 0,
       )
-    ]);
+    ], l10n);
   }
 }

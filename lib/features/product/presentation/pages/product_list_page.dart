@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 
 import '../bloc/product_bloc.dart';
 import '../../domain/entities/product.dart';
@@ -452,7 +452,7 @@ class _ProductListPageState extends State<ProductListPage> {
     try {
       final state = context.read<ProductBloc>().state;
       if (state.status == ProductStatus.loaded) {
-        final filePath = await CsvService.exportProducts(state.products);
+        final filePath = await CsvService.exportProducts(state.products, l10n);
         if (filePath != null && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

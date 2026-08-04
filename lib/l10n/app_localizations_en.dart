@@ -48,7 +48,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordsNotMatch => 'Passwords do not match';
 
   @override
-  String get acceptTerms => 'I agree to the Terms & Conditions and Privacy Policy';
+  String get acceptTerms =>
+      'I agree to the Terms & Conditions and Privacy Policy';
 
   @override
   String get signIn => 'Sign In';
@@ -66,19 +67,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get secureFastReliable => 'Secure • Fast • Reliable';
 
   @override
-  String get invalidCredentials => 'Invalid email or password. Please try again.';
+  String get invalidCredentials =>
+      'Invalid email or password. Please try again.';
 
   @override
-  String get emailNotConfirmed => 'Please check your email and click the verification link.';
+  String get emailNotConfirmed =>
+      'Please check your email and click the verification link.';
 
   @override
-  String get userAlreadyRegistered => 'An account with this email already exists. Try logging in instead.';
+  String get userAlreadyRegistered =>
+      'An account with this email already exists. Try logging in instead.';
 
   @override
   String get pleaseAcceptTerms => 'Please accept the Terms and Conditions';
 
   @override
-  String get checkEmailVerification => 'Please check your email to verify your account';
+  String get checkEmailVerification =>
+      'Please check your email to verify your account';
 
   @override
   String get settings => 'Settings';
@@ -144,7 +149,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connected => 'CONNECTED';
 
   @override
-  String get connectNewDevice => 'Export reports and invoices from the settings screen.';
+  String get connectNewDevice =>
+      'Export reports and invoices from the settings screen.';
 
   @override
   String get data => 'Data';
@@ -159,7 +165,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreData => 'Restore Data';
 
   @override
-  String get restoreFromBackup => 'Restore from a backup file';
+  String get restoreFromBackup => 'Restore from backup';
 
   @override
   String get about => 'About';
@@ -171,7 +177,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get version => 'Version';
 
   @override
-  String get appDescription => 'TwigaMoney is a personal finance management & budgeting app that helps you track your money use. This powerful spending tracker saves your money as you can see where your Money goes. It has daily expense tracker, free budget planner, intuitive analysis and many powerful features everything is offline, no internet needed.';
+  String get appDescription =>
+      'TwigaMoney is a personal finance management & budgeting app that helps you track your money use. This powerful spending tracker saves your money as you can see where your Money goes. It has daily expense tracker, free budget planner, intuitive analysis and many powerful features everything is offline, no internet needed.';
 
   @override
   String get features => 'Features:';
@@ -192,7 +199,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
-  String get selectLanguage => 'Select app language';
+  String get selectLanguage => 'Select Language';
 
   @override
   String get calendar => 'Calendar';
@@ -387,10 +394,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectPrinter => 'Export Data';
 
   @override
-  String get printReceipt => 'Complete Sale';
+  String get printReceipt => 'Print Receipt';
+
+  @override
+  String get completeSale => 'Complete Sale';
 
   @override
   String get noPrinter => 'No export selected';
+
+  @override
+  String get checkout => 'Checkout';
+
+  @override
+  String get cartIsEmpty => 'Your cart is empty';
+
+  @override
+  String get processing => 'Processing...';
 
   @override
   String get userManagement => 'User Management';
@@ -411,6 +430,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editCustomer => 'Edit Customer';
 
   @override
+  String get updateCustomer => 'Update Customer';
+
+  @override
+  String get deleteCustomer => 'Delete Customer';
+
+  @override
+  String get customerTransactions => 'Customer Transactions';
+
+  @override
+  String transactionWithId(Object id) {
+    return 'Transaction #$id';
+  }
+
+  @override
   String get productManagement => 'Product Management';
 
   @override
@@ -418,6 +451,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editProduct => 'Edit Product';
+
+  @override
+  String get deleteProduct => 'Delete Product';
+
+  @override
+  String get restock => 'Restock';
+
+  @override
+  String get stockQuantity => 'Stock Quantity';
+
+  @override
+  String get productName => 'Product Name';
+
+  @override
+  String get price => 'Price';
+
+  @override
+  String get searchProducts => 'Search products...';
+
+  @override
+  String get noProductsFound => 'No products found';
+
+  @override
+  String get addFirstProduct => 'Tap the + button to add your first product';
+
+  @override
+  String get noProductsMatchSearch => 'No products match your search';
+
+  @override
+  String get exportCsv => 'Export CSV';
+
+  @override
+  String get importCsv => 'Import CSV';
+
+  @override
+  String get downloadTemplate => 'Download Template';
+
+  @override
+  String productsExportedTo(Object path) {
+    return 'Products exported to: $path';
+  }
+
+  @override
+  String productsImportedSuccessfully(Object count) {
+    return '$count products imported successfully';
+  }
+
+  @override
+  String get csvTemplate => 'CSV Template';
+
+  @override
+  String get csvTemplateNote =>
+      'Use this format for your CSV file:\n\nID,Name,Description,Price,Cost Price,Barcode,Category,Stock Quantity,Min Stock Level,Image URL\nsample-1,Sample Product,Description,10.0,7.0,123456789,Category,100,10,\n\nNote: ID should be unique. Leave empty for auto-generation.';
+
+  @override
+  String confirmDeleteProduct(Object name) {
+    return 'Are you sure you want to delete $name?';
+  }
+
+  @override
+  String returnProduct(Object name) {
+    return 'Return $name';
+  }
+
+  @override
+  String get quantityToReturn => 'Quantity to Return';
 
   @override
   String get stockAdjustment => 'Stock Adjustment';
@@ -456,4 +555,896 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scan => 'Scan';
+
+  @override
+  String get addItem => 'Add Item';
+
+  @override
+  String get searchProduct => 'Search Product';
+
+  @override
+  String get qty => 'Qty';
+
+  @override
+  String get discountPercent => 'Discount (%)';
+
+  @override
+  String get currentCart => 'Current Cart';
+
+  @override
+  String get quickSave => 'Quick Save';
+
+  @override
+  String get orderDetails => 'Order Details';
+
+  @override
+  String get scanToPay => 'Scan to Pay';
+
+  @override
+  String itemsInCart(Object count) {
+    return '$count items in cart';
+  }
+
+  @override
+  String get business => 'Business';
+
+  @override
+  String get dataManagement => 'Data Management';
+
+  @override
+  String get support => 'Support';
+
+  @override
+  String get ownerProfile => 'Owner Profile';
+
+  @override
+  String get ownerProfileDesc => 'Your personal information';
+
+  @override
+  String get clearCache => 'Clear Cache';
+
+  @override
+  String get clearCacheDesc => 'Free up space by clearing temp files';
+
+  @override
+  String get helpCenter => 'Help Center';
+
+  @override
+  String get helpCenterDesc => 'FAQs and guides';
+
+  @override
+  String hello(Object name) {
+    return 'Hello, $name';
+  }
+
+  @override
+  String get businessSummary => 'Here is your business summary';
+
+  @override
+  String get netPosition => 'Net Position';
+
+  @override
+  String get cashBalance => 'Cash Balance';
+
+  @override
+  String get customerDebt => 'Customer Debt';
+
+  @override
+  String get keyMetrics => 'Key Metrics';
+
+  @override
+  String get sellItems => 'Sell items';
+
+  @override
+  String get operations => 'Operations';
+
+  @override
+  String get dailyTasks => 'Daily tasks';
+
+  @override
+  String get inventory => 'Inventory';
+
+  @override
+  String get manageStock => 'Manage stock';
+
+  @override
+  String get analytics => 'Analytics';
+
+  @override
+  String get fullReports => 'Full reports';
+
+  @override
+  String get manageDebt => 'Manage debt';
+
+  @override
+  String get tasksAndNotes => 'Tasks & Notes';
+
+  @override
+  String get overdueCollections => 'Overdue Collections';
+
+  @override
+  String overdueDebtMessage(Object amount, Object symbol) {
+    return 'You have $symbol$amount in overdue debt.';
+  }
+
+  @override
+  String get lowStockWarning => 'Low Stock Warning';
+
+  @override
+  String lowStockMessage(Object count) {
+    return '$count items are running low on stock.';
+  }
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get myShop => 'My Shop';
+
+  @override
+  String get user => 'User';
+
+  @override
+  String get totalBalance => 'Total Balance';
+
+  @override
+  String get totalIncome => 'Total Income';
+
+  @override
+  String get totalExpenses => 'Total Expenses';
+
+  @override
+  String get netSavings => 'Net Savings';
+
+  @override
+  String get noTransactionsYet => 'No transactions yet';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get budgetAlerts => 'Budget Alerts';
+
+  @override
+  String percentSpent(Object percent) {
+    return '$percent% spent';
+  }
+
+  @override
+  String get monthlyOutlook => 'Monthly Outlook';
+
+  @override
+  String get predictive => 'Predictive';
+
+  @override
+  String get estMonthEndBalance => 'Est. Month-End Balance';
+
+  @override
+  String get enabled => 'Enabled';
+
+  @override
+  String get disabled => 'Disabled';
+
+  @override
+  String get selectCurrency => 'Select Currency';
+
+  @override
+  String get tanzanianShilling => 'Tanzanian Shilling (TZS)';
+
+  @override
+  String get usDollar => 'US Dollar (USD)';
+
+  @override
+  String get shopProfile => 'Shop Profile';
+
+  @override
+  String get shopName => 'Shop Name';
+
+  @override
+  String get addressLine1 => 'Address Line 1';
+
+  @override
+  String get addressLine2 => 'Address Line 2';
+
+  @override
+  String get phoneNumber => 'Phone Number';
+
+  @override
+  String get upiPaymentId => 'UPI / Payment ID';
+
+  @override
+  String get shopLogoText => 'Shop Logo Text';
+
+  @override
+  String get receiptFooter => 'Receipt Footer';
+
+  @override
+  String get thankYouMessage => 'Thank you message';
+
+  @override
+  String get textShownOnReceipts => 'Text shown on receipts';
+
+  @override
+  String get myProfile => 'My Profile';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profile updated successfully';
+
+  @override
+  String get shopProfileUpdatedSuccessfully =>
+      'Shop profile updated successfully';
+
+  @override
+  String get cacheClearedSuccessfully => 'Cache cleared successfully';
+
+  @override
+  String errorClearingCache(Object error) {
+    return 'Error clearing cache: $error';
+  }
+
+  @override
+  String get backupCreatedAndShared => 'Backup created and shared';
+
+  @override
+  String backupFailed(Object error) {
+    return 'Backup failed: $error';
+  }
+
+  @override
+  String get restoreDataConfirm =>
+      'This will replace ALL current data with the selected backup file.\n\nThis action cannot be undone.';
+
+  @override
+  String get continueButton => 'Continue';
+
+  @override
+  String get restoreSuccessful =>
+      'Data restored successfully. Please restart the app.';
+
+  @override
+  String restoreFailed(Object error) {
+    return 'Restore failed: $error';
+  }
+
+  @override
+  String exportFailed(Object error) {
+    return 'Export failed: $error';
+  }
+
+  @override
+  String get dataExportedAndShared => 'Data exported and shared successfully';
+
+  @override
+  String get nameAddressContact => 'Name, address, and contact info';
+
+  @override
+  String get required => 'required';
+
+  @override
+  String get shopNameRequired => 'Shop Name is required';
+
+  @override
+  String get addressRequired => 'Address Line 1 is required';
+
+  @override
+  String get refreshList => 'Refresh List';
+
+  @override
+  String get searchCustomerHint => 'Search by name, phone or email...';
+
+  @override
+  String get active => 'Active';
+
+  @override
+  String get inactive => 'Inactive';
+
+  @override
+  String get debt => 'Debt';
+
+  @override
+  String get good => 'Good';
+
+  @override
+  String get paid => 'Paid';
+
+  @override
+  String get warning => 'Warning';
+
+  @override
+  String get overdue => 'Overdue';
+
+  @override
+  String get viewTransactions => 'View Transactions';
+
+  @override
+  String get deactivate => 'Deactivate';
+
+  @override
+  String get activate => 'Activate';
+
+  @override
+  String get phone => 'Phone';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get creditLimit => 'Credit Limit';
+
+  @override
+  String get availableCredit => 'Available Credit';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get created => 'Created';
+
+  @override
+  String get lastTransaction => 'Last Transaction';
+
+  @override
+  String confirmDeleteCustomer(Object name) {
+    return 'Are you sure you want to delete $name? This action cannot be undone.';
+  }
+
+  @override
+  String get customerDeletedSuccessfully => 'Customer deleted successfully';
+
+  @override
+  String failedToLoadCustomers(Object error) {
+    return 'Failed to load customers: $error';
+  }
+
+  @override
+  String errorLoadingCustomers(Object error) {
+    return 'Error loading customers: $error';
+  }
+
+  @override
+  String get customerActivated => 'Customer activated';
+
+  @override
+  String get customerDeactivated => 'Customer deactivated';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get nameIsRequired => 'Name is required';
+
+  @override
+  String get phoneNumberRequired => 'Phone number is required';
+
+  @override
+  String get enterValidEmail => 'Enter a valid email';
+
+  @override
+  String get enterValidCreditLimit => 'Enter a valid credit limit';
+
+  @override
+  String get customerAddedSuccessfully => 'Customer added successfully';
+
+  @override
+  String get customerUpdatedSuccessfully => 'Customer updated successfully';
+
+  @override
+  String failedToLoadCustomer(Object error) {
+    return 'Failed to load customer: $error';
+  }
+
+  @override
+  String get noTransactionsFound => 'No transactions found';
+
+  @override
+  String get totalTransactions => 'Total Transactions';
+
+  @override
+  String get totalAmount => 'Total Amount';
+
+  @override
+  String get numberOfTransactions => 'Number of Transactions';
+
+  @override
+  String get transactionDetails => 'Transaction Details';
+
+  @override
+  String get items => 'Items';
+
+  @override
+  String get customerNotFound => 'Customer not found';
+
+  @override
+  String get pageNotFound => 'Page not found';
+
+  @override
+  String get helpSupport => 'Help & Support';
+
+  @override
+  String get faq => 'Frequently Asked Questions';
+
+  @override
+  String get faqAddProductTitle => 'How do I add a new product?';
+
+  @override
+  String get faqAddProductContent =>
+      'Go to Products > Add Product and fill in the details.';
+
+  @override
+  String get faqProcessSaleTitle => 'How do I process a sale?';
+
+  @override
+  String get faqProcessSaleContent =>
+      'Use the New Sale screen to add items manually or search, then checkout.';
+
+  @override
+  String get faqBackupDataTitle => 'How do I backup my data?';
+
+  @override
+  String get faqBackupDataContent =>
+      'Go to Settings > Data Management > Backup Data.';
+
+  @override
+  String get faqDarkModeTitle => 'How do I switch to dark mode?';
+
+  @override
+  String get faqDarkModeContent =>
+      'Go to Settings > Appearance and select Dark Mode.';
+
+  @override
+  String get faqShopProfileTitle => 'How do I customize my shop profile?';
+
+  @override
+  String get faqShopProfileContent =>
+      'Go to Settings > Shop Details to edit name, address, and contact info.';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get updateProfileInfo => 'Update your name, email, and photo';
+
+  @override
+  String get changePassword => 'Change Password';
+
+  @override
+  String get updateYourPassword => 'Update your password';
+
+  @override
+  String get general => 'General';
+
+  @override
+  String get exports => 'Exports';
+
+  @override
+  String get exportInvoices => 'Export Invoices';
+
+  @override
+  String get exportAsPdf => 'Export as PDF';
+
+  @override
+  String get shareData => 'Share Data';
+
+  @override
+  String get exportAllData => 'Export all data';
+
+  @override
+  String get backupToCloud => 'Backup to cloud';
+
+  @override
+  String get freeUpSpace => 'Free up space';
+
+  @override
+  String get aboutApp => 'About App';
+
+  @override
+  String get termsConditions => 'Terms & Conditions';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get clearAllData => 'Clear All Data';
+
+  @override
+  String get confirmClearAllData =>
+      'Are you sure you want to clear all data? This action cannot be undone.';
+
+  @override
+  String get clearAll => 'Clear All';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get enterNewPassword => 'Enter new password:';
+
+  @override
+  String get passwordUpdated => 'Password updated successfully';
+
+  @override
+  String get noInvoicesToExport => 'No invoices to export';
+
+  @override
+  String get invoiceExportTitle => 'TwigaMoney Invoice Export';
+
+  @override
+  String invoicesExportedAndShared(Object count) {
+    return '$count invoices exported and shared';
+  }
+
+  @override
+  String recordsExportedAsCsv(Object count) {
+    return '$count records exported as CSV';
+  }
+
+  @override
+  String get backingUpData => 'Backing up data...';
+
+  @override
+  String get backupCompleted => 'Backup completed and shared';
+
+  @override
+  String get noBackupFound => 'No backup file found in storage';
+
+  @override
+  String get restoreBackup => 'Restore Backup?';
+
+  @override
+  String restoreConfirmMessage(Object file) {
+    return 'This will replace all current data with the data from this backup.\n\nBackup file:\n$file\n\nThis action cannot be undone.';
+  }
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get cacheCleared => 'Cache cleared';
+
+  @override
+  String get clearCacheConfirm =>
+      'This will free up storage used by temporary files and cached data. Your settings and data will not be affected.';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get allDataCleared => 'All data cleared';
+
+  @override
+  String failedToClearData(Object error) {
+    return 'Failed to clear data: $error';
+  }
+
+  @override
+  String get copyright => '© 2026 TwigaMoney. All rights reserved.';
+
+  @override
+  String get contactSupport => 'Contact Support';
+
+  @override
+  String get videoTutorial => 'Video Tutorial';
+
+  @override
+  String get watchHowToUse => 'Watch how to use TwigaMoney';
+
+  @override
+  String get documentation => 'Documentation';
+
+  @override
+  String get readUserGuide => 'Read the user guide';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get generateCustomReport => 'Generate Custom Report';
+
+  @override
+  String get reportType => 'Report Type';
+
+  @override
+  String get salesReport => 'Sales Report';
+
+  @override
+  String get productsReport => 'Products Report';
+
+  @override
+  String get financeReport => 'Finance Report';
+
+  @override
+  String get customersReport => 'Customers Report';
+
+  @override
+  String get startDate => 'Start Date';
+
+  @override
+  String get endDate => 'End Date';
+
+  @override
+  String get generate => 'Generate';
+
+  @override
+  String customReportPeriod(Object reportType) {
+    return '$reportType report generated for custom period';
+  }
+
+  @override
+  String get exportPdf => 'Export PDF';
+
+  @override
+  String get shareReport => 'Share Report';
+
+  @override
+  String get refreshData => 'Refresh Data';
+
+  @override
+  String get newReport => 'New Report';
+
+  @override
+  String get todaySalesLabel => 'Today\'s Sales';
+
+  @override
+  String get yesterdaySalesLabel => 'Yesterday\'s Sales';
+
+  @override
+  String get totalRevenueLabel => 'Total Revenue';
+
+  @override
+  String get totalProfitLabel => 'Total Profit';
+
+  @override
+  String get revenueTrend => 'Revenue Trend';
+
+  @override
+  String get profitTrend => 'Profit Trend';
+
+  @override
+  String get recentSales => 'Recent Sales';
+
+  @override
+  String get bestSellers => 'Best Sellers';
+
+  @override
+  String get lowTurnoverProducts => 'Low Turnover Products';
+
+  @override
+  String get financialSummary => 'Financial Summary';
+
+  @override
+  String get totalCustomers => 'Total Customers';
+
+  @override
+  String get customerList => 'Customer List';
+
+  @override
+  String get noPhone => 'No phone';
+
+  @override
+  String get balance => 'balance';
+
+  @override
+  String get reportExportedSuccessfully =>
+      'Report exported and shared successfully';
+
+  @override
+  String get csvReportExported => 'CSV report exported and shared';
+
+  @override
+  String get failedToLoadSalesData => 'Failed to load sales data';
+
+  @override
+  String get failedToLoadRevenueData => 'Failed to load revenue data';
+
+  @override
+  String get failedToLoadProfitData => 'Failed to load profit data';
+
+  @override
+  String get failedToLoadProductAnalytics => 'Failed to load product analytics';
+
+  @override
+  String get failedToLoadLowTurnoverData => 'Failed to load low turnover data';
+
+  @override
+  String get failedToLoadFinancialData => 'Failed to load financial data';
+
+  @override
+  String get failedToLoadCustomerData => 'Failed to load customer data';
+
+  @override
+  String errorLoadingReportData(Object error) {
+    return 'Error loading report data: $error';
+  }
+
+  @override
+  String get twigaMoneyReport => 'TwigaMoney Report';
+
+  @override
+  String period(Object end, Object start) {
+    return 'Period: $start to $end';
+  }
+
+  @override
+  String reportGeneratedOn(Object date) {
+    return 'Report generated on $date';
+  }
+
+  @override
+  String transactionsWithCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions',
+      one: '1 transaction',
+      zero: 'No transactions',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shiftStarted => 'Shift started';
+
+  @override
+  String get shiftEnded => 'Shift ended';
+
+  @override
+  String get cashDrop => 'Cash Drop';
+
+  @override
+  String cashDropRecorded(Object amount, Object currency) {
+    return 'Cash drop of $currency $amount recorded';
+  }
+
+  @override
+  String get record => 'Record';
+
+  @override
+  String get shiftActiveStatus => 'Shift is Active';
+
+  @override
+  String get shiftClosedStatus => 'Shift is Closed';
+
+  @override
+  String get recordingSales => 'Currently recording sales';
+
+  @override
+  String get startShiftToBegin => 'Start a shift to begin selling';
+
+  @override
+  String get endCurrentShift => 'End Current Shift';
+
+  @override
+  String get startNewShift => 'Start New Shift';
+
+  @override
+  String get endOfDay => 'End of Day';
+
+  @override
+  String get viewReports => 'View Reports';
+
+  @override
+  String get action => 'Action';
+
+  @override
+  String get appDescriptionLong =>
+      'TwigaMoney is a personal finance management & budgeting app that helps you track your money use. This powerful spending tracker saves your money as you can see where your Money goes. It has daily expense tracker, free budget planner, intuitive analysis and many powerful features everything is offline, no internet needed.\n\nUse it for some days and you will see the differences.\n\nHow to manage Money and track expenses? Just add an expense record when you are spending some. TwigaMoney will take care of it. TwigaMoney is your ultimate budget planner that helps you achieve your budget goals. Too much spending on coffee? Set a budget on coffee and surely, you would not cross the budget target. This limits your expenses and helps you control your spending behaviour. If you really want to save Money and understand your expenses, TwigaMoney is the perfect app that can help you.';
+
+  @override
+  String get keyFeatures => 'Key Features';
+
+  @override
+  String get featuresDetail =>
+      '• Expense Manager\nManage income and expenses by categories. Create categories as many as you need.\n\n• Budget Planner\nPlan monthly budget to boost savings. Try not to cross your budget target.\n\n• Effective Analysis\nSee your monthly income and expense analysis with clean charts.\n\n• Simple & Easy\nIts simple and easy to use interface will surely make you love it.\n\n• Quick Homescreen Widget\nTwigaMoney\'s smart homescreen widget will help you keep an eye on your balance and add records on the go.\n\n• Offline\nFully offline, no internet required to use TwigaMoney.\n\n• Wallet, Cards Separately\nMultiple accounts for managing wallet, cards, savings etc. No limitation on account creation.\n\n• Personal\nChoose your currency sign, decimal place etc. Select preferred category & account icons, titles.\n\n• Safe & Secured\nKeep your record data safe with backups. Restore them if necessary. Export worksheets to print the records.';
+
+  @override
+  String get personalFinanceTracker => 'Personal Finance Tracker';
+
+  @override
+  String get addFirstExpenseIncome => 'Add your first expense or income';
+
+  @override
+  String get quickAccess => 'Quick Access';
+
+  @override
+  String get plannerCalendar => 'Planner & Calendar';
+
+  @override
+  String get errorLoadingTransactions => 'Error loading transactions';
+
+  @override
+  String get selectMonth => 'Select Month';
+
+  @override
+  String get expensesByCategory => 'Expenses by Category';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get errorLoadingReport => 'Error loading report';
+
+  @override
+  String get noExpensesMonth => 'No expenses this month';
+
+  @override
+  String reportExportedCount(Object count) {
+    return 'Report exported: $count transactions';
+  }
+
+  @override
+  String get reportReadyShare => 'Report ready to share:';
+
+  @override
+  String get noAccountsYet => 'No accounts yet';
+
+  @override
+  String get addFirstAccount => 'Add your first account';
+
+  @override
+  String get manageAccounts => 'Manage Accounts';
+
+  @override
+  String get errorLoadingAccounts => 'Error loading accounts';
+
+  @override
+  String get noBudgetsYet => 'No budgets yet';
+
+  @override
+  String get addFirstBudget => 'Create your first budget';
+
+  @override
+  String get createBudget => 'Create Budget';
+
+  @override
+  String get errorLoadingBudgets => 'Error loading budgets';
+
+  @override
+  String spentOf(Object spent, Object total) {
+    return 'Spent: $spent / $total';
+  }
+
+  @override
+  String get addCategory => 'Add Category';
+
+  @override
+  String get editCategory => 'Edit Category';
+
+  @override
+  String get categoryName => 'Category Name';
+
+  @override
+  String get icon => 'Icon';
+
+  @override
+  String get color => 'Color';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get noCategoriesYet => 'No categories yet';
+
+  @override
+  String get addFirstCategory => 'Add your first category';
+
+  @override
+  String get errorLoadingCategories => 'Error loading categories';
+
+  @override
+  String get todaysEvents => 'Today\'s Events';
+
+  @override
+  String get noEventsDay => 'No events for this day';
+
+  @override
+  String get quickNotes => 'Quick Notes';
 }
