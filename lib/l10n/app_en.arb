@@ -485,5 +485,27 @@
   "dateFormatShort": "MM/dd/yyyy",
   "dateFormatMedium": "dd MMM yyyy",
   "dateFormatIso": "yyyy-MM-dd",
-  "dateFormatEuropean": "dd/MM/yyyy"
+  "dateFormatEuropean": "dd/MM/yyyy",
+
+  "financialTools": "Financial Tools",
+  "emergencyFundCalculator": "Emergency Fund Calculator",
+  "goalTracker": "Goal Tracker",
+  "retirementPlanner": "Retirement Planner",
+  "monthlyExpenses": "Monthly Expenses",
+  "emergencyFund": "Emergency Fund",
+  "monthsOfCoverage": "Months of Coverage",
+  "targetAmount": "Target Amount",
+  "currentAmount": "Current Amount",
+  "monthlyContribution": "Monthly Contribution",
+  "monthsToGoal": "Months to Reach Goal",
+  "yearsToGoal": "Years to Reach Goal",
+  "currentAge": "Current Age",
+  "retirementAge": "Retirement Age",
+  "expectedReturn": "Expected Annual Return (%)",
+  "projectedSavings": "Projected Savings at Retirement",
+  "investmentNeeded": "Monthly Investment Needed",
+  "calculate": "Calculate",
+  "more": "More",
+  "analysis": "Analysis",
+  "help": "Help"
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/account.dart';
 import '../../presentation/bloc/account_cubit.dart';
+import '../../../../core/widgets/page_transitions.dart';
 
 class EditAccountPage extends StatefulWidget {
   final Account? account;
@@ -73,6 +74,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const BackButtonWidget(),
         title: Text(widget.account == null ? 'New Account' : 'Edit Account'),
         backgroundColor: Colors.transparent,
         elevation: 0,

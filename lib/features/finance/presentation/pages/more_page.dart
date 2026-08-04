@@ -1,42 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
+import '../../../../core/utils/responsive.dart';
 
 class MorePage extends StatelessWidget {
   const MorePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final crossAxisCount = Responsive.isDesktop(context) ? 4 : (Responsive.isTablet(context) ? 3 : 2);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('More'),
+        title: Text(l10n.more),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: GridView.count(
-        crossAxisCount: 2,
-        padding: const EdgeInsets.all(16),
+        crossAxisCount: crossAxisCount,
+        padding: EdgeInsets.all(Responsive.getPadding(context)),
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
+        childAspectRatio: Responsive.isDesktop(context) ? 1.2 : 1.0,
         children: [
-          _buildTile(context, 'Add Transaction', Icons.add_circle_outline, () {
+          _buildTile(context, l10n.addTransaction, Icons.add_circle_outline, () {
             context.push('/add-transaction');
           }),
-          _buildTile(context, 'Categories', Icons.category_outlined, () {
+          _buildTile(context, l10n.categories, Icons.category_outlined, () {
             context.push('/categories');
           }),
-          _buildTile(context, 'Analysis', Icons.analytics_outlined, () {
+          _buildTile(context, l10n.analysis, Icons.analytics_outlined, () {
             context.push('/analysis');
           }),
-          _buildTile(context, 'Reports', Icons.bar_chart_outlined, () {
+          _buildTile(context, l10n.reports, Icons.bar_chart_outlined, () {
             context.push('/reports');
           }),
-          _buildTile(context, 'Settings', Icons.settings_outlined, () {
+          _buildTile(context, l10n.financialTools, Icons.calculate_outlined, () {
+            context.push('/financial-tools');
+          }),
+          _buildTile(context, l10n.settings, Icons.settings_outlined, () {
             context.push('/settings');
           }),
-          _buildTile(context, 'About', Icons.info_outline, () {
+          _buildTile(context, l10n.about, Icons.info_outline, () {
             context.go('/about');
           }),
-          _buildTile(context, 'Help', Icons.help_outline, () {
+          _buildTile(context, l10n.help, Icons.help_outline, () {
             context.go('/help-support');
           }),
         ],

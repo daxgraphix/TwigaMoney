@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:hive/hive.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../../l10n/app_localizations.dart';
 
 import '../../../shop/presentation/bloc/shop_bloc.dart';
@@ -30,6 +31,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         },
         child: Scaffold(
           appBar: AppBar(
+            leading: const BackButtonWidget(),
             title: Text(AppLocalizations.of(context)!.checkout,
                 style: const TextStyle(fontWeight: FontWeight.bold)),
           ),

@@ -2847,6 +2847,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'dd/MM/yyyy'**
   String get dateFormatEuropean;
+
+  /// No description provided for @financialTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial Tools'**
+  String get financialTools;
+
+  /// No description provided for @emergencyFundCalculator.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency Fund Calculator'**
+  String get emergencyFundCalculator;
+
+  /// No description provided for @goalTracker.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal Tracker'**
+  String get goalTracker;
+
+  /// No description provided for @retirementPlanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Retirement Planner'**
+  String get retirementPlanner;
+
+  /// No description provided for @monthlyExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Expenses'**
+  String get monthlyExpenses;
+
+  /// No description provided for @emergencyFund.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency Fund'**
+  String get emergencyFund;
+
+  /// No description provided for @monthsOfCoverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Months of Coverage'**
+  String get monthsOfCoverage;
+
+  /// No description provided for @targetAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Target Amount'**
+  String get targetAmount;
+
+  /// No description provided for @currentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Amount'**
+  String get currentAmount;
+
+  /// No description provided for @monthlyContribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Contribution'**
+  String get monthlyContribution;
+
+  /// No description provided for @monthsToGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Months to Reach Goal'**
+  String get monthsToGoal;
+
+  /// No description provided for @yearsToGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Years to Reach Goal'**
+  String get yearsToGoal;
+
+  /// No description provided for @currentAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Age'**
+  String get currentAge;
+
+  /// No description provided for @retirementAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Retirement Age'**
+  String get retirementAge;
+
+  /// No description provided for @expectedReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected Annual Return (%)'**
+  String get expectedReturn;
+
+  /// No description provided for @projectedSavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Projected Savings at Retirement'**
+  String get projectedSavings;
+
+  /// No description provided for @investmentNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Investment Needed'**
+  String get investmentNeeded;
+
+  /// No description provided for @calculate.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculate'**
+  String get calculate;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @analysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis'**
+  String get analysis;
+
+  /// No description provided for @help.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get help;
 }
 
 class _AppLocalizationsDelegate

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/page_transitions.dart';
 
 class ShiftReportPage extends StatelessWidget {
   final String shiftId;
@@ -9,6 +10,7 @@ class ShiftReportPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const BackButtonWidget(),
         title: const Text('Shift Report'),
         backgroundColor: Colors.red,
       ),

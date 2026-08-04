@@ -6,6 +6,7 @@ import '../../../finance/presentation/bloc/transaction_bloc.dart';
 import '../../../finance/domain/entities/transaction.dart';
 import '../../../finance/domain/entities/category.dart';
 import '../../../finance/domain/entities/account.dart';
+import '../../../../core/widgets/page_transitions.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -27,6 +28,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const BackButtonWidget(),
         title: const Text('Add Transaction'),
       ),
       body: BlocBuilder<FinanceBloc, FinanceState>(

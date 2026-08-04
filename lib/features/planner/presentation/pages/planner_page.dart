@@ -3,6 +3,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:hive/hive.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../core/widgets/page_transitions.dart';
 
 class PlannerPage extends StatefulWidget {
   const PlannerPage({super.key});
@@ -197,6 +198,7 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
 
     return Scaffold(
       appBar: AppBar(
+        leading: const BackButtonWidget(),
         title: Text(l10n.planner, style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(icon: const Icon(Icons.search), onPressed: _searchNotes),

@@ -1474,4 +1474,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dateFormatEuropean => 'dd/MM/yyyy';
+
+  @override
+  String get financialTools => 'Financial Tools';
+
+  @override
+  String get emergencyFundCalculator => 'Emergency Fund Calculator';
+
+  @override
+  String get goalTracker => 'Goal Tracker';
+
+  @override
+  String get retirementPlanner => 'Retirement Planner';
+
+  @override
+  String get monthlyExpenses => 'Monthly Expenses';
+
+  @override
+  String get emergencyFund => 'Emergency Fund';
+
+  @override
+  String get monthsOfCoverage => 'Months of Coverage';
+
+  @override
+  String get targetAmount => 'Target Amount';
+
+  @override
+  String get currentAmount => 'Current Amount';
+
+  @override
+  String get monthlyContribution => 'Monthly Contribution';
+
+  @override
+  String get monthsToGoal => 'Months to Reach Goal';
+
+  @override
+  String get yearsToGoal => 'Years to Reach Goal';
+
+  @override
+  String get currentAge => 'Current Age';
+
+  @override
+  String get retirementAge => 'Retirement Age';
+
+  @override
+  String get expectedReturn => 'Expected Annual Return (%)';
+
+  @override
+  String get projectedSavings => 'Projected Savings at Retirement';
+
+  @override
+  String get investmentNeeded => 'Monthly Investment Needed';
+
+  @override
+  String get calculate => 'Calculate';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get analysis => 'Analysis';
+
+  @override
+  String get help => 'Help';
 }

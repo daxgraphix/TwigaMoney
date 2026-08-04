@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/page_transitions.dart';
 import '../../../billing/domain/repositories/sales_repository.dart';
 import '../../../billing/domain/entities/sales_transaction.dart';
 
@@ -46,6 +47,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const BackButtonWidget(),
         title: const Text('Invoice Detail'),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
