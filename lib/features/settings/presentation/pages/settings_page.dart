@@ -75,7 +75,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     return _buildListItem(
                       icon: Icons.translate,
                       title: l10n.language,
-                      subtitle: locale.languageCode == 'sw' ? l10n.swahili : l10n.english,
+                      subtitle: l10n.english,
                       onTap: () => _showLanguageDialog(context),
                     );
                   },
@@ -84,9 +84,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 _buildListItem(
                   icon: Icons.currency_exchange,
                   title: l10n.currency,
-                  subtitle: Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'),
-                  onTap: () => _showCurrencyDialog(context),
-                ),
+                subtitle: Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'),
+                onTap: () => _showCurrencyDialog(context),
+              ),
+              _buildDivider(),
+              _buildListItem(
+                icon: Icons.calendar_today,
+                title: l10n.dateFormat,
+                subtitle: Hive.box('settings').get('dateFormat', defaultValue: 'dd MMM yyyy'),
+                onTap: () => _showDateFormatDialog(context),
+              ),
               ],
             ),
 
@@ -201,6 +208,53 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showDateFormatDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.selectDateFormat),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(l10n.dateFormatMedium),
+              onTap: () {
+                Hive.box('settings').put('dateFormat', 'dd MMM yyyy');
+                Navigator.pop(context);
+                setState(() {});
+              },
+            ),
+            ListTile(
+              title: Text(l10n.dateFormatShort),
+              onTap: () {
+                Hive.box('settings').put('dateFormat', 'MM/dd/yyyy');
+                Navigator.pop(context);
+                setState(() {});
+              },
+            ),
+            ListTile(
+              title: Text(l10n.dateFormatIso),
+              onTap: () {
+                Hive.box('settings').put('dateFormat', 'yyyy-MM-dd');
+                Navigator.pop(context);
+                setState(() {});
+              },
+            ),
+            ListTile(
+              title: Text(l10n.dateFormatEuropean),
+              onTap: () {
+                Hive.box('settings').put('dateFormat', 'dd/MM/yyyy');
+                Navigator.pop(context);
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 0, 24, 12),
@@ -273,14 +327,6 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 AppTheme.localeNotifier.value = const Locale('en');
                 Hive.box('settings').put('languageCode', 'en');
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text(l10n.swahili),
-              onTap: () {
-                AppTheme.localeNotifier.value = const Locale('sw');
-                Hive.box('settings').put('languageCode', 'sw');
                 Navigator.pop(context);
               },
             ),

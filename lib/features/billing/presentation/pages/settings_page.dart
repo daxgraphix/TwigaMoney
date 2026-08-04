@@ -22,8 +22,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  late String _selectedLanguage;
   late String _selectedCurrency;
+  late String _selectedDateFormat;
   late bool _isDarkMode;
 
   @override
@@ -34,8 +34,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _loadSettings() {
     final settingsBox = Hive.box('settings');
-    _selectedLanguage = settingsBox.get('selectedLanguage', defaultValue: 'English');
     _selectedCurrency = settingsBox.get('selectedCurrency', defaultValue: 'TZS');
+    _selectedDateFormat = settingsBox.get('dateFormat', defaultValue: 'dd MMM yyyy');
     // Read darkMode bool first, then fall back to themeMode string for backward compat
     _isDarkMode = settingsBox.get('darkMode',
             defaultValue: settingsBox.get('themeMode', defaultValue: 'light') == 'dark') as bool;
@@ -44,8 +44,8 @@ class _SettingsPageState extends State<SettingsPage> {
   void _saveSetting(String key, dynamic value) {
     Hive.box('settings').put(key, value);
     setState(() {
-      if (key == 'selectedLanguage') _selectedLanguage = value;
       if (key == 'selectedCurrency') _selectedCurrency = value;
+      if (key == 'dateFormat') _selectedDateFormat = value;
       if (key == 'isDarkMode') {
         _isDarkMode = value;
         Hive.box('settings').put('themeMode', value ? 'dark' : 'light');
@@ -68,18 +68,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               title: Text(l10n.english),
               onTap: () {
-                _saveSetting('selectedLanguage', 'English');
                 _saveSetting('languageCode', 'en');
                 AppTheme.localeNotifier.value = const Locale('en');
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text(l10n.swahili),
-              onTap: () {
-                _saveSetting('selectedLanguage', 'Swahili');
-                _saveSetting('languageCode', 'sw');
-                AppTheme.localeNotifier.value = const Locale('sw');
                 Navigator.pop(context);
               },
             ),
@@ -118,6 +108,49 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showDateFormatDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.selectDateFormat),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(l10n.dateFormatMedium),
+              onTap: () {
+                _saveSetting('dateFormat', 'dd MMM yyyy');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text(l10n.dateFormatShort),
+              onTap: () {
+                _saveSetting('dateFormat', 'MM/dd/yyyy');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text(l10n.dateFormatIso),
+              onTap: () {
+                _saveSetting('dateFormat', 'yyyy-MM-dd');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text(l10n.dateFormatEuropean),
+              onTap: () {
+                _saveSetting('dateFormat', 'dd/MM/yyyy');
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -139,7 +172,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingTile(
                 icon: Icons.language,
                 title: l10n.language,
-                subtitle: _selectedLanguage == 'English' ? l10n.english : l10n.swahili,
+                subtitle: l10n.english,
                 onTap: _showLanguageDialog,
               ),
               _SettingTile(
@@ -147,6 +180,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: l10n.currency,
                 subtitle: _selectedCurrency,
                 onTap: _showCurrencyDialog,
+              ),
+              _SettingTile(
+                icon: Icons.calendar_today,
+                title: l10n.dateFormat,
+                subtitle: _selectedDateFormat,
+                onTap: _showDateFormatDialog,
               ),
               _SettingTile(
                 icon: Icons.dark_mode,

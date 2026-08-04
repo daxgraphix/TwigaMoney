@@ -331,8 +331,8 @@ class _BudgetListPageState extends State<BudgetListPage> {
           budget.period.name,
           budget.amount,
           budget.spent,
-          DateFormat('yyyy-MM-dd').format(budget.startDate),
-          budget.endDate != null ? DateFormat('yyyy-MM-dd').format(budget.endDate!) : 'N/A',
+          AppTheme.getDateFormat().format(budget.startDate),
+          budget.endDate != null ? AppTheme.getDateFormat().format(budget.endDate!) : 'N/A',
         ]);
       }
 

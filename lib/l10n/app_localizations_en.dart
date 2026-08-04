@@ -241,9 +241,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
-  String get swahili => 'Swahili';
-
-  @override
   String get english => 'English';
 
   @override
@@ -377,6 +374,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monthlyReport => 'Monthly Report';
+
+  @override
+  String get dailyReport => 'Daily Report';
+
+  @override
+  String get weeklyReport => 'Weekly Report';
+
+  @override
+  String get biweeklyReport => 'Biweekly Report';
+
+  @override
+  String get yearlyReport => 'Yearly Report';
 
   @override
   String get shiftReport => 'Shift Report';
@@ -1340,7 +1349,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get featuresDetail =>
-      '• Expense Manager\nManage income and expenses by categories. Create categories as many as you need.\n\n• Budget Planner\nPlan monthly budget to boost savings. Try not to cross your budget target.\n\n• Effective Analysis\nSee your monthly income and expense analysis with clean charts.\n\n• Simple & Easy\nIts simple and easy to use interface will surely make you love it.\n\n• Quick Homescreen Widget\nTwigaMoney\'s smart homescreen widget will help you keep an eye on your balance and add records on the go.\n\n• Offline\nFully offline, no internet required to use TwigaMoney.\n\n• Wallet, Cards Separately\nMultiple accounts for managing wallet, cards, savings etc. No limitation on account creation.\n\n• Personal\nChoose your currency sign, decimal place etc. Select preferred category & account icons, titles.\n\n• Safe & Secured\nKeep your record data safe with backups. Restore them if necessary. Export worksheets to print the records.';
+      'Organizing your expenses allows you to have better control over your money.\n\n• Expense Manager\nTrack your income and expenses, classify them by category. Create categories as many as you need. You can modify or delete the records that you have created.\n\n• Budget Planner\nPlan monthly budget to boost savings. Try not to cross your budget target.\n\n• Effective Analysis & Graphical Reports\nSee your monthly income and expense analysis with clean charts. Create graphical reports.\n\n• Recurring Transactions\nSchedule recurring records, so the application automatically adds repetitive movements in fixed periods.\n\n• Quick Homescreen Widget\nTwigaMoney\'s smart homescreen widget helps you keep an eye on your balance and add records on the go, with a monthly summary widget.\n\n• Periodic Reports\nThe application shows reports grouped by periods along with your balance period. Available reports: daily, weekly, biweekly, monthly and yearly.\n\n• Simple & Easy\nIts simple and easy to use interface will surely make you love it.\n\n• Offline\nFully offline, no internet required to use TwigaMoney.\n\n• Wallet, Cards Separately\nMultiple accounts for managing wallet, cards, savings etc. No limitation on account creation.\n\n• Personal\nChoose the currency format and the date format used in your country. Select preferred category & account icons, titles.\n\n• Tablet Support\nHorizontal screen layout optimized for tablets.\n\n• Safe & Secured\nThe application lets you create a backup of your database to restore your information if necessary. Keep your record data safe with backups. Restore them if necessary. Export worksheets to print the records.\n\n💰 TRACK EVERYTHING\nTrack your expenses, income, savings, investments, and net worth in one place.\nVisualize your cash flow with clean, easy charts.\n\n📊 BUDGET WITH CONFIDENCE\nSet monthly budgets, control your spending, and stay on top of your financial goals.\nNo more end-of-month surprises.\n\n🔮 PLAN YOUR FUTURE\nUse smart tools to plan ahead:\nEmergency Fund Calculator – Know how long your money will last\nGoal Tracker – See exactly when you\'ll reach savings targets\nRetirement Planner – Find your financial freedom date\n\n📈 GROW YOUR WEALTH\nTrack stocks, crypto, and investments effortlessly.\nYour complete portfolio, in your pocket.\n\n🔒 100% PRIVATE\nNo logins\nNo cloud\nNo tracking\nEverything stays on your device.\n\n⚙️ BUILT FOR YOU\nCustom categories, icons & themes.\nMulti-currency support.\nSimple import & export.\nWorks fully offline.';
 
   @override
   String get personalFinanceTracker => 'Personal Finance Tracker';
@@ -1447,4 +1456,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickNotes => 'Quick Notes';
+
+  @override
+  String get dateFormat => 'Date Format';
+
+  @override
+  String get selectDateFormat => 'Select Date Format';
+
+  @override
+  String get dateFormatShort => 'MM/dd/yyyy';
+
+  @override
+  String get dateFormatMedium => 'dd MMM yyyy';
+
+  @override
+  String get dateFormatIso => 'yyyy-MM-dd';
+
+  @override
+  String get dateFormatEuropean => 'dd/MM/yyyy';
 }

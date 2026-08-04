@@ -232,7 +232,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
               const SizedBox(height: 16),
               ListTile(
                 title: Text(l10n.startDate),
-                subtitle: Text(DateFormat('yyyy-MM-dd').format(customStart!)),
+                subtitle: Text(AppTheme.getDateFormat().format(customStart!)),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -245,7 +245,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
               ),
               ListTile(
                 title: Text(l10n.endDate),
-                subtitle: Text(DateFormat('yyyy-MM-dd').format(customEnd!)),
+                subtitle: Text(AppTheme.getDateFormat().format(customEnd!)),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -729,7 +729,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   ),
                 ),
                 title: Text(transaction.description, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(DateFormat('MMM dd, yyyy').format(transaction.date), style: const TextStyle(fontSize: 12)),
+                subtitle: Text(AppTheme.getDateFormat().format(transaction.date), style: const TextStyle(fontSize: 12)),
                 trailing: Text(
                   '${!isExpense ? '+' : '-'}${AppTheme.getCurrencySymbol(Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS'))}${transaction.amount.toStringAsFixed(0)}',
                   style: TextStyle(

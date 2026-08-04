@@ -27,7 +27,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
   String _typeFilter = 'All';
   String _dateFilter = 'All Time';
   String _searchQuery = '';
-  final DateFormat _dateFmt = DateFormat('dd MMM yyyy');
+  final DateFormat _dateFmt = AppTheme.getDateFormat();
   final TextEditingController _searchController = TextEditingController();
 
   List<Transaction> _allTransactions = [];

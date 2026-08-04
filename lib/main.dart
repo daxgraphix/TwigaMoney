@@ -190,7 +190,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   ],
                   supportedLocales: const [
                     Locale('en'),
-                    Locale('sw'),
                   ],
                   routerConfig: _router,
                   debugShowCheckedModeBanner: false,

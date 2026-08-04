@@ -5,8 +5,9 @@ import 'package:hive/hive.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../../../../l10n/app_localizations.dart';
-import '../../../../core/theme/app_theme.dart';
+import 'package:twigamoney/core/service_locator.dart' as di;
+import 'package:twigamoney/l10n/app_localizations.dart';
+import 'package:twigamoney/core/theme/app_theme.dart';
 import '../../../shop/presentation/bloc/shop_bloc.dart';
 import '../../../finance/presentation/bloc/finance_bloc.dart';
 import '../../../finance/presentation/bloc/transaction_bloc.dart';
@@ -15,6 +16,8 @@ import '../../../finance/presentation/bloc/account_cubit.dart';
 import '../../../finance/presentation/bloc/report_cubit.dart';
 import '../../../finance/domain/entities/transaction.dart';
 import '../../../finance/domain/entities/category.dart';
+import '../../../finance/domain/entities/recurring_transaction.dart';
+import '../../../finance/domain/repositories/recurring_transaction_repository.dart';
 import '../../../finance/domain/usecases/monthly_report_usecase.dart';
 
 Widget _quickAccessCard(
@@ -86,7 +89,68 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _generateRecurringTransactions() {}
+  void _generateRecurringTransactions() {
+    final repo = di.sl<RecurringTransactionRepository>();
+    repo.getActiveRecurringTransactions().then((result) {
+      if (!mounted) return;
+      result.fold(
+        (failure) => debugPrint('Failed to load recurring transactions: ${failure.message}'),
+        (recurringTransactions) {
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final existingTransactions =
+              context.read<TransactionBloc>().state.transactions;
+
+          for (final recurring in recurringTransactions) {
+            if (!_shouldGenerateToday(recurring, today)) continue;
+
+            final alreadyGenerated = existingTransactions.any(
+              (t) =>
+                  t.description == recurring.description &&
+                  DateUtils.isSameDay(t.date, today),
+            );
+
+            if (alreadyGenerated) continue;
+
+            final transaction = Transaction(
+              id: '${recurring.id}_${today.toIso8601String()}',
+              description: recurring.description,
+              amount: recurring.amount,
+              date: now,
+              categoryId: recurring.categoryId,
+              accountId: recurring.accountId,
+              type: recurring.type,
+            );
+
+            context.read<TransactionBloc>().add(AddTransactionEvent(transaction));
+          }
+        },
+      );
+    });
+  }
+
+  bool _shouldGenerateToday(RecurringTransaction recurring, DateTime today) {
+    final start = DateTime(
+        recurring.startDate.year, recurring.startDate.month, recurring.startDate.day);
+    if (today.isBefore(start)) return false;
+    if (recurring.endDate != null) {
+      final end = DateTime(
+          recurring.endDate!.year, recurring.endDate!.month, recurring.endDate!.day);
+      if (today.isAfter(end)) return false;
+    }
+
+    switch (recurring.interval) {
+      case RecurringInterval.daily:
+        return true;
+      case RecurringInterval.weekly:
+        return today.difference(start).inDays % 7 == 0;
+      case RecurringInterval.monthly:
+        return recurring.startDate.day == today.day;
+      case RecurringInterval.yearly:
+        return recurring.startDate.month == today.month &&
+            recurring.startDate.day == today.day;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

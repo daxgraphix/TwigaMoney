@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 
 class AppTheme {
   static ValueNotifier<ThemeMode> themeModeNotifier = ValueNotifier(ThemeMode.light);
@@ -176,6 +178,17 @@ class AppTheme {
         return 1.0;
     }
   }
+
+  static String getDateFormatPattern() {
+    try {
+      final pattern = Hive.box('settings').get('dateFormat', defaultValue: 'dd MMM yyyy');
+      return pattern as String;
+    } catch (e) {
+      return 'dd MMM yyyy';
+    }
+  }
+
+  static DateFormat getDateFormat() => DateFormat(getDateFormatPattern());
 
   // ignore: prefer_const_constructors
   static ThemeData get darkTheme {

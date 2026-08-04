@@ -5,6 +5,8 @@ import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/usecases/monthly_report_usecase.dart';
 import '../../domain/usecases/comprehensive_report_usecase.dart';
 
+enum ReportPeriod { daily, weekly, biweekly, monthly, yearly }
+
 // Events
 abstract class ReportEvent extends Equatable {
   @override
@@ -90,5 +92,48 @@ class ReportCubit extends Cubit<ReportState> {
       (failure) => emit(ReportError(failure.message)),
       (data) => emit(ReportLoaded(data)),
     );
+  }
+
+  Future<void> loadDailyReport() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    await loadComprehensiveReport(today, tomorrow);
+  }
+
+  Future<void> loadWeeklyReport() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final startOfWeek = today.subtract(Duration(days: today.weekday - 1));
+    final endOfWeek = startOfWeek.add(const Duration(days: 6));
+    await loadComprehensiveReport(startOfWeek, endOfWeek);
+  }
+
+  Future<void> loadBiweeklyReport() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final start = today.subtract(const Duration(days: 13));
+    await loadComprehensiveReport(start, today);
+  }
+
+  Future<void> loadYearlyReport() async {
+    final now = DateTime.now();
+    final startOfYear = DateTime(now.year, 1, 1);
+    await loadComprehensiveReport(startOfYear, now);
+  }
+
+  Future<void> loadReportByPeriod(ReportPeriod period) async {
+    switch (period) {
+      case ReportPeriod.daily:
+        await loadDailyReport();
+      case ReportPeriod.weekly:
+        await loadWeeklyReport();
+      case ReportPeriod.biweekly:
+        await loadBiweeklyReport();
+      case ReportPeriod.monthly:
+        await loadMonthlyReport(DateTime.now());
+      case ReportPeriod.yearly:
+        await loadYearlyReport();
+    }
   }
 }

@@ -22,10 +22,11 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
+  final DateFormat _dateFormat = AppTheme.getDateFormat();
   late final DateTime _now;
   late final DateTime _monthStart;
   late final DateTime _monthEnd;
+  ReportPeriod _selectedReportPeriod = ReportPeriod.monthly;
 
   @override
   void initState() {
@@ -34,7 +35,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _monthStart = DateTime(_now.year, _now.month, 1);
     _monthEnd = DateTime(_now.year, _now.month + 1, 1);
     
-    // Trigger data loading through Blocs/Cubits
+    // Trigger data loading through Blocs/Cubit
     context.read<FinanceBloc>().add(LoadCategoriesEvent());
     context.read<AccountCubit>().loadAccounts();
     context.read<BudgetCubit>().loadBudgets();
@@ -43,9 +44,14 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _loadProjections() {
-    final now = DateTime.now();
-    final startOfMonth = DateTime(now.year, now.month, 1);
-    context.read<ReportCubit>().loadComprehensiveReport(startOfMonth, now);
+    context.read<ReportCubit>().loadReportByPeriod(_selectedReportPeriod);
+  }
+
+  void _onReportPeriodChanged(ReportPeriod period) {
+    setState(() {
+      _selectedReportPeriod = period;
+    });
+    _loadProjections();
   }
 
   @override
@@ -132,6 +138,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ],
                               ),
                               const SizedBox(height: 24),
+
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: _buildReportPeriodSelector(context, l10n),
+                              ),
+                              const SizedBox(height: 16),
 
                               if (report != null) ...[
                                 _buildMonthlyOutlook(context, report, totalBalance, symbol, l10n),
@@ -267,13 +279,52 @@ class _DashboardPageState extends State<DashboardPage> {
             },
           );
         },
-      ),
+      );
+    },
+  ),
 
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/add-transaction'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Widget _buildReportPeriodSelector(BuildContext context, AppLocalizations l10n) {
+    final periods = ReportPeriod.values;
+    final labels = [
+      l10n.dailyReport,
+      l10n.weeklyReport,
+      l10n.biweeklyReport,
+      l10n.monthlyReport,
+      l10n.yearlyReport,
+    ];
+    return Row(
+      children: [
+        for (int i = 0; i < periods.length; i++)
+          Padding(
+            padding: EdgeInsets.only(right: i < periods.length - 1 ? 8 : 0),
+            child: ChoiceChip(
+              label: Text(labels[i]),
+              selected: _selectedReportPeriod == periods[i],
+              onSelected: (_) => _onReportPeriodChanged(periods[i]),
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+              selectedColor: Theme.of(context).colorScheme.primary,
+              labelStyle: TextStyle(
+                color: _selectedReportPeriod == periods[i]
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: _selectedReportPeriod == periods[i]
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
