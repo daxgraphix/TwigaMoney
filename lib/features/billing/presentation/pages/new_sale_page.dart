@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/data/hive_database.dart';
-import '../../../../core/widgets/page_transitions.dart';
 import '../../../product/domain/entities/product.dart';
 import '../../../product/presentation/bloc/product_bloc.dart';
 import '../bloc/billing_bloc.dart';
+import '../../../../core/widgets/back_button_widget.dart';
 
 class NewSalePage extends StatefulWidget {
   const NewSalePage({super.key});
@@ -43,20 +42,27 @@ class _NewSalePageState extends State<NewSalePage> {
     super.dispose();
   }
 
+  // ignore: unused_field
   bool _isQuickScanMode = false;
 
   void _addManualToCart() {
     final name = _productNameController.text.trim();
-    final price = double.tryParse(_priceController.text) ?? 0;
+    final priceStr = _priceController.text.replaceAll(',', '');
+    final price = double.tryParse(priceStr) ?? 0;
     final qty = int.tryParse(_qtyController.text) ?? 1;
     final discountPercent = double.tryParse(_discountController.text) ?? 0;
     
-    if ((name.isEmpty && _selectedProductId == null) || price <= 0 || qty <= 0) {
+    final l10n = AppLocalizations.of(context)!;
+    if (name.isEmpty && _selectedProductId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid product name and price'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(l10n.selectProductMessage)),
+      );
+      return;
+    }
+
+    if (price <= 0) {
+       ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.enterValidPriceMessage)),
       );
       return;
     }
@@ -79,7 +85,7 @@ class _NewSalePageState extends State<NewSalePage> {
           costPrice: effectiveUnitPrice,
           stock: 999,
           lastStockUpdate: DateTime.now(),
-          category: 'Manual',
+          category: l10n.manualCategory,
           updatedAt: DateTime.now(),
         );
 
@@ -96,7 +102,6 @@ class _NewSalePageState extends State<NewSalePage> {
       _selectedProductId = null;
     });
     
-    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.productAddedToCart),
@@ -106,113 +111,6 @@ class _NewSalePageState extends State<NewSalePage> {
     );
   }
 
-  void _showBarcodeScanner() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          height: MediaQuery.of(context).size.height * 0.8,
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 16, 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Scan Barcode', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    Row(
-                      children: [
-                        const Text('Quick Scan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                        Switch(
-                          value: _isQuickScanMode,
-                          onChanged: (val) {
-                            setState(() => _isQuickScanMode = val);
-                            setModalState(() {});
-                          },
-                        ),
-                        IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    MobileScanner(
-                      onDetect: (capture) {
-                        final List<Barcode> barcodes = capture.barcodes;
-                        if (barcodes.isNotEmpty) {
-                          final code = barcodes.first.rawValue;
-                          if (code != null) {
-                            if (!_isQuickScanMode) {
-                              Navigator.pop(context);
-                            }
-                            _handleScannedBarcode(code);
-                          }
-                        }
-                      },
-                    ),
-                    // Scanner Overlay
-                    Center(
-                      child: Container(
-                        width: 250,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppTheme.primaryColor, width: 2),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (_isQuickScanMode)
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Text(
-                    'Quick Scan Mode Active: Scanned items are added instantly.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _handleScannedBarcode(String code) {
-    try {
-      final product = _availableProducts.firstWhere((p) => p.barcode == code);
-      setState(() {
-        _selectedProductId = product.id;
-        _productNameController.text = product.name;
-        _priceController.text = product.price.toStringAsFixed(0);
-      });
-      _addManualToCart();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Product not found for barcode: $code'), backgroundColor: Colors.orange),
-      );
-    }
-  }
 
   Widget _buildQtyButton({
     required IconData icon,
@@ -286,35 +184,29 @@ class _NewSalePageState extends State<NewSalePage> {
                       Container(
                         decoration: BoxDecoration(
                           color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(24),
                           boxShadow: AppTheme.softShadow,
+                          border: Border.all(
+                            color: isDark ? AppTheme.darkBorderColor : Colors.grey.shade100,
+                          ),
                         ),
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  l10n.addItem,
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                IconButton.filledTonal(
-                                  onPressed: _showBarcodeScanner,
-                                  icon: const Icon(Icons.qr_code_scanner),
-                                ),
-                              ],
+                            Text(
+                              l10n.addItem,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : AppTheme.secondaryColor,
+                              ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             
-                            // Product Autocomplete / Search
+                            // Product Selection / Search
                             Autocomplete<Product>(
                               displayStringForOption: (Product p) => p.name,
                               optionsBuilder: (TextEditingValue textEditingValue) {
-                                if (textEditingValue.text == '') {
-                                  return const Iterable<Product>.empty();
-                                }
                                 return _availableProducts.where((Product p) {
                                   return p.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
                                 });
@@ -325,8 +217,6 @@ class _NewSalePageState extends State<NewSalePage> {
                                   _productNameController.text = p.name;
                                   _priceController.text = p.price.toStringAsFixed(0);
                                 });
-                                // Automatically add to cart if selected from search
-                                _addManualToCart();
                               },
                               fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
                                 return TextField(
@@ -334,21 +224,10 @@ class _NewSalePageState extends State<NewSalePage> {
                                   focusNode: focusNode,
                                   decoration: InputDecoration(
                                     labelText: l10n.searchProduct,
-                                    hintText: 'Start typing...',
+                                    hintText: l10n.searchProductHint,
                                     prefixIcon: const Icon(Icons.search),
-                                    suffixIcon: controller.text.isNotEmpty 
-                                      ? IconButton(
-                                          icon: const Icon(Icons.clear),
-                                          onPressed: () {
-                                            controller.clear();
-                                            setState(() {
-                                              _selectedProductId = null;
-                                              _productNameController.clear();
-                                              _priceController.clear();
-                                            });
-                                          },
-                                        )
-                                      : null,
+                                    filled: true,
+                                    fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
                                   ),
                                   onChanged: (val) {
                                     _productNameController.text = val;
@@ -387,7 +266,7 @@ class _NewSalePageState extends State<NewSalePage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             Row(
                               children: [
                                 Expanded(
@@ -407,6 +286,7 @@ class _NewSalePageState extends State<NewSalePage> {
                                     icon: const Icon(Icons.add_shopping_cart, size: 20),
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                                     ),
                                     label: Text(l10n.addToCart),
                                   ),
@@ -440,10 +320,10 @@ class _NewSalePageState extends State<NewSalePage> {
                                 alignment: Alignment.centerRight,
                                 padding: const EdgeInsets.only(right: 20),
                                 decoration: BoxDecoration(
-                                  color: Colors.redAccent,
-                                  borderRadius: BorderRadius.circular(16),
+                                  color: Colors.redAccent.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(24),
                                 ),
-                                child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
+                                child: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 28),
                               ),
                               onDismissed: (direction) {
                                 context.read<BillingBloc>().add(RemoveProductFromCartEvent(item.product.id));
@@ -451,7 +331,7 @@ class _NewSalePageState extends State<NewSalePage> {
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(24),
                                   border: Border.all(
                                     color: isDark ? AppTheme.darkBorderColor : Colors.grey.shade200,
                                     width: 1,
@@ -459,7 +339,7 @@ class _NewSalePageState extends State<NewSalePage> {
                                   boxShadow: AppTheme.softShadow,
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.all(16),
                                   child: Row(
                                     children: [
                                       // Product Info
@@ -476,7 +356,7 @@ class _NewSalePageState extends State<NewSalePage> {
                                             const SizedBox(height: 4),
                                             Text(
                                               '$symbol${item.product.price.toStringAsFixed(0)}',
-                                              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                                              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey.shade600, fontSize: 14),
                                             ),
                                           ],
                                         ),
@@ -486,7 +366,7 @@ class _NewSalePageState extends State<NewSalePage> {
                                       Container(
                                         decoration: BoxDecoration(
                                           color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(16),
                                         ),
                                         child: Row(
                                           children: [
@@ -603,6 +483,10 @@ class _NewSalePageState extends State<NewSalePage> {
                               onPressed: () {},
                               icon: const Icon(Icons.save),
                               label: Text(l10n.quickSave),
+                              style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -611,6 +495,10 @@ class _NewSalePageState extends State<NewSalePage> {
                               onPressed: () => context.push('/checkout'),
                               icon: const Icon(Icons.arrow_forward),
                               label: Text(l10n.proceedToCheckout),
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
                             ),
                           ),
                         ],

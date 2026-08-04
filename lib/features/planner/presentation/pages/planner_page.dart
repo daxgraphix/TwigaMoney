@@ -187,9 +187,11 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppTheme.primaryColor;
     
+    final theme = Theme.of(context);
+
     final dayEvents = _events
         .where((e) =>
             e['date'] != null &&
@@ -199,7 +201,8 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
     return Scaffold(
       appBar: AppBar(
         leading: const BackButtonWidget(),
-        title: Text(l10n.planner, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.planner,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(icon: const Icon(Icons.search), onPressed: _searchNotes),
         ],
@@ -207,10 +210,10 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Container(
               decoration: BoxDecoration(
-                color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
+                color: theme.cardTheme.color ?? theme.cardColor,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: AppTheme.softShadow,
               ),
@@ -238,11 +241,16 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
                 headerStyle: HeaderStyle(
                   formatButtonVisible: true,
                   titleCentered: true,
+                  titleTextStyle: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 17),
                   formatButtonDecoration: BoxDecoration(
                     color: primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(24),
                   ),
-                  formatButtonTextStyle: TextStyle(color: primary, fontWeight: FontWeight.bold),
+                  formatButtonTextStyle:
+                      TextStyle(color: primary, fontWeight: FontWeight.bold),
+                  leftChevronIcon: Icon(Icons.chevron_left, color: primary),
+                  rightChevronIcon: Icon(Icons.chevron_right, color: primary),
                 ),
                 calendarStyle: CalendarStyle(
                   selectedDecoration: BoxDecoration(
@@ -250,38 +258,48 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
                     shape: BoxShape.circle,
                   ),
                   todayDecoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.3),
+                    color: primary.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  markerDecoration: BoxDecoration(
+                  todayTextStyle:
+                      TextStyle(color: primary, fontWeight: FontWeight.bold),
+                  markerDecoration: const BoxDecoration(
                     color: AppTheme.accentColor,
                     shape: BoxShape.circle,
                   ),
+                  outsideDaysVisible: false,
                 ),
                 eventLoader: (day) {
                   return _events
-                      .where((e) => e['date'] != null && isSameDay(DateTime.parse(e['date'] as String), day))
+                      .where((e) =>
+                          e['date'] != null &&
+                          isSameDay(DateTime.parse(e['date'] as String), day))
                       .toList();
                 },
               ),
             ),
           ),
-          
-          const SizedBox(height: 16),
-          
-          TabBar(
-            controller: _tabController,
-            labelColor: primary,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: primary,
-            indicatorWeight: 3,
-            indicatorSize: TabBarIndicatorSize.label,
-            tabs: [
-              Tab(text: l10n.calendar),
-              Tab(text: l10n.notes),
-            ],
+          const SizedBox(height: 12),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: theme.cardTheme.color ?? theme.cardColor,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              labelColor: primary,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: primary,
+              indicatorWeight: 3,
+              indicatorSize: TabBarIndicatorSize.label,
+              dividerColor: Colors.transparent,
+              tabs: [
+                Tab(text: l10n.calendar),
+                Tab(text: l10n.notes),
+              ],
+            ),
           ),
-          
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -302,21 +320,26 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
 
   Widget _buildEventsTab(List<Map<String, dynamic>> dayEvents) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+    final theme = Theme.of(context);
+
     if (dayEvents.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_busy_outlined, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+            Icon(Icons.event_note_outlined,
+                size: 64, color: Colors.grey.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
-            Text(l10n.noEvents, style: const TextStyle(color: Colors.grey)),
+            Text(l10n.noEvents,
+                style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500)),
           ],
         ),
       );
     }
-    
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: dayEvents.length,
@@ -324,16 +347,25 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDark ? AppTheme.darkBorderColor : Colors.grey.shade100),
+            color: theme.cardTheme.color ?? theme.cardColor,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: AppTheme.softShadow,
           ),
           child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-              child: const Icon(Icons.event, color: AppTheme.primaryColor, size: 20),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child:
+                  const Icon(Icons.event_outlined, color: AppTheme.primaryColor),
             ),
-            title: Text(dayEvents[index]['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(dayEvents[index]['title'],
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             trailing: IconButton(
               icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
               onPressed: () {
@@ -351,16 +383,21 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
 
   Widget _buildNotesTab() {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     if (_notes.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.note_alt_outlined, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+            Icon(Icons.edit_note_outlined,
+                size: 64, color: Colors.grey.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
-            Text(l10n.noNotes, style: const TextStyle(color: Colors.grey)),
+            Text(l10n.noNotes,
+                style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500)),
           ],
         ),
       );
@@ -373,12 +410,17 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDark ? AppTheme.darkBorderColor : Colors.grey.shade100),
+            color: theme.cardTheme.color ?? theme.cardColor,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: AppTheme.softShadow,
           ),
           child: ListTile(
-            title: Text(_notes[index]),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            title: Text(
+              _notes[index],
+              style: const TextStyle(fontSize: 15, height: 1.4),
+            ),
             trailing: IconButton(
               icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
               onPressed: () {

@@ -244,6 +244,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get english => 'English';
 
   @override
+  String get swahili => 'Swahili';
+
+  @override
   String get dashboard => 'Dashboard';
 
   @override
@@ -418,6 +421,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cartIsEmpty => 'Your cart is empty';
 
   @override
+  String insufficientStock(Object inCart, Object name, Object stock) {
+    return 'Insufficient stock for $name. Available: $stock, In Cart: $inCart';
+  }
+
+  @override
+  String cannotUpdateQuantityOnlyStock(Object name, Object stock) {
+    return 'Cannot update quantity. Only $stock available for $name.';
+  }
+
+  @override
   String get processing => 'Processing...';
 
   @override
@@ -532,6 +545,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stockAdjustment => 'Stock Adjustment';
+
+  @override
+  String get productAddedSuccessfully => 'Product added successfully';
+
+  @override
+  String get productUpdatedSuccessfully => 'Product updated successfully';
+
+  @override
+  String get productDeletedSuccessfully => 'Product deleted successfully';
+
+  @override
+  String get stockUpdatedSuccessfully => 'Stock updated successfully';
+
+  @override
+  String get failedToLoadProducts => 'Failed to load products';
+
+  @override
+  String get failedToAddProduct => 'Failed to add product';
+
+  @override
+  String get failedToUpdateProduct => 'Failed to update product';
+
+  @override
+  String get failedToDeleteProduct => 'Failed to delete product';
+
+  @override
+  String get failedToUpdateStock => 'Failed to update stock';
 
   @override
   String get budgetManagement => 'Budget Management';
@@ -1123,6 +1163,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pageNotFound => 'Page not found';
 
   @override
+  String get howCanWeHelp => 'How can we help?';
+
+  @override
   String get helpSupport => 'Help & Support';
 
   @override
@@ -1434,6 +1477,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get goalReached => 'Goal reached!';
+
+  @override
   String get twigaMoneyReport => 'TwigaMoney Report';
 
   @override
@@ -1656,6 +1702,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dateFormatEuropean => 'dd/MM/yyyy';
 
   @override
+  String marginPercent(Object percent) {
+    return '$percent% margin';
+  }
+
+  @override
+  String averageLabel(Object amount) {
+    return 'avg $amount';
+  }
+
+  @override
+  String unitsSold(Object count) {
+    return '$count units sold';
+  }
+
+  @override
+  String turnoverRate(Object rate) {
+    return 'Turnover Rate: $rate';
+  }
+
+  @override
+  String soldCount(Object count) {
+    return '$count sold';
+  }
+
+  @override
+  String get activeBalancesDesc => 'with active balances';
+
+  @override
+  String get agingRange0_30 => '0-30';
+
+  @override
+  String get agingRange31_60 => '31-60';
+
+  @override
+  String get agingRange60Plus => '60+';
+
+  @override
+  String get selectProductMessage => 'Please select or enter a product name';
+
+  @override
+  String get enterValidPriceMessage => 'Please enter a valid price';
+
+  @override
+  String get manualCategory => 'Manual';
+
+  @override
+  String get searchProductHint => 'Start typing product name...';
+
+  @override
+  String get defaultShopName => 'Shop';
+
+  @override
+  String get marginLabel => 'margin';
+
+  @override
   String get financialTools => 'Financial Tools';
 
   @override
@@ -1714,6 +1815,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get analysis => 'Analysis';
+
+  @override
+  String get financialAnalysis => 'Financial Analysis';
+
+  @override
+  String get toggleForecasting => 'Toggle Forecasting';
+
+  @override
+  String get last3Months => 'Last 3 Months';
+
+  @override
+  String get incomeVsExpenses => 'Income vs Expenses';
+
+  @override
+  String get expenseDistribution => 'Expense Distribution';
+
+  @override
+  String get categoryBreakdown => 'Category Breakdown';
+
+  @override
+  String get avgPerTransaction => 'Avg / Trans';
+
+  @override
+  String get noTransactionsPeriod => 'No transactions found for this period';
+
+  @override
+  String percentOfTotalExpenses(Object percent) {
+    return '$percent% of total expenses';
+  }
+
+  @override
+  String get thirtyDayForecast => '30-Day Forecast';
+
+  @override
+  String get projectedRevenue => 'Projected Revenue';
+
+  @override
+  String get projectedProfit => 'Projected Profit';
 
   @override
   String get help => 'Help';
@@ -1879,4 +2018,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionExport => 'Transaction Export';
+
+  @override
+  String get storagePermissionRequired =>
+      'Storage permission is required to save or share files.';
+
+  @override
+  String get failedToLoadShop => 'Failed to load shop details';
+
+  @override
+  String get failedToUpdateShop => 'Failed to update shop details';
+
+  @override
+  String get completeShopSetup => 'Complete Your Shop Setup';
+
+  @override
+  String get shopSetupSubtitle =>
+      'Let\'s set up your shop details. This information will appear on your receipts.';
+
+  @override
+  String get saveAndContinue => 'Save & Continue';
+
+  @override
+  String get skipForNow => 'Skip for Now';
 }

@@ -50,10 +50,10 @@ class MorePage extends StatelessWidget {
             context.push('/settings');
           }),
           _buildTile(context, l10n.about, Icons.info_outline, () {
-            context.go('/about');
+            context.push('/about');
           }),
           _buildTile(context, l10n.help, Icons.help_outline, () {
-            context.go('/help-support');
+            context.push('/help-support');
           }),
         ],
       ),

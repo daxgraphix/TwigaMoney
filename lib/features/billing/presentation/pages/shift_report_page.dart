@@ -105,7 +105,7 @@ class ShiftReportPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
                       boxShadow: AppTheme.softShadow,
                     ),

@@ -25,10 +25,10 @@ Widget _quickAccessCard(
   final isSmall = MediaQuery.of(context).size.width < 380;
   return Card(
     elevation: 3,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
     child: InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(24),
       child: Padding(
         padding: EdgeInsets.all(isSmall ? 10 : 16),
         child: Column(
@@ -186,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
                         color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -684,11 +684,11 @@ class _ReportsTabState extends State<ReportsTab> {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         padding: EdgeInsets.all(isSmall ? 12 : 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           border: Border(left: BorderSide(color: color, width: 5)),
         ),
         child: Column(

@@ -74,14 +74,14 @@ class _OperationsPageState extends State<OperationsPage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(Icons.money, color: AppTheme.primaryColor, size: 24),
             ),
@@ -126,7 +126,7 @@ class _OperationsPageState extends State<OperationsPage> {
                     ],
                   ),
                 ),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
                 filled: true,
                 fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               ),
@@ -142,7 +142,7 @@ class _OperationsPageState extends State<OperationsPage> {
                   onPressed: () => Navigator.pop(dialogContext),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                   ),
                   child: Text(l10n.cancel),
                 ),
@@ -187,7 +187,7 @@ class _OperationsPageState extends State<OperationsPage> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     elevation: 0,
                   ),
                   child: Text(l10n.record),
@@ -233,6 +233,7 @@ class _OperationsPageState extends State<OperationsPage> {
               // ── Shift Card ──────────────────────────────────────────
               Container(
                 decoration: BoxDecoration(
+                  color: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: AppTheme.softShadow,
                 ),
@@ -316,7 +317,7 @@ class _OperationsPageState extends State<OperationsPage> {
                                           : Colors.green,
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 18),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                                       elevation: 0,
                                     ),
                                   ),
@@ -386,6 +387,7 @@ class _OperationsPageState extends State<OperationsPage> {
 
     return Container(
       decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.softShadow,
       ),

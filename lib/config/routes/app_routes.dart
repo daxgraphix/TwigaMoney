@@ -23,7 +23,6 @@ import '../../features/finance/presentation/pages/transaction_list_page.dart';
 import '../../features/finance/presentation/pages/account_list_page.dart';
 import '../../features/finance/presentation/pages/category_list_page.dart';
 import '../../features/finance/presentation/pages/analysis_page.dart';
-import '../../features/finance/presentation/pages/edit_account_page.dart';
 import '../../features/finance/presentation/pages/financial_calculators_page.dart';
 import '../../features/finance/presentation/pages/more_page.dart';
 import '../../features/product/presentation/pages/product_list_page.dart';
@@ -35,7 +34,6 @@ import '../../features/billing/presentation/pages/edit_customer_page.dart';
 import '../../features/billing/presentation/pages/customer_transactions_page.dart';
 import '../../core/widgets/page_transitions.dart';
 import '../../features/finance/domain/entities/budget.dart';
-import '../../features/finance/domain/entities/account.dart';
 import '../../features/product/domain/entities/product.dart';
 import '../../features/billing/domain/entities/customer.dart';
 import '../../core/widgets/main_navigation_shell.dart';
@@ -57,12 +55,6 @@ GoRouter createRouter() {
         routes: [
           GoRoute(
               path: '/', builder: (context, state) => const DashboardPage()),
-          GoRoute(
-              path: '/reports',
-              builder: (context, state) => const ReportsPage()),
-          GoRoute(
-              path: '/settings',
-              builder: (context, state) => const SettingsPage()),
           GoRoute(
               path: '/products',
               builder: (context, state) => const ProductListPage()),
@@ -120,19 +112,23 @@ GoRouter createRouter() {
           GoRoute(
               path: '/categories',
               builder: (context, state) => const CategoryListPage()),
-          GoRoute(
-              path: '/analysis',
-              builder: (context, state) => const AnalysisPage()),
-          GoRoute(
-            path: '/edit-account',
-            pageBuilder: (context, state) {
-              final account = state.extra as Account?;
-              return SwipeToPopPage.create(
-                  state, EditAccountPage(account: account));
-            },
-          ),
           GoRoute(path: '/more', builder: (context, state) => const MorePage()),
         ],
+      ),
+      GoRoute(
+        path: '/reports',
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const ReportsPage()),
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const SettingsPage()),
+      ),
+      GoRoute(
+        path: '/analysis',
+        pageBuilder: (context, state) =>
+            SwipeToPopPage.create(state, const AnalysisPage()),
       ),
       GoRoute(
         path: '/shop',

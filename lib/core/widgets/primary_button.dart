@@ -17,7 +17,7 @@ class PrimaryButton extends StatelessWidget {
     required this.label,
     this.icon,
     this.elevation = 8.0,
-    this.borderRadius = 16.0,
+    this.borderRadius = 24.0,
     this.padding = const EdgeInsets.symmetric(vertical: 16),
     this.isFullWidth = true,
     this.textStyle,

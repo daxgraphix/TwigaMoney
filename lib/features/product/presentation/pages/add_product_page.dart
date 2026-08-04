@@ -65,91 +65,101 @@ class _AddProductPageState extends State<AddProductPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Form(
               key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InputLabel(text: l10n.productName),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      hintText: l10n.productNameHint,
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: AppTheme.softShadow,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    InputLabel(text: l10n.productName),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        hintText: l10n.productNameHint,
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                      validator: AppValidators.required(l10n.nameIsRequired),
+                      onSaved: (value) => _name = value!,
                     ),
-                    textCapitalization: TextCapitalization.words,
-                    validator: AppValidators.required(l10n.nameIsRequired), // Reuse or create specific
-                    onSaved: (value) => _name = value!,
-                  ),
-                  const SizedBox(height: 24),
-                  InputLabel(text: l10n.price),
-                  TextFormField(
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      hintText: l10n.priceHint,
-                      prefixText: '$symbol ',
-                      prefixStyle: const TextStyle(
+                    const SizedBox(height: 24),
+                    InputLabel(text: l10n.price),
+                    TextFormField(
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        hintText: l10n.priceHint,
+                        prefixText: '$symbol ',
+                        prefixStyle: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black),
-                    ),
-                    validator: (value) => AppValidators.price(value, context),
-                    onSaved: (value) => _price = double.parse(value!),
-                  ),
-                  const SizedBox(height: 24),
-                  InputLabel(text: l10n.stockQuantity),
-                  TextFormField(
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: l10n.stockHint,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return l10n.pleaseEnterValidQuantity;
-                      }
-                      final stock = int.tryParse(value);
-                      if (stock == null || stock < 0) {
-                        return l10n.pleaseEnterValidQuantity;
-                      }
-                      return null;
-                    },
-                    onSaved: (value) => _stock = int.parse(value!),
-                  ),
-                  const SizedBox(height: 24),
-                  InputLabel(text: l10n.category),
-                  FormField<String>(
-                    initialValue: _category,
-                    builder: (FormFieldState<String> state) {
-                      return InputDecorator(
-                        decoration: InputDecoration(
-                          hintText: l10n.category,
-                          errorText: state.errorText,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
-                        child: DropdownButton<String>(
-                          value: state.value,
-                          items: [
-                            DropdownMenuItem(value: 'Food', child: Text(l10n.categoryFood)),
-                            DropdownMenuItem(value: 'Beverages', child: Text(l10n.categoryBeverages)),
-                            DropdownMenuItem(value: 'Household', child: Text(l10n.categoryHousehold)),
-                            DropdownMenuItem(value: 'Personal Care', child: Text(l10n.categoryPersonalCare)),
-                            DropdownMenuItem(value: 'Electronics', child: Text(l10n.categoryElectronics)),
-                            DropdownMenuItem(value: 'Other', child: Text(l10n.categoryOther)),
-                          ],
-                          onChanged: (value) {
-                            state.didChange(value);
-                            setState(() {
-                              _category = value!;
-                            });
-                          },
-                          isExpanded: true,
-                        ),
-                      );
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return l10n.category;
-                      }
-                      return null;
-                    },
-                  ),
-                ],
+                      ),
+                      validator: (value) => AppValidators.price(value, context),
+                      onSaved: (value) => _price = double.parse(value!),
+                    ),
+                    const SizedBox(height: 24),
+                    InputLabel(text: l10n.stockQuantity),
+                    TextFormField(
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: l10n.stockHint,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return l10n.pleaseEnterValidQuantity;
+                        }
+                        final stock = int.tryParse(value);
+                        if (stock == null || stock < 0) {
+                          return l10n.pleaseEnterValidQuantity;
+                        }
+                        return null;
+                      },
+                      onSaved: (value) => _stock = int.parse(value!),
+                    ),
+                    const SizedBox(height: 24),
+                    InputLabel(text: l10n.category),
+                    FormField<String>(
+                      initialValue: _category,
+                      builder: (FormFieldState<String> state) {
+                        return InputDecorator(
+                          decoration: InputDecoration(
+                            hintText: l10n.category,
+                            errorText: state.errorText,
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: state.value,
+                              items: [
+                                DropdownMenuItem(value: 'Food', child: Text(l10n.categoryFood)),
+                                DropdownMenuItem(value: 'Beverages', child: Text(l10n.categoryBeverages)),
+                                DropdownMenuItem(value: 'Household', child: Text(l10n.categoryHousehold)),
+                                DropdownMenuItem(value: 'Personal Care', child: Text(l10n.categoryPersonalCare)),
+                                DropdownMenuItem(value: 'Electronics', child: Text(l10n.categoryElectronics)),
+                                DropdownMenuItem(value: 'Other', child: Text(l10n.categoryOther)),
+                              ],
+                              onChanged: (value) {
+                                state.didChange(value);
+                                setState(() {
+                                  _category = value!;
+                                });
+                              },
+                              isExpanded: true,
+                            ),
+                          ),
+                        );
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return l10n.category;
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

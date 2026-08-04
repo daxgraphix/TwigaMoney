@@ -7,6 +7,7 @@ import 'package:pdf/widgets.dart' as pdf_widgets;
 import 'package:csv/csv.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import '../bloc/analytics/analytics_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -48,6 +49,20 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
   }
 
   Future<void> _exportReportToPDF() async {
+    final l10n = AppLocalizations.of(context)!;
+    
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.request();
+      if (status.isDenied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.storagePermissionRequired)),
+          );
+        }
+        return;
+      }
+    }
+
     try {
       final pdf = pdf_widgets.Document();
       pdf.addPage(
@@ -89,6 +104,20 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
   }
 
   Future<void> _exportReportToCSV() async {
+    final l10n = AppLocalizations.of(context)!;
+    
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.request();
+      if (status.isDenied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.storagePermissionRequired)),
+          );
+        }
+        return;
+      }
+    }
+
     try {
       final state = context.read<AnalyticsBloc>().state;
       final l10n = AppLocalizations.of(context)!;
@@ -133,8 +162,8 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
     await showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Text(l10n.generateCustomReport, style: const TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -152,7 +181,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   DropdownMenuItem(value: 'Finance', child: Text(l10n.financeReport)),
                   DropdownMenuItem(value: 'Customers', child: Text(l10n.customersReport)),
                 ],
-                onChanged: (val) => setState(() => reportType = val!),
+                onChanged: (val) => setDialogState(() => reportType = val!),
               ),
               const SizedBox(height: 16),
               ListTile(
@@ -167,7 +196,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
                   );
-                  if (picked != null) setState(() => customStart = picked);
+                  if (picked != null) setDialogState(() => customStart = picked);
                 },
               ),
               ListTile(
@@ -182,7 +211,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
                   );
-                  if (picked != null) setState(() => customEnd = picked);
+                  if (picked != null) setDialogState(() => customEnd = picked);
                 },
               ),
             ],
@@ -200,7 +229,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                 
                 Navigator.pop(context);
                 
-                this.setState(() {
+                setState(() {
                   _startDate = start;
                   _endDate = end;
                 });
@@ -212,7 +241,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(100, 45),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               ),
               child: Text(l10n.generate),
             ),
@@ -346,6 +375,8 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
     final dailyProfit = state.dailyProfit;
     final totalSales = state.transactions.where((t) => t.type == TransactionType.income).length;
     final l10n = AppLocalizations.of(context)!;
+    final currency = Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
+    final symbol = AppTheme.getCurrencySymbol(currency);
     
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -362,16 +393,32 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
           _buildChartCard(
             "",
             SizedBox(
-              height: 220,
+              height: 250, // Increased height
               child: dailyRevenue.isEmpty 
                 ? _buildEmptyState()
                 : LineChart(
                     LineChartData(
+                      lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          tooltipBgColor: Theme.of(context).colorScheme.surface,
+                          tooltipRoundedRadius: 12,
+                          getTooltipItems: (spots) => spots.map((spot) {
+                            return LineTooltipItem(
+                              '${NumberFormat.currency(symbol: symbol, decimalDigits: 0).format(spot.y)}',
+                              TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
                       gridData: FlGridData(
                         show: true,
                         drawVerticalLine: false,
                         getDrawingHorizontalLine: (value) => FlLine(
-                          color: Colors.grey.withValues(alpha: 0.1),
+                          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                           strokeWidth: 1,
                         ),
                       ),
@@ -381,17 +428,20 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                             showTitles: true,
                             getTitlesWidget: (value, meta) {
                               final date = _startDate.add(Duration(days: value.toInt()));
-                              // Only show every few days to avoid crowding
                               if (value.toInt() % (state.dailyRevenue.length > 10 ? 5 : 2) != 0) return const SizedBox();
                               return Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
+                                padding: const EdgeInsets.only(top: 10.0),
                                 child: Text(
                                   DateFormat('dd/MM').format(date),
-                                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                                  style: TextStyle(
+                                    fontSize: 11, 
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               );
                             },
-                            reservedSize: 30,
+                            reservedSize: 35,
                           ),
                         ),
                         leftTitles: AxisTitles(
@@ -399,9 +449,13 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                             showTitles: true,
                             getTitlesWidget: (value, meta) => Text(
                               NumberFormat.compact().format(value),
-                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                              style: TextStyle(
+                                fontSize: 11, 
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                            reservedSize: 40,
+                            reservedSize: 45,
                           ),
                         ),
                         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -418,14 +472,22 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                             ..sort((a, b) => a.x.compareTo(b.x)),
                           isCurved: true,
                           color: AppTheme.primaryColor,
-                          barWidth: 4,
+                          barWidth: 5,
                           isStrokeCapRound: true,
-                          dotData: const FlDotData(show: false),
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                              radius: 4,
+                              color: AppTheme.primaryColor,
+                              strokeWidth: 2,
+                              strokeColor: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
+                            ),
+                          ),
                           belowBarData: BarAreaData(
                             show: true,
                             gradient: LinearGradient(
                               colors: [
-                                AppTheme.primaryColor.withValues(alpha: 0.2),
+                                AppTheme.primaryColor.withValues(alpha: 0.3),
                                 AppTheme.primaryColor.withValues(alpha: 0.0),
                               ],
                               begin: Alignment.topCenter,
@@ -434,17 +496,6 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                           ),
                         ),
                       ],
-                      lineTouchData: LineTouchData(
-                        touchTooltipData: LineTouchTooltipData(
-                          tooltipBgColor: AppTheme.secondaryColor,
-                          getTooltipItems: (spots) => spots.map((spot) {
-                            return LineTooltipItem(
-                              '${NumberFormat.compact().format(spot.y)}',
-                              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            );
-                          }).toList(),
-                        ),
-                      ),
                     ),
                   ),
             ),
@@ -455,16 +506,32 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
           _buildChartCard(
             "",
             SizedBox(
-              height: 220,
+              height: 250,
               child: dailyProfit.isEmpty 
                 ? _buildEmptyState()
                 : LineChart(
                     LineChartData(
+                      lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          tooltipBgColor: Theme.of(context).colorScheme.surface,
+                          tooltipRoundedRadius: 12,
+                          getTooltipItems: (spots) => spots.map((spot) {
+                            return LineTooltipItem(
+                              '${NumberFormat.currency(symbol: symbol, decimalDigits: 0).format(spot.y)}',
+                              TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
                       gridData: FlGridData(
                         show: true,
                         drawVerticalLine: false,
                         getDrawingHorizontalLine: (value) => FlLine(
-                          color: Colors.grey.withValues(alpha: 0.1),
+                          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                           strokeWidth: 1,
                         ),
                       ),
@@ -476,14 +543,18 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                               final date = _startDate.add(Duration(days: value.toInt()));
                               if (value.toInt() % (state.dailyProfit.length > 10 ? 5 : 2) != 0) return const SizedBox();
                               return Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
+                                padding: const EdgeInsets.only(top: 10.0),
                                 child: Text(
                                   DateFormat('dd/MM').format(date),
-                                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                                  style: TextStyle(
+                                    fontSize: 11, 
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               );
                             },
-                            reservedSize: 30,
+                            reservedSize: 35,
                           ),
                         ),
                         leftTitles: AxisTitles(
@@ -491,9 +562,13 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                             showTitles: true,
                             getTitlesWidget: (value, meta) => Text(
                               NumberFormat.compact().format(value),
-                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                              style: TextStyle(
+                                fontSize: 11, 
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                            reservedSize: 40,
+                            reservedSize: 45,
                           ),
                         ),
                         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -510,14 +585,22 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                             ..sort((a, b) => a.x.compareTo(b.x)),
                           isCurved: true,
                           color: Colors.green,
-                          barWidth: 4,
+                          barWidth: 5,
                           isStrokeCapRound: true,
-                          dotData: const FlDotData(show: false),
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                              radius: 4,
+                              color: Colors.green,
+                              strokeWidth: 2,
+                              strokeColor: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
+                            ),
+                          ),
                           belowBarData: BarAreaData(
                             show: true,
                             gradient: LinearGradient(
                               colors: [
-                                Colors.green.withValues(alpha: 0.2),
+                                Colors.green.withValues(alpha: 0.3),
                                 Colors.green.withValues(alpha: 0.0),
                               ],
                               begin: Alignment.topCenter,
@@ -586,7 +669,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.primaryColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.1)),
       ),
       child: Row(
@@ -660,6 +743,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
     final totalProfit = state.dailyProfit.values.fold<double>(0, (sum, val) => sum + val);
     final currency = Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
     final symbol = AppTheme.getCurrencySymbol(currency);
+    final l10n = AppLocalizations.of(context)!;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -682,7 +766,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
             _buildSummaryCard(
               AppLocalizations.of(context)!.totalProfitLabel,
               '$symbol${NumberFormat.compact().format(totalProfit)}',
-              '${totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toStringAsFixed(1) : '0.0'}% margin',
+              '${totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toStringAsFixed(1) : '0.0'}% ${l10n.marginLabel}',
               Icons.trending_up,
               Colors.green,
             ),
@@ -690,7 +774,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
               _buildSummaryCard(
                 AppLocalizations.of(context)!.transactionsCount,
                 totalSales.toString(),
-                'avg $symbol${totalSales > 0 ? NumberFormat.compact().format(totalRevenue / totalSales) : 0}',
+                l10n.averageLabel(totalSales > 0 ? '$symbol${NumberFormat.compact().format(totalRevenue / totalSales)}' : '0'),
                 Icons.shopping_cart_outlined,
                 Colors.orange,
               ),
@@ -744,7 +828,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   ),
                 ),
                 title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('${product.totalSold} units sold', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                subtitle: Text(l10n.unitsSold(product.totalSold.toString()), style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -754,7 +838,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     Text(
-                      '${product.marginPercentage.toStringAsFixed(1)}% margin',
+                      l10n.marginPercent(product.marginPercentage.toStringAsFixed(1)),
                       style: TextStyle(fontSize: 10, color: Colors.green[600], fontWeight: FontWeight.w500),
                     ),
                   ],
@@ -782,9 +866,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                   child: const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
                 ),
                 title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Turnover Rate: ${product.turnoverRate.toStringAsFixed(2)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                subtitle: Text(l10n.turnoverRate(product.turnoverRate.toStringAsFixed(2)), style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
                 trailing: Text(
-                  '${product.totalSold} sold',
+                  l10n.soldCount(product.totalSold.toString()),
                   style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500),
                 ),
               );
@@ -1017,7 +1101,7 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
           _buildSummaryCard(
             l10n.totalCustomers,
             outstanding.length.toString(),
-            'with active balances',
+            l10n.activeBalancesDesc,
             Icons.people_outline,
             Colors.purple,
           ),
@@ -1055,9 +1139,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
                             getTitlesWidget: (value, meta) {
                               String text = '';
                               switch (value.toInt()) {
-                                case 0: text = '0-30'; break;
-                                case 1: text = '31-60'; break;
-                                case 2: text = '60+'; break;
+                                case 0: text = l10n.agingRange0_30; break;
+                                case 1: text = l10n.agingRange31_60; break;
+                                case 2: text = l10n.agingRange60Plus; break;
                               }
                               return Padding(
                                 padding: const EdgeInsets.only(top: 8.0),
@@ -1120,10 +1204,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.softShadow,
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1178,10 +1261,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.softShadow,
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1207,10 +1289,9 @@ class _ReportsPageState extends State<ReportsPage> with TickerProviderStateMixin
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.softShadow,
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

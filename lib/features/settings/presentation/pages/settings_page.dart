@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -177,6 +178,7 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(l10n.selectCurrency),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -206,6 +208,7 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(l10n.selectDateFormat),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -260,11 +263,12 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildListGroup({required List<Widget> children}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
+        color: theme.cardTheme.color ?? theme.cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.softShadow,
         border: Border.all(color: isDark ? AppTheme.darkBorderColor : Colors.grey.shade100),
@@ -307,6 +311,7 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(l10n.selectLanguage),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -327,6 +332,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _backupData() async {
     final l10n = AppLocalizations.of(context)!;
+    
+    // Request storage permissions for Android < 13
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.request();
+      if (status.isDenied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.storagePermissionRequired)),
+          );
+        }
+        return;
+      }
+    }
+
     try {
       final json = await context.read<SettingsCubit>().settingsRepository.exportData();
       
@@ -361,10 +380,24 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _restoreData() async {
     final l10n = AppLocalizations.of(context)!;
+    
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.request();
+      if (status.isDenied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.storagePermissionRequired)),
+          );
+        }
+        return;
+      }
+    }
+
     try {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Text(l10n.restoreData),
           content: Text(l10n.restoreDataConfirm),
           actions: [
@@ -426,6 +459,7 @@ class _SettingsPageState extends State<SettingsPage> {
     await showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(l10n.myProfile),
         content: SingleChildScrollView(
           child: Column(

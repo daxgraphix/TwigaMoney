@@ -84,9 +84,22 @@ class _EditProductPageState extends State<EditProductPage> {
                     margin: const EdgeInsets.only(bottom: 24),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                           color: AppTheme.primaryColor.withValues(alpha: 0.1)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.qr_code_scanner, color: AppTheme.primaryColor),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l10n.barcodeScanning.replaceAll('• ', ''), style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(widget.product.barcode, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   InputLabel(text: l10n.productName),

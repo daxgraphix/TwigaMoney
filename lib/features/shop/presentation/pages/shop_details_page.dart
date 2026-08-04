@@ -1,6 +1,7 @@
 import 'package:twigamoney/l10n/app_localizations.dart';
 import 'package:twigamoney/core/widgets/input_label.dart';
 import 'package:twigamoney/core/widgets/primary_button.dart';
+import 'package:twigamoney/core/widgets/page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -82,6 +83,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
         appBar: AppBar(
+          leading: const BackButtonWidget(),
           title: Text(l10n.shopDetails),
         ),
         body: BlocConsumer<ShopBloc, ShopState>(
@@ -94,8 +96,13 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                   backgroundColor: Colors.green));
               if (context.canPop()) { context.pop(); } else { context.go('/'); }
             } else if (state is ShopError) {
+              final errorMessage = state.message == 'failedToLoadShop'
+                  ? l10n.failedToLoadShop
+                  : state.message == 'failedToUpdateShop'
+                      ? l10n.failedToUpdateShop
+                      : state.message;
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(state.message), backgroundColor: Colors.red));
+                  content: Text(errorMessage), backgroundColor: Colors.red));
             }
           },
           buildWhen: (previous, current) =>
@@ -174,7 +181,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                       controller: _footerController,
                       hint: l10n.thankYouHint,
                       maxLines: 2,
-                      maxLength: 60,
+                      maxLength: 150,
                     ),
                   ],
                 ),

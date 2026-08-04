@@ -138,11 +138,18 @@ class _ProductListPageState extends State<ProductListPage> {
           Expanded(
             child: BlocConsumer<ProductBloc, ProductState>(
               listener: (context, state) {
+                final l10n = AppLocalizations.of(context)!;
                 if (state.status == ProductStatus.success &&
                     state.message != null) {
+                  String message = state.message!;
+                  if (message == 'productAddedSuccessfully') message = l10n.productAddedSuccessfully;
+                  if (message == 'productUpdatedSuccessfully') message = l10n.productUpdatedSuccessfully;
+                  if (message == 'productDeletedSuccessfully') message = l10n.productDeletedSuccessfully;
+                  if (message == 'stockUpdatedSuccessfully') message = l10n.stockUpdatedSuccessfully;
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content: Text(state.message!),
+                        content: Text(message),
                         backgroundColor: Colors.green),
                   );
                 } else if (state.status == ProductStatus.error &&
@@ -214,7 +221,7 @@ class _ProductListPageState extends State<ProductListPage> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(24),
                           boxShadow: AppTheme.softShadow,
                           border: Border.all(
                             color: isLowStock 
@@ -223,18 +230,18 @@ class _ProductListPageState extends State<ProductListPage> {
                           ),
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(24),
                           child: IntrinsicHeight(
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Container(
-                                  width: 6,
+                                  width: 8,
                                   color: isLowStock ? Colors.red : AppTheme.primaryColor,
                                 ),
                                 Expanded(
                                   child: Padding(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: const EdgeInsets.all(18),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -246,7 +253,7 @@ class _ProductListPageState extends State<ProductListPage> {
                                                 product.name,
                                                 style: const TextStyle(
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 16),
+                                                    fontSize: 17),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
@@ -256,20 +263,20 @@ class _ProductListPageState extends State<ProductListPage> {
                                               style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   color: AppTheme.primaryColor,
-                                                  fontSize: 16),
+                                                  fontSize: 17),
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 4),
+                                        const SizedBox(height: 6),
                                         Text(
                                           product.category,
                                           style: TextStyle(
-                                            fontSize: 12,
+                                            fontSize: 13,
                                             color: Colors.grey[500],
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                        const SizedBox(height: 12),
+                                        const SizedBox(height: 16),
                                         Row(
                                           children: [
                                             _buildStockIndicator(product.stock, product.minStockThreshold),
@@ -277,16 +284,16 @@ class _ProductListPageState extends State<ProductListPage> {
                                             _buildActionIconButton(
                                               icon: Icons.edit_outlined,
                                               color: Colors.blue,
-                                              onTap: () => context.push('/products/edit/${product.id}', extra: product),
+                                              onTap: () => context.push('/products/edit', extra: product),
                                             ),
-                                            const SizedBox(width: 8),
+                                            const SizedBox(width: 10),
                                             _buildActionIconButton(
                                               icon: Icons.add_box_outlined,
                                               color: Colors.green,
                                               onTap: () => _returnItem(context, product),
                                               tooltip: l10n.restock,
                                             ),
-                                            const SizedBox(width: 8),
+                                            const SizedBox(width: 10),
                                             _buildActionIconButton(
                                               icon: Icons.delete_outline,
                                               color: Colors.red,
@@ -324,21 +331,21 @@ class _ProductListPageState extends State<ProductListPage> {
     final bool isLow = stock <= threshold;
     final color = isLow ? Colors.red : Colors.green;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(isLow ? Icons.warning_amber_rounded : Icons.check_circle_outline, 
-               size: 14, color: color),
-          const SizedBox(width: 4),
+               size: 16, color: color),
+          const SizedBox(width: 6),
           Text(
             '${l10n.stock}: $stock',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -353,14 +360,14 @@ class _ProductListPageState extends State<ProductListPage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: color, size: 18),
+          child: Icon(icon, color: color, size: 20),
         ),
       ),
     );

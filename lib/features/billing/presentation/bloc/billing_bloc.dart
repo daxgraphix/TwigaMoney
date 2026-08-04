@@ -42,7 +42,7 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
 
     if (event.product.stock < currentInCart + event.quantity) {
       emit(state.copyWith(
-        error: 'Insufficient stock for ${event.product.name}. Available: ${event.product.stock}, In Cart: $currentInCart',
+        error: 'insufficientStock|${event.product.name}|${event.product.stock}|$currentInCart',
       ));
       return;
     }
@@ -92,7 +92,7 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
       
       if (product.stock < event.quantity) {
         emit(state.copyWith(
-          error: 'Cannot update quantity. Only ${product.stock} available for ${product.name}.',
+          error: 'cannotUpdateQuantityOnlyStock|${product.stock}|${product.name}',
         ));
         return;
       }
@@ -119,7 +119,7 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
   Future<void> _onCompleteSale(
       CompleteSaleEvent event, Emitter<BillingState> emit) async {
     if (state.cartItems.isEmpty) {
-      emit(state.copyWith(error: 'Cart is empty'));
+      emit(state.copyWith(error: 'cartIsEmpty'));
       return;
     }
 

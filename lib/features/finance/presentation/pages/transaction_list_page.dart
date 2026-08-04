@@ -286,6 +286,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     return await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                             title: Text(l10n.deleteTransaction),
                             content: Text(l10n.confirmDeleteTransaction(tx.description)),
                             actions: [
@@ -365,32 +366,55 @@ class _TransactionListPageState extends State<TransactionListPage> {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      backgroundColor: Theme.of(context).cardColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
       builder: (context) => Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: category.color.withValues(alpha: 0.1),
-                  child: Icon(category.icon, color: category.color),
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: category.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(category.icon, color: category.color, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Text(tx.description, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tx.description, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      Text(category.name, style: TextStyle(color: Colors.grey[500], fontSize: 14)),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
             _detailRow(l10n.amount, '$_currencySymbol${tx.amount.toStringAsFixed(2)}'),
             _detailRow(l10n.type, tx.type.name.toUpperCase()),
             _detailRow(l10n.category, category.name),
             if (account != null) _detailRow(l10n.account, account.name),
             _detailRow(l10n.date, _dateFmt.format(tx.date)),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             Row(
               children: [
                 Expanded(
@@ -399,13 +423,23 @@ class _TransactionListPageState extends State<TransactionListPage> {
                       Navigator.pop(context);
                       context.push('/add-transaction', extra: tx);
                     },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    ),
                     child: Text(l10n.edit),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.withValues(alpha: 0.1),
+                      foregroundColor: Colors.red,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                       context.read<TransactionBloc>().add(DeleteTransactionEvent(tx.id));
@@ -413,7 +447,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                         SnackBar(content: Text(l10n.transactionDeleted(tx.description)), backgroundColor: Colors.green),
                       );
                     },
-                    child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
+                    child: Text(l10n.delete),
                   ),
                 ),
               ],

@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_sw.dart';
 
 // ignore_for_file: type=lint
 
@@ -92,7 +93,10 @@ abstract class AppLocalizations {
   ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('sw')
+  ];
 
   /// No description provided for @appName.
   ///
@@ -550,6 +554,12 @@ abstract class AppLocalizations {
   /// **'English'**
   String get english;
 
+  /// No description provided for @swahili.
+  ///
+  /// In en, this message translates to:
+  /// **'Swahili'**
+  String get swahili;
+
   /// No description provided for @dashboard.
   ///
   /// In en, this message translates to:
@@ -898,6 +908,18 @@ abstract class AppLocalizations {
   /// **'Your cart is empty'**
   String get cartIsEmpty;
 
+  /// No description provided for @insufficientStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient stock for {name}. Available: {stock}, In Cart: {inCart}'**
+  String insufficientStock(Object inCart, Object name, Object stock);
+
+  /// No description provided for @cannotUpdateQuantityOnlyStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot update quantity. Only {stock} available for {name}.'**
+  String cannotUpdateQuantityOnlyStock(Object name, Object stock);
+
   /// No description provided for @processing.
   ///
   /// In en, this message translates to:
@@ -1107,6 +1129,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stock Adjustment'**
   String get stockAdjustment;
+
+  /// No description provided for @productAddedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Product added successfully'**
+  String get productAddedSuccessfully;
+
+  /// No description provided for @productUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Product updated successfully'**
+  String get productUpdatedSuccessfully;
+
+  /// No description provided for @productDeletedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Product deleted successfully'**
+  String get productDeletedSuccessfully;
+
+  /// No description provided for @stockUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock updated successfully'**
+  String get stockUpdatedSuccessfully;
+
+  /// No description provided for @failedToLoadProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load products'**
+  String get failedToLoadProducts;
+
+  /// No description provided for @failedToAddProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add product'**
+  String get failedToAddProduct;
+
+  /// No description provided for @failedToUpdateProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update product'**
+  String get failedToUpdateProduct;
+
+  /// No description provided for @failedToDeleteProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete product'**
+  String get failedToDeleteProduct;
+
+  /// No description provided for @failedToUpdateStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update stock'**
+  String get failedToUpdateStock;
 
   /// No description provided for @budgetManagement.
   ///
@@ -2206,6 +2282,12 @@ abstract class AppLocalizations {
   /// **'Page not found'**
   String get pageNotFound;
 
+  /// No description provided for @howCanWeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'How can we help?'**
+  String get howCanWeHelp;
+
   /// No description provided for @helpSupport.
   ///
   /// In en, this message translates to:
@@ -2788,6 +2870,12 @@ abstract class AppLocalizations {
   /// **'Error loading report data: {error}'**
   String errorLoadingReportData(Object error);
 
+  /// No description provided for @goalReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached!'**
+  String get goalReached;
+
   /// No description provided for @twigaMoneyReport.
   ///
   /// In en, this message translates to:
@@ -3190,6 +3278,96 @@ abstract class AppLocalizations {
   /// **'dd/MM/yyyy'**
   String get dateFormatEuropean;
 
+  /// No description provided for @marginPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% margin'**
+  String marginPercent(Object percent);
+
+  /// No description provided for @averageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'avg {amount}'**
+  String averageLabel(Object amount);
+
+  /// No description provided for @unitsSold.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} units sold'**
+  String unitsSold(Object count);
+
+  /// No description provided for @turnoverRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Turnover Rate: {rate}'**
+  String turnoverRate(Object rate);
+
+  /// No description provided for @soldCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sold'**
+  String soldCount(Object count);
+
+  /// No description provided for @activeBalancesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'with active balances'**
+  String get activeBalancesDesc;
+
+  /// No description provided for @agingRange0_30.
+  ///
+  /// In en, this message translates to:
+  /// **'0-30'**
+  String get agingRange0_30;
+
+  /// No description provided for @agingRange31_60.
+  ///
+  /// In en, this message translates to:
+  /// **'31-60'**
+  String get agingRange31_60;
+
+  /// No description provided for @agingRange60Plus.
+  ///
+  /// In en, this message translates to:
+  /// **'60+'**
+  String get agingRange60Plus;
+
+  /// No description provided for @selectProductMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select or enter a product name'**
+  String get selectProductMessage;
+
+  /// No description provided for @enterValidPriceMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid price'**
+  String get enterValidPriceMessage;
+
+  /// No description provided for @manualCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get manualCategory;
+
+  /// No description provided for @searchProductHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Start typing product name...'**
+  String get searchProductHint;
+
+  /// No description provided for @defaultShopName.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get defaultShopName;
+
+  /// No description provided for @marginLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'margin'**
+  String get marginLabel;
+
   /// No description provided for @financialTools.
   ///
   /// In en, this message translates to:
@@ -3309,6 +3487,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Analysis'**
   String get analysis;
+
+  /// No description provided for @financialAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial Analysis'**
+  String get financialAnalysis;
+
+  /// No description provided for @toggleForecasting.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle Forecasting'**
+  String get toggleForecasting;
+
+  /// No description provided for @last3Months.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 3 Months'**
+  String get last3Months;
+
+  /// No description provided for @incomeVsExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Income vs Expenses'**
+  String get incomeVsExpenses;
+
+  /// No description provided for @expenseDistribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense Distribution'**
+  String get expenseDistribution;
+
+  /// No description provided for @categoryBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Breakdown'**
+  String get categoryBreakdown;
+
+  /// No description provided for @avgPerTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg / Trans'**
+  String get avgPerTransaction;
+
+  /// No description provided for @noTransactionsPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions found for this period'**
+  String get noTransactionsPeriod;
+
+  /// No description provided for @percentOfTotalExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% of total expenses'**
+  String percentOfTotalExpenses(Object percent);
+
+  /// No description provided for @thirtyDayForecast.
+  ///
+  /// In en, this message translates to:
+  /// **'30-Day Forecast'**
+  String get thirtyDayForecast;
+
+  /// No description provided for @projectedRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Projected Revenue'**
+  String get projectedRevenue;
+
+  /// No description provided for @projectedProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Projected Profit'**
+  String get projectedProfit;
 
   /// No description provided for @help.
   ///
@@ -3627,6 +3877,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transaction Export'**
   String get transactionExport;
+
+  /// No description provided for @storagePermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage permission is required to save or share files.'**
+  String get storagePermissionRequired;
+
+  /// No description provided for @failedToLoadShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load shop details'**
+  String get failedToLoadShop;
+
+  /// No description provided for @failedToUpdateShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update shop details'**
+  String get failedToUpdateShop;
+
+  /// No description provided for @completeShopSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Your Shop Setup'**
+  String get completeShopSetup;
+
+  /// No description provided for @shopSetupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s set up your shop details. This information will appear on your receipts.'**
+  String get shopSetupSubtitle;
+
+  /// No description provided for @saveAndContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Save & Continue'**
+  String get saveAndContinue;
+
+  /// No description provided for @skipForNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for Now'**
+  String get skipForNow;
 }
 
 class _AppLocalizationsDelegate
@@ -3640,7 +3932,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en'].contains(locale.languageCode);
+      <String>['en', 'sw'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -3651,6 +3943,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'sw':
+      return AppLocalizationsSw();
   }
 
   throw FlutterError(

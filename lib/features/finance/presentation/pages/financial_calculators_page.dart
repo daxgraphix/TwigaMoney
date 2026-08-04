@@ -230,7 +230,7 @@ class _GoalTrackerState extends State<_GoalTracker>
       result: _monthsToGoal == null
           ? null
           : _monthsToGoal! < 0
-              ? 'Goal reached!'
+              ? l10n.goalReached
               : '${_monthsToGoal!.toStringAsFixed(1)} ${l10n.monthsToGoal}',
       resultIcon: Icons.flag,
     );
@@ -481,7 +481,7 @@ class _CalculatorLayout extends StatelessWidget {
   Widget _buildResultCard(
       String text, Color color, IconData? icon, bool isDark) {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       color:
           isDark ? color.withValues(alpha: 0.2) : color.withValues(alpha: 0.1),
       child: Padding(

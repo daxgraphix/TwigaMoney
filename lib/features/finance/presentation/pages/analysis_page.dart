@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/widgets/page_transitions.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/category.dart';
 import '../../../../core/data/hive_database.dart';
@@ -23,11 +24,11 @@ class _AnalysisPageState extends State<AnalysisPage> {
   String _dateRangeFilter = 'This Month';
   bool _showForecasting = false;
 
-  final List<String> _dateRangeOptions = const [
-    'This Month',
-    'Last 3 Months',
-    'This Year',
-    'All Time',
+  List<String> _getDateRangeOptions(AppLocalizations l10n) => [
+    l10n.thisMonth,
+    l10n.last3Months,
+    l10n.thisYear,
+    l10n.allTime,
   ];
 
   @override
@@ -35,6 +36,12 @@ class _AnalysisPageState extends State<AnalysisPage> {
     super.initState();
     context.read<TransactionBloc>().add(LoadTransactionsEvent());
     context.read<FinanceBloc>().add(LoadCategoriesEvent());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _dateRangeFilter = AppLocalizations.of(context)!.thisMonth;
     _loadReport();
   }
 
@@ -42,20 +49,16 @@ class _AnalysisPageState extends State<AnalysisPage> {
     final now = DateTime.now();
     DateTime startDate;
     DateTime endDate = now;
+    final l10n = AppLocalizations.of(context)!;
 
-    switch (_dateRangeFilter) {
-      case 'Last 3 Months':
-        startDate = DateTime(now.year, now.month - 2, 1);
-        break;
-      case 'This Year':
-        startDate = DateTime(now.year, 1, 1);
-        break;
-      case 'All Time':
-        startDate = DateTime(2000);
-        break;
-      case 'This Month':
-      default:
-        startDate = DateTime(now.year, now.month, 1);
+    if (_dateRangeFilter == l10n.last3Months) {
+      startDate = DateTime(now.year, now.month - 2, 1);
+    } else if (_dateRangeFilter == l10n.thisYear) {
+      startDate = DateTime(now.year, 1, 1);
+    } else if (_dateRangeFilter == l10n.allTime) {
+      startDate = DateTime(2000);
+    } else {
+      startDate = DateTime(now.year, now.month, 1);
     }
     context.read<ReportCubit>().loadComprehensiveReport(startDate, endDate);
   }
@@ -63,20 +66,16 @@ class _AnalysisPageState extends State<AnalysisPage> {
   List<Transaction> _getFilteredTransactions(List<Transaction> transactions) {
     final now = DateTime.now();
     DateTime startDate;
+    final l10n = AppLocalizations.of(context)!;
 
-    switch (_dateRangeFilter) {
-      case 'Last 3 Months':
-        startDate = DateTime(now.year, now.month - 2, 1);
-        break;
-      case 'This Year':
-        startDate = DateTime(now.year, 1, 1);
-        break;
-      case 'All Time':
-        startDate = DateTime(2000);
-        break;
-      case 'This Month':
-      default:
-        startDate = DateTime(now.year, now.month, 1);
+    if (_dateRangeFilter == l10n.last3Months) {
+      startDate = DateTime(now.year, now.month - 2, 1);
+    } else if (_dateRangeFilter == l10n.thisYear) {
+      startDate = DateTime(now.year, 1, 1);
+    } else if (_dateRangeFilter == l10n.allTime) {
+      startDate = DateTime(2000);
+    } else {
+      startDate = DateTime(now.year, now.month, 1);
     }
 
     return transactions.where((t) => !t.date.isBefore(startDate)).toList();
@@ -87,17 +86,18 @@ class _AnalysisPageState extends State<AnalysisPage> {
     final currency = HiveDatabase.settingsBox.get('selectedCurrency', defaultValue: 'TZS');
     final symbol = AppTheme.getCurrencySymbol(currency);
     final padding = Responsive.getPadding(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         leading: const BackButtonWidget(),
-        title: const Text('Financial Analysis', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.financialAnalysis, style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: Icon(_showForecasting ? Icons.trending_up : Icons.show_chart, 
               color: _showForecasting ? Theme.of(context).primaryColor : null),
             onPressed: () => setState(() => _showForecasting = !_showForecasting),
-            tooltip: 'Toggle Forecasting',
+            tooltip: l10n.toggleForecasting,
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -111,7 +111,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
                 value: _dateRangeFilter,
                 icon: const Icon(Icons.filter_list, size: 18),
                 style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 13),
-                items: _dateRangeOptions
+                items: _getDateRangeOptions(l10n)
                     .map((option) => DropdownMenuItem(value: option, child: Text(option)))
                     .toList(),
                 onChanged: (value) {
@@ -144,7 +144,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
                       : null;
 
                   if (filteredTransactions.isEmpty) {
-                    return const Center(child: Text('No transactions found for this period'));
+                    return Center(child: Text(l10n.noTransactionsPeriod));
                   }
 
                   return SingleChildScrollView(
@@ -156,32 +156,32 @@ class _AnalysisPageState extends State<AnalysisPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (_showForecasting && report != null) ...[
-                              _buildForecastingSection(report, symbol),
+                              _buildForecastingSection(report, symbol, l10n),
                               const SizedBox(height: 24),
                             ],
-                            _buildSummaryCards(filteredTransactions, symbol),
+                            _buildSummaryCards(filteredTransactions, symbol, l10n),
                             const SizedBox(height: 24),
                             if (Responsive.isDesktop(context))
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(child: _buildChartSection('Income vs Expenses', _buildBarChart(filteredTransactions))),
+                                  Expanded(child: _buildChartSection(l10n.incomeVsExpenses, _buildBarChart(filteredTransactions))),
                                   const SizedBox(width: 24),
-                                  Expanded(child: _buildChartSection('Expense Distribution', _buildPieChart(filteredTransactions, categories))),
+                                  Expanded(child: _buildChartSection(l10n.expenseDistribution, _buildPieChart(filteredTransactions, categories, l10n))),
                                 ],
                               )
                             else
                               Column(
                                 children: [
-                                  _buildChartSection('Income vs Expenses', _buildBarChart(filteredTransactions)),
+                                  _buildChartSection(l10n.incomeVsExpenses, _buildBarChart(filteredTransactions)),
                                   const SizedBox(height: 24),
-                                  _buildChartSection('Expense Distribution', _buildPieChart(filteredTransactions, categories)),
+                                  _buildChartSection(l10n.expenseDistribution, _buildPieChart(filteredTransactions, categories, l10n)),
                                 ],
                               ),
                             const SizedBox(height: 24),
-                            Text('Category Breakdown', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                            Text(l10n.categoryBreakdown, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                             const SizedBox(height: 12),
-                            _buildCategoryBreakdown(filteredTransactions, categoryMap, symbol),
+                            _buildCategoryBreakdown(filteredTransactions, categoryMap, symbol, l10n),
                             const SizedBox(height: 32),
                           ],
                         ),
@@ -197,7 +197,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
     );
   }
 
-  Widget _buildSummaryCards(List<Transaction> transactions, String symbol) {
+  Widget _buildSummaryCards(List<Transaction> transactions, String symbol, AppLocalizations l10n) {
     final totalIncome = transactions
         .where((t) => t.type == TransactionType.income)
         .fold(0.0, (sum, t) => sum + t.amount);
@@ -214,46 +214,46 @@ class _AnalysisPageState extends State<AnalysisPage> {
       crossAxisSpacing: 16,
       childAspectRatio: 2.2,
       children: [
-        _buildStatCard('Total Income', totalIncome, Colors.green, symbol, Icons.trending_up),
-        _buildStatCard('Total Expenses', totalExpenses, Colors.red, symbol, Icons.trending_down),
-        _buildStatCard('Net Savings', totalIncome - totalExpenses, Colors.blue, symbol, Icons.account_balance_wallet),
-        _buildStatCard('Avg / Trans', averageAmount, Colors.orange, symbol, Icons.receipt_long),
+        _buildStatCard(l10n.totalIncome, totalIncome, Colors.green, symbol, Icons.trending_up),
+        _buildStatCard(l10n.totalExpenses, totalExpenses, Colors.red, symbol, Icons.trending_down),
+        _buildStatCard(l10n.netSavings, totalIncome - totalExpenses, Colors.blue, symbol, Icons.account_balance_wallet),
+        _buildStatCard(l10n.avgPerTransaction, averageAmount, Colors.orange, symbol, Icons.receipt_long),
       ],
     );
   }
 
   Widget _buildStatCard(String label, double value, Color color, String symbol, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.softShadow,
         border: Border.all(color: color.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500)),
-                const SizedBox(height: 2),
+                Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[500], fontWeight: FontWeight.w500)),
+                const SizedBox(height: 4),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     '$symbol${value.toStringAsFixed(0)}',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
                   ),
                 ),
               ],
@@ -297,7 +297,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
     final keys = grouped.keys.toList()..sort();
     final displayKeys = keys.length > 6 ? keys.sublist(keys.length - 6) : keys;
 
-    if (displayKeys.isEmpty) return const Center(child: Text('Not enough data'));
+    if (displayKeys.isEmpty) return Center(child: Text(AppLocalizations.of(context)!.noData));
 
     final groups = List.generate(displayKeys.length, (index) {
       final key = displayKeys[index];
@@ -308,8 +308,18 @@ class _AnalysisPageState extends State<AnalysisPage> {
       return BarChartGroupData(
         x: index,
         barRods: [
-          BarChartRodData(toY: income, color: Colors.green, width: 12, borderRadius: BorderRadius.circular(4)),
-          BarChartRodData(toY: expense, color: Colors.red, width: 12, borderRadius: BorderRadius.circular(4)),
+          BarChartRodData(
+            toY: income, 
+            color: Colors.green, 
+            width: 14, 
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+          ),
+          BarChartRodData(
+            toY: expense, 
+            color: Colors.red, 
+            width: 14, 
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+          ),
         ],
       );
     });
@@ -357,7 +367,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
     );
   }
 
-  Widget _buildPieChart(List<Transaction> transactions, List<Category> categories) {
+  Widget _buildPieChart(List<Transaction> transactions, List<Category> categories, AppLocalizations l10n) {
     final expenses = transactions.where((t) => t.type == TransactionType.expense);
     final Map<String, double> byCategoryId = {};
     double totalExpense = 0;
@@ -367,7 +377,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
       totalExpense += t.amount;
     }
 
-    if (totalExpense == 0) return const Center(child: Text('No expense data'));
+    if (totalExpense == 0) return Center(child: Text(l10n.noExpensesMonth));
 
     final sortedEntries = byCategoryId.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -377,7 +387,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
     
     for (int i = 0; i < sortedEntries.length && i < 5; i++) {
       final entry = sortedEntries[i];
-      final category = categoryMap[entry.key] ?? Category(id: '', name: 'Other', colorValue: Colors.grey.r.toInt() << 24 | Colors.grey.g.toInt() << 16 | Colors.grey.b.toInt() << 8 | Colors.grey.a.toInt(), iconName: '');
+      final category = categoryMap[entry.key] ?? Category(id: '', name: l10n.unknown, colorValue: Colors.grey.r.toInt() << 24 | Colors.grey.g.toInt() << 16 | Colors.grey.b.toInt() << 8 | Colors.grey.a.toInt(), iconName: '');
       sections.add(PieChartSectionData(
         value: entry.value,
         title: '${(entry.value / totalExpense * 100).toStringAsFixed(0)}%',
@@ -396,7 +406,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
     );
   }
 
-  Widget _buildCategoryBreakdown(List<Transaction> transactions, Map<String, Category> categoryMap, String symbol) {
+  Widget _buildCategoryBreakdown(List<Transaction> transactions, Map<String, Category> categoryMap, String symbol, AppLocalizations l10n) {
     final expenses = transactions.where((t) => t.type == TransactionType.expense);
     final Map<String, double> byCategoryId = {};
     double totalExpense = 0;
@@ -412,7 +422,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
     return Column(
       children: sortedEntries.map((entry) {
         final category = categoryMap[entry.key] ??
-            Category(id: '', name: 'Unknown', colorValue: 0xFF9E9E9E, iconName: 'other');
+            Category(id: '', name: l10n.unknown, colorValue: 0xFF9E9E9E, iconName: 'other');
         final percentage = totalExpense > 0 ? (entry.value / totalExpense) : 0.0;
 
         return Center(
@@ -423,7 +433,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: AppTheme.softShadow,
               ),
               child: Column(
@@ -444,7 +454,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                            Text('${(percentage * 100).toStringAsFixed(1)}% of total expenses', 
+                            Text(l10n.percentOfTotalExpenses((percentage * 100).toStringAsFixed(1)), 
                               style: TextStyle(color: Colors.grey[500], fontSize: 12)),
                           ],
                         ),
@@ -487,7 +497,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
     );
   }
 
-  Widget _buildForecastingSection(BusinessReport report, String symbol) {
+  Widget _buildForecastingSection(BusinessReport report, String symbol, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -495,7 +505,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
           children: [
             const Icon(Icons.auto_graph, color: Colors.purple, size: 20),
             const SizedBox(width: 8),
-            Text('30-Day Forecast', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.purple)),
+            Text(l10n.thirtyDayForecast, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.purple)),
           ],
         ),
         const SizedBox(height: 12),
@@ -507,8 +517,8 @@ class _AnalysisPageState extends State<AnalysisPage> {
           crossAxisSpacing: 12,
           childAspectRatio: 2.5,
           children: [
-            _buildStatCard('Projected Revenue', report.projectedRevenue, Colors.purple, symbol, Icons.trending_up),
-            _buildStatCard('Projected Profit', report.projectedProfit, Colors.deepPurple, symbol, Icons.payments),
+            _buildStatCard(l10n.projectedRevenue, report.projectedRevenue, Colors.purple, symbol, Icons.trending_up),
+            _buildStatCard(l10n.projectedProfit, report.projectedProfit, Colors.deepPurple, symbol, Icons.payments),
           ],
         ),
       ],

@@ -46,8 +46,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     backgroundColor: Colors.green));
                 context.go('/');
               } else if (state.error != null) {
+                String message = state.error!;
+                if (message == 'cartIsEmpty') {
+                  message = l10n.cartIsEmpty;
+                } else if (message.startsWith('insufficientStock|')) {
+                  final parts = message.split('|');
+                  message = l10n.insufficientStock(parts[1], parts[2], parts[3]);
+                } else if (message.startsWith('cannotUpdateQuantityOnlyStock|')) {
+                  final parts = message.split('|');
+                  message = l10n.cannotUpdateQuantityOnlyStock(parts[1], parts[2]);
+                }
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(state.error!),
+                    content: Text(message),
                     backgroundColor: Colors.red));
               }
             },
@@ -56,7 +66,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               return BlocBuilder<ShopBloc, ShopState>(
                   builder: (context, shopState) {
                 String upiId = '';
-                String shopName = 'Shop';
+                String shopName = l10n.defaultShopName;
 
                 if (shopState is ShopLoaded) {
                   upiId = shopState.shop.upiId;
@@ -127,8 +137,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             // Itemized List
                             Container(
                               decoration: BoxDecoration(
-                                color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
-                                borderRadius: BorderRadius.circular(20),
+                                color: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(24),
                                 border: Border.all(color: isDark ? AppTheme.darkBorderColor : Colors.grey.shade100),
                               ),
                               child: Column(
@@ -171,7 +181,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                        padding: const EdgeInsets.all(16),
                                        decoration: BoxDecoration(
                                          color: Colors.white,
-                                         borderRadius: BorderRadius.circular(20),
+                                         borderRadius: BorderRadius.circular(24),
                                          boxShadow: AppTheme.softShadow,
                                        ),
                                        child: PrettyQrView.data(
@@ -195,7 +205,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     Container(
                       padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).padding.bottom + 20),
                       decoration: BoxDecoration(
-                        color: isDark ? AppTheme.darkSurfaceColor : Colors.white,
+                        color: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.1),

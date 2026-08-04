@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
+import 'package:twigamoney/l10n/app_localizations.dart';
 import '../../../../core/data/hive_database.dart';
 import '../../../../core/utils/app_validators.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -90,6 +91,7 @@ class _CustomerShopSetupPageState extends State<CustomerShopSetupPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return BlocListener<ShopBloc, ShopState>(
       listener: (context, state) {
         if (state is ShopOperationSuccess) {
@@ -98,9 +100,14 @@ class _CustomerShopSetupPageState extends State<CustomerShopSetupPage> {
             context.go('/');
           }
         } else if (state is ShopError) {
+          final errorMessage = state.message == 'failedToLoadShop'
+              ? l10n.failedToLoadShop
+              : state.message == 'failedToUpdateShop'
+                  ? l10n.failedToUpdateShop
+                  : state.message;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
+              content: Text(errorMessage),
               backgroundColor: Colors.red,
             ),
           );
@@ -108,15 +115,10 @@ class _CustomerShopSetupPageState extends State<CustomerShopSetupPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Complete Your Shop Setup'),
+          title: Text(l10n.completeShopSetup),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.chevron_left,
-                size: 28, color: Theme.of(context).primaryColor),
-            onPressed: () { if (context.canPop()) { context.pop(); } else { context.go('/'); } },
-          ),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
@@ -126,58 +128,58 @@ class _CustomerShopSetupPageState extends State<CustomerShopSetupPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Intro text
-                const Text(
-                  'Let\'s set up your shop details. This information will appear on your receipts.',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                Text(
+                  l10n.shopSetupSubtitle,
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 24),
-                const InputLabel(text: 'Shop Name *'),
+                InputLabel(text: l10n.shopName),
                 _buildTextField(
                   controller: _nameController,
-                  hint: 'e.g. QuickMart Superstore',
-                  validator: AppValidators.required('Required'),
+                  hint: l10n.shopNameHint,
+                  validator: AppValidators.required(l10n.required),
                 ),
                 const SizedBox(height: 15),
-                const InputLabel(text: 'Address Line 1 *'),
+                InputLabel(text: l10n.addressLine1),
                 _buildTextField(
                   controller: _address1Controller,
-                  hint: 'Street address',
-                  validator: AppValidators.required('Required'),
+                  hint: l10n.addressLine1Hint,
+                  validator: AppValidators.required(l10n.required),
                 ),
                 const SizedBox(height: 15),
-                const InputLabel(text: 'Address Line 2 (Optional)'),
+                InputLabel(text: l10n.addressLine2Optional),
                 _buildTextField(
                   controller: _address2Controller,
-                  hint: 'City, State, PIN',
+                  hint: l10n.addressLine2Hint,
                 ),
                 const SizedBox(height: 15),
-                const InputLabel(text: 'Phone Number *'),
+                InputLabel(text: l10n.phoneNumber),
                 _buildTextField(
                   controller: _phoneController,
-                  hint: '+91 9876543210',
+                  hint: l10n.phoneHint,
                   keyboardType: TextInputType.phone,
-                  validator: AppValidators.required('Required'),
+                  validator: AppValidators.required(l10n.required),
                 ),
                 const SizedBox(height: 15),
-                const InputLabel(text: 'UPI ID (Optional)'),
+                InputLabel(text: l10n.upiPaymentId),
                 _buildTextField(
                   controller: _upiController,
-                  hint: 'yourname@okaxis',
+                  hint: l10n.upiHint,
                 ),
                 const SizedBox(height: 15),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const InputLabel(text: 'Receipt Footer'),
-                    Text('Max 60 chars',
+                    InputLabel(text: l10n.receiptFooter),
+                    Text(l10n.maxChars(150),
                         style: TextStyle(fontSize: 11, color: Colors.grey[400])),
                   ],
                 ),
                 _buildTextField(
                   controller: _footerController,
-                  hint: 'Thank you, Visit again!!!',
+                  hint: l10n.thankYouHint,
                   maxLines: 2,
-                  maxLength: 60,
+                  maxLength: 150,
                 ),
               ],
             ),
@@ -191,12 +193,12 @@ class _CustomerShopSetupPageState extends State<CustomerShopSetupPage> {
               PrimaryButton(
                 onPressed: _saveAndContinue,
                 icon: Icons.check,
-                label: 'Save & Continue',
+                label: l10n.saveAndContinue,
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _skipAndContinue,
-                child: const Text('Skip for Now'),
+                child: Text(l10n.skipForNow),
               ),
             ],
           ),

@@ -63,6 +63,7 @@ class HiveDatabase {
     Hive.registerAdapter(BudgetAdapter());
     Hive.registerAdapter(RecurringTransactionAdapter());
     Hive.registerAdapter(SalesTransactionAdapter());
+    Hive.registerAdapter(TransactionStatusAdapter());
     Hive.registerAdapter(MovementTypeAdapter());
     Hive.registerAdapter(StockMovementAdapter());
     Hive.registerAdapter(CustomerAdapter());

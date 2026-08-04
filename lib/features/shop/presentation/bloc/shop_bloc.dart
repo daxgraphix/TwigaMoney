@@ -30,7 +30,7 @@ class ShopBloc extends Bloc<ShopEvent, ShopState> {
     ).flatMap((either) => TaskEither.fromEither(either)).run();
 
     result.fold(
-      (failure) => emit(ShopError(failure.message)),
+      (failure) => emit(ShopError('failedToLoadShop')),
       (shop) => emit(ShopLoaded(shop)),
     );
   }
@@ -45,7 +45,7 @@ class ShopBloc extends Bloc<ShopEvent, ShopState> {
     ).flatMap((either) => TaskEither.fromEither(either)).run();
 
     result.fold(
-      (failure) => emit(ShopError(failure.message)),
+      (failure) => emit(ShopError('failedToUpdateShop')),
       (_) {
         add(LoadShopEvent());
         emit(ShopOperationSuccess());

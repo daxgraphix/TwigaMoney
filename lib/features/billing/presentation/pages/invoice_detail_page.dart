@@ -44,7 +44,9 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currency = Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
+    final theme = Theme.of(context);
+    final currency =
+        Hive.box('settings').get('selectedCurrency', defaultValue: 'TZS');
     final symbol = AppTheme.getCurrencySymbol(currency);
 
     return Scaffold(
@@ -75,109 +77,150 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
+                      color: theme.cardTheme.color ?? theme.cardColor,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: AppTheme.softShadow,
-                      border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Invoice',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[500],
-                                fontWeight: FontWeight.w600,
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(24)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Invoice',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[500],
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: (_transaction!.status ==
+                                                  TransactionStatus.paid
+                                              ? Colors.green
+                                              : Colors.orange)
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      _transaction!.status.name.toUpperCase(),
+                                      style: TextStyle(
+                                        color: _transaction!.status ==
+                                                TransactionStatus.paid
+                                            ? Colors.green
+                                            : Colors.orange,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: (_transaction!.status == TransactionStatus.paid ? Colors.green : Colors.orange).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                _transaction!.status.name.toUpperCase(),
-                                style: TextStyle(
-                                  color: _transaction!.status == TransactionStatus.paid ? Colors.green : Colors.orange,
-                                  fontSize: 10,
+                              const SizedBox(height: 12),
+                              Text(
+                                '#${_transaction!.id.substring(0, 8).toUpperCase()}',
+                                style: const TextStyle(
+                                  fontSize: 28,
                                   fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.5,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '#${_transaction!.id}',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        _buildInfoRow(Icons.calendar_today_outlined, 'Date', DateFormat('dd MMM yyyy, HH:mm').format(_transaction!.timestamp)),
-                        const SizedBox(height: 12),
-                        _buildInfoRow(Icons.person_outline, 'Customer', _transaction!.customerId),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  const Text(
-                    'Items',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: AppTheme.softShadow,
-                      border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
-                    ),
-                    child: Column(
-                      children: [
-                        ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                          leading: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(Icons.inventory_2_outlined, color: Theme.of(context).primaryColor, size: 20),
-                          ),
-                          title: Text(_transaction!.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text('Qty: ${_transaction!.quantity}'),
-                          trailing: Text(
-                            '$symbol${_transaction!.totalRevenue.toStringAsFixed(0)}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                        ),
-                        if (_transaction!.items.isNotEmpty)
-                          ..._transaction!.items.map((item) => ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                                title: Text(item),
-                                subtitle: const Text('Additional item'),
-                              )),
-                        const Divider(indent: 20, endIndent: 20),
                         Padding(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(24),
                           child: Column(
                             children: [
-                              _buildAmountRow('Subtotal', '$symbol${_transaction!.totalRevenue.toStringAsFixed(0)}', isBold: false),
-                              const SizedBox(height: 8),
-                              _buildAmountRow('Total', '$symbol${_transaction!.totalRevenue.toStringAsFixed(0)}', isBold: true),
+                              _buildInfoRow(Icons.calendar_today_outlined,
+                                  'Date', DateFormat('dd MMM yyyy, HH:mm').format(_transaction!.timestamp)),
+                              const SizedBox(height: 16),
+                              _buildInfoRow(Icons.person_outline, 'Customer',
+                                  _transaction!.customerId),
+                              const SizedBox(height: 24),
+                              const Divider(height: 1),
+                              const SizedBox(height: 24),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryColor
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(Icons.inventory_2_outlined,
+                                        color: AppTheme.primaryColor, size: 24),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(_transaction!.productName,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16)),
+                                        Text('Quantity: ${_transaction!.quantity}',
+                                            style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 14)),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    '$symbol${_transaction!.totalRevenue.toStringAsFixed(0)}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 32),
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.1)),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Total Amount',
+                                        style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500)),
+                                    Text(
+                                      '$symbol${_transaction!.totalRevenue.toStringAsFixed(0)}',
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -185,10 +228,32 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  ElevatedButton.icon(
-                    onPressed: _shareInvoice,
-                    icon: const Icon(Icons.share_outlined, size: 20),
-                    label: const Text('SHARE INVOICE'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _generateAndSharePdf,
+                          icon: const Icon(Icons.picture_as_pdf_outlined),
+                          label: const Text('PDF'),
+                          style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _shareInvoice,
+                          icon: const Icon(Icons.share_outlined),
+                          label: const Text('SHARE'),
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -199,33 +264,16 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.grey[500]),
-        const SizedBox(width: 8),
-        Text('$label: ', style: TextStyle(color: Colors.grey[500], fontSize: 14)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-      ],
-    );
-  }
-
-  Widget _buildAmountRow(String label, String value, {required bool isBold}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isBold ? 18 : 14,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            color: isBold ? null : Colors.grey[600],
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: isBold ? 22 : 16,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-            color: isBold ? Theme.of(context).primaryColor : null,
-          ),
+        Icon(icon, size: 18, color: AppTheme.primaryColor.withValues(alpha: 0.7)),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+            Text(value,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          ],
         ),
       ],
     );
